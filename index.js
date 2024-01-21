@@ -1,5 +1,6 @@
 var express = require('express');
 var https = require('https');
+var http = require('http');
 var cors = require('cors');
 var fs = require('fs');
 
@@ -8,15 +9,18 @@ var fs = require('fs');
 
 var app = express()
 
-app.use(cors({credentials: true}))
+app.use(cors())
 
 
 //___________TLS CRADENTIALS______________
 
 
 var options = {
-    key: fs.readFileSync('./teal_state_TSL_cradentiales/localhost+2-key.pem'),
-    cert: fs.readFileSync('./teal_state_TSL_cradentiales/localhost+2.pem')};
+    key: fs.readFileSync('../localhost+2-key.pem'),
+    cert: fs.readFileSync('../localhost+2.pem'),
+    /** Home */ //key: fs.readFileSync('../localhost+2-key.pem'),
+    /** Home *///cert: fs.readFileSync('../localhost+2.pem')
+};
 
 
 //___________ROUTS______________
@@ -35,7 +39,7 @@ app.get('/', (req,res)=>{
 
 const port = 3050;
 const host = '127.0.0.1'
-var server = https.createServer(options, app);
+var server = http.createServer(options, app);
 
 server.listen(port, host, ()=>{
 
