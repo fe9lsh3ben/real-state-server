@@ -9,7 +9,10 @@ var fs = require('fs');
 
 var app = express()
 
-app.use(cors())
+app.use(cors({
+    origin:"*",
+    credentials: true,
+    allowedHeaders: "Origin,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,locale"}));
 
 
 //___________TLS CRADENTIALS______________
@@ -39,7 +42,7 @@ app.get('/', (req,res)=>{
 
 const port = 3050;
 const host = '127.0.0.1'
-var server = http.createServer(options, app);
+var server = https.createServer(options, app);
 
 server.listen(port, host, ()=>{
 
