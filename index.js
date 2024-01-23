@@ -1,4 +1,5 @@
 var express = require('express');
+const bcrypt = require('bcrypt');
 var https = require('https');
 var http = require('http');
 var cors = require('cors');
@@ -19,10 +20,10 @@ app.use(cors({
 
 
 var options = {
-    key: fs.readFileSync('../localhost+2-key.pem'),
-    cert: fs.readFileSync('../localhost+2.pem'),
-    /** Home */ //key: fs.readFileSync('../localhost+2-key.pem'),
-    /** Home *///cert: fs.readFileSync('../localhost+2.pem')
+    //key: fs.readFileSync('../localhost+2-key.pem'),
+    //cert: fs.readFileSync('../localhost+2.pem'),
+    /** Home */ key: fs.readFileSync('./real_state_TSL_cradentiales_Home/localhost+2-key.pem'),
+    /** Home */cert: fs.readFileSync('./real_state_TSL_cradentiales_Home/localhost+2.pem')
 };
 
 
