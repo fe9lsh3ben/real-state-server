@@ -1,3 +1,4 @@
+//___________Library______________
 var express = require('express');
 const bcrypt = require('bcrypt');
 var https = require('https');
@@ -5,8 +6,13 @@ var http = require('http');
 var cors = require('cors');
 var fs = require('fs');
 
-//___________SERVER SETTINGS______________
+// var a = options.a !== undefined ? options.a : "nothing";
 
+//___________Modules______________
+const auth = require('./auth')
+
+
+//___________SERVER SETTINGS______________
 
 var app = express()
 
@@ -18,7 +24,6 @@ app.use(cors({
 
 //___________TLS CRADENTIALS______________
 
-
 var options = {
     //key: fs.readFileSync('../localhost+2-key.pem'),
     //cert: fs.readFileSync('../localhost+2.pem'),
@@ -27,7 +32,8 @@ var options = {
 };
 
 
-//___________ROUTS______________
+//___________App______________
+
 
 
 app.get('/', (req,res)=>{
@@ -37,6 +43,7 @@ app.get('/', (req,res)=>{
 
 });
 
+app.use('/auth&auth',auth);
 
 //___________SERVER______________
 
