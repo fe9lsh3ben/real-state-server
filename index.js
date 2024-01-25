@@ -36,9 +36,9 @@ var options = {
 
 
 
-app.get('/', (req,res)=>{
+app.post('/', (req,res)=>{
 
-    console.log(req.body);
+    console.log(req.read());
     res.send({'status':'ok'});
 
 });

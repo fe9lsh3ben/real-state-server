@@ -4,8 +4,9 @@ const DateDiff = require('./dateDef')
 
 
 const requestValidator = (req,res, next)=>{
-
-    if (req.body = undefined) {
+    console.log(req)
+    if (req.body == undefined) {
+        console.log(req.body)
         res.status(400).send('Bad Request');
         return;
     }else { 
@@ -59,13 +60,13 @@ const requestValidator = (req,res, next)=>{
                 return
             } 
 
-
+            res.status(200).send('validation success')
+            next();
 
         } catch (e) {
             // Rcord Error
         }
-        console.log('validation success')
-        next();
+        
     }
 }
 

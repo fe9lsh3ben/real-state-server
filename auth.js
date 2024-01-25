@@ -5,7 +5,8 @@ var requestValidator = require('./middlewareValidator.js')
 
 
 authRouter.route('/')
-    .post(requestValidator,(req,res,next)=> {
+    .post(requestValidator,(req,res)=> {
+        
         
         
     })
