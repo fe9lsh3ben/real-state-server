@@ -16,7 +16,7 @@ const auth = require('./auth')
 
 var app = express()
 
-app.use(cors({
+app.use(express.json(),cors({
     origin:"*",
     credentials: true,
     allowedHeaders: "Origin,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,locale"}));
@@ -25,10 +25,10 @@ app.use(cors({
 //___________TLS CRADENTIALS______________
 
 var options = {
-    //key: fs.readFileSync('../localhost+2-key.pem'),
-    //cert: fs.readFileSync('../localhost+2.pem'),
-    /** Home */ key: fs.readFileSync('./real_state_TSL_cradentiales_Home/localhost+2-key.pem'),
-    /** Home */cert: fs.readFileSync('./real_state_TSL_cradentiales_Home/localhost+2.pem')
+    /** Work */ key: fs.readFileSync('../localhost+2-key.pem'),
+    /** Work */ cert: fs.readFileSync('../localhost+2.pem'),
+    /** Home */ //key: fs.readFileSync('./real_state_TSL_cradentiales_Home/localhost+2-key.pem'),
+    /** Home *///cert: fs.readFileSync('./real_state_TSL_cradentiales_Home/localhost+2.pem')
 };
 
 
@@ -38,7 +38,7 @@ var options = {
 
 app.post('/', (req,res)=>{
 
-    console.log(req.read());
+    console.log(req.body);
     res.send({'status':'ok'});
 
 });

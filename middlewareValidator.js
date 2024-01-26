@@ -4,7 +4,14 @@ const DateDiff = require('./dateDef')
 
 
 const requestValidator = (req,res, next)=>{
-    console.log(req)
+    
+    let c = Object.entries(req.body.fullName.english)
+    console.log(c)
+    for(v in c[1]) {
+        console.log(v)
+    }
+    // console.log(v[1] + " " + validator.isAlpha(v))
+    
     if (req.body == undefined) {
         console.log(req.body)
         res.status(400).send('Bad Request');
@@ -14,21 +21,21 @@ const requestValidator = (req,res, next)=>{
             const {username, fullName, age, govermentalID, birthOfDate, email} = req.body;
             
             if (!validator.isAlphanumeric(username)) {
-
+                
                 res.status(400).send('Username entry should be letters and numaric only!');
                 return
             }
 
-            if (!validator.isAlpha(fullName.english,'ar-SA')) {
+            if (!validator.isAlpha(fullName.english,'en-US')) {
                 
-                res.status(400).send('Name in arabic has no entry')
+                res.status(400).send('Name in english has no entry')
                 return
 
             }
             
-            if (!validator.isAlpha(fullName.arabic,'en-US')) {
+            if (!validator.isAlpha(fullName.arabic,'ar-SA')) {
             
-                res.status(400).send('Name in english has no entry')
+                res.status(400).send('Name in arabic has no entry')
                 return
             } 
             
