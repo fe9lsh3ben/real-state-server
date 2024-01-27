@@ -25,8 +25,8 @@ app.use(express.json(),cors({
 //___________TLS CRADENTIALS______________
 
 var options = {
-    /** Work */ key: fs.readFileSync('../localhost+2-key.pem'),
-    /** Work */ cert: fs.readFileSync('../localhost+2.pem'),
+    /** Work */ key: fs.readFileSync('./real_state_TSL_cradentiales_Home/home_localhost+2-key.pem'),
+    /** Work */ cert: fs.readFileSync('./real_state_TSL_cradentiales_Home/home_localhost+2.pem'),
     /** Home */ //key: fs.readFileSync('./real_state_TSL_cradentiales_Home/localhost+2-key.pem'),
     /** Home *///cert: fs.readFileSync('./real_state_TSL_cradentiales_Home/localhost+2.pem')
 };
