@@ -38,8 +38,7 @@ var options = {
 
 app.post('/', (req,res)=>{
 
-    console.log(req.body);
-    res.send({'status':'ok'});
+    
 
 });
 

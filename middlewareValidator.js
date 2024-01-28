@@ -5,11 +5,9 @@ const DateDiff = require('./dateDef')
 
 const requestValidator = (req,res, next)=>{
     
-    let c = Object.entries(req.body.fullName.english)
-    console.log(c)
-    for(v in c[1]) {
-        console.log(v)
-    }
+    console.log (req.body.fullName.english[0])
+    
+    
     // console.log(v[1] + " " + validator.isAlpha(v))
     
     if (req.body == undefined) {
