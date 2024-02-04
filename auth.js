@@ -1,11 +1,11 @@
 const express = require('express');
 const authRouter = express.Router();
-var requestValidator = require('./middlewareValidator.js')
+var {requestValidator, signupValidator} = require('./middlewareValidator.js')
 
 
 
 authRouter.route('/')
-    .post(requestValidator,(req,res)=> {
+    .post(requestValidator, signupValidator,(req,res)=> {
         
         
         

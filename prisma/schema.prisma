@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+// run prisma generate
+
+// Define the Role table
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+}
+
+// Define the Permission table
+model Permission {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+}
+
+// Define the Session table
+model Session {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+}
+
+// Define the Setting table
+model Setting {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  value String
+}
+
+// Define the AuditTrail table
+model AuditTrail {
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  action      String
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+
+// Define the User table
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  UserContent  UserContent[]
+}
+
+
+// Define a simple Relationship table
+model UserContent {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  contentId Int
+  content   Content  @relation(fields: [contentId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+// Define the Content table
+model Content {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  usercontent UserContent[]
+  title      String
+  body       String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
