@@ -14,18 +14,10 @@ datasource db {
 // run prisma generate
 
 // Define the Role table
-model Role {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-}
+
 
 // Define the Permission table
-model Permission {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
-  description String?
-}
+
 
 // Define the Session table
 model Session {
@@ -52,16 +44,19 @@ model AuditTrail {
 }
 
 
+
 // Define the User table
 model User {
   id        Int      @id @default(autoincrement())
   username  String   @unique
   email     String   @unique
   password  String
+  role      Role     @default(BENEFICIARY)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   UserContent  UserContent[]
 }
+
 
 
 // Define a simple Relationship table
@@ -85,3 +80,11 @@ model Content {
   updatedAt  DateTime @updatedAt
 }
 
+enum Role {
+    ADMIN
+    OFFICE
+    BENEFICIARY
+    UTILITY_BUSINESS
+    GOVERMENTAL
+    OTHER
+}
