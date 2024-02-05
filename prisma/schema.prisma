@@ -20,12 +20,17 @@ datasource db {
 
 
 // Define the Session table
+// Define the Session table
 model Session {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  token     String   @unique
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id])
+  token     String    @unique
   expiresAt DateTime
 }
+
+
+
 
 // Define the Setting table
 model Setting {
@@ -48,12 +53,15 @@ model AuditTrail {
 // Define the User table
 model User {
   id        Int      @id @default(autoincrement())
+  role      Role     @default(BENEFICIARY)
+  govID     String?
+  profile   String?
   username  String   @unique
   email     String   @unique
   password  String
-  role      Role     @default(BENEFICIARY)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  session   Session?
   UserContent  UserContent[]
 }
 
@@ -72,7 +80,7 @@ model UserContent {
 // Define the Content table
 model Content {
   id         Int      @id @default(autoincrement())
-  userId     Int
+  authorId   Int
   usercontent UserContent[]
   title      String
   body       String
