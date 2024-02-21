@@ -7,30 +7,24 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://postgres:1@localhost:5432/real_estate?schema=public"
 }
-
 
 // run prisma generate
 
 // Define the Role table
 
-
 // Define the Permission table
-
 
 // Define the Session table
 // Define the Session table
 model Session {
-  ID        Int       @id @default(autoincrement())
-  UserId    Int       @unique
-  User      User      @relation(fields: [UserId], references: [ID])
-  Token     String    @unique
+  ID        Int      @id @default(autoincrement())
+  UserId    Int      @unique
+  User      User     @relation(fields: [UserId], references: [ID])
+  Token     String   @unique
   ExpiresAt DateTime
 }
-
-
-
 
 // Define the Setting table
 model Setting {
@@ -48,120 +42,132 @@ model AuditTrail {
   CreatedAt   DateTime @default(now())
 }
 
-
-
 // Define the User table
 model User {
-  Role              Role     @default(BENEFICIARY)
-  ID                Int      @id @default(autoincrement())
-  CreatedAt         DateTime @default(now())
-  UpdatedAt         DateTime @updatedAt
+  Role              Role               @default(BENEFICIARY)
+  ID                Int                @id @default(autoincrement())
+  CreatedAt         DateTime           @default(now())
+  UpdatedAt         DateTime           @updatedAt
   TermsCondetion_ID String
-  Username          String   @unique
-  Email             String   @unique
+  Username          String             @unique
+  Email             String             @unique
   Session           Session?
   ProfileImage      Bytes?
-  GovID             String?
+  GovID             String?            @unique
   Address           Json
   FullName          String[]
   UserPhone         String
-  FalLicense        String
-  Other1            Json[]
+  BrokerLicense     String?
+  FalLicense        String?
+  Other1            Json[]      // Admin={Log_records}, OfficeOwner/Staff{Broker_License}, Beneficiary={Beneficiary_class}, Govermental={Other}
   RE_Office         RealEstateOffice[]
-  Visitors          Int?
-  Balance           Decimal?
   
+  Balance           Decimal?
 }
 
-model RealEstateOffice{
-    ID  Int @id @default(autoincrement())
-    CommercialRegister    String
-    OwnerID    Int       @unique
-    Owner      User      @relation(fields: [OwnerID], references: [ID])
-    Region String
-    City String
-    Address Json
-    Status  OfficeStatus
-    Staff   OfficeStaff[]
-    RealStateUnits RealEstateUnit[] @relation("OfficeAndREUnitRelation")
-    Contracts Contract[]
-    ADs RealStateAD[]
-    Bargains Bargain[]
-    Visitors Int
-    Balance Decimal
-    CreatedAt DateTime
-    UpdatedAt DateTime
-    TearmsAndAgreements Boolean 
-
+model RealEstateOffice {
+  ID                  Int              @id @default(autoincrement())
+  CommercialRegister  String
+  OwnerID             Int              @unique
+  Owner               User             @relation(fields: [OwnerID], references: [ID])
+  Region              String
+  City                String
+  Address             Json
+  Status              OfficeStatus
+  Staff               OfficeStaff[]
+  RealStateUnits      RealEstateUnit[] @relation("OfficeAndREUnitRelation")
+  Contracts           Contract[]
+  ADs                 RealStateAD[]
+  Bargains            Bargain[]
+  Visitors            Int
+  Balance             Decimal
+  CreatedAt           DateTime
+  UpdatedAt           DateTime
+  TearmsAndAgreements Boolean
 }
 
-model RealEstateUnit{
-    ID Int @id @default(autoincrement())
-    UnitType RealStateType
-    DeedNumber String
-    DeedDate DateTime
-    DeedOwner Json[] 
-    RealEstateOffice RealEstateOffice[] @relation("OfficeAndREUnitRelation")
-    CreatorID String
-    CreatedBy String 
-    CreatorContactNumber String 
-    Address Json
-    CreatedAt DateTime
-    UpdatedAt DateTime
-    TermsAndAgreements Boolean
-
+model RealEstateUnit {
+  ID                   Int                @id @default(autoincrement())
+  UnitType             RealStateType
+  DeedNumber           String             @unique
+  DeedDate             DateTime
+  DeedOwner            Json[]
+  RealEstateOffice     RealEstateOffice[] @relation("OfficeAndREUnitRelation")
+  CreatorID            String
+  CreatedBy            String
+  CreatorContactNumber String
+  Region               String
+  City                 String
+  Address              Json   //{Destrect,Altitude,Longtude}
+  UnitImage            Bytes[]
+  CreatedAt            DateTime
+  UpdatedAt            DateTime
+  Description          Json[] //Based on Unit type
+  TermsAndAgreements   Boolean
 }
 
-model Contract{
-    ID Int @id @default(autoincrement())
-    ResponsableOffice Int @unique
-    ResponsableOfficeRelation RealEstateOffice @relation(fields: [ResponsableOffice], references: [ID])
+model Contract {
+  ID                Int              @id //Parties ID +D&T
+  InitiatorOffice   Int              
+  InitiatorRelation RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
+  PartiesConsent    Json[]    //{Name,ID,SignatureOTP}
+  Contant           String
+  PartiesPhone      Json[]   
+  Other             Json[]
+  CreatedAt         DateTime
+  UpdatedAt         DateTime
+  TermsAndCondetion Json[]
 }
 
-model Bargain{
-    ID Int @id @default(autoincrement())
-    InitiatorOffice Int @unique
-    OfficeRelation RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
+model Bargain {
+  ID                Int              @id //Parties ID +D&T
+  InitiatorOffice   Int              
+  InitiatorRelation RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
+  PartiesConsent    Json[]    //{Name,ID,SignatureOTP}
+  Contant           String
+  PartiesPhone      Json[]   
+  Other             Json[]
+  CreatedAt         DateTime
+  UpdatedAt         DateTime
+  TermsAndCondetion Json[]
 }
 
-model OfficeStaff{
-    ID Int @id @default(autoincrement())
-    OfficeID Int
-    Office RealEstateOffice @relation(fields: [OfficeID], references: [ID])
-    
+model OfficeStaff {
+  ID       Int              @id @default(autoincrement())
+  GovID    String
+  BrokageLicense String
+  OfficeID Int
+  Office   RealEstateOffice @relation(fields: [OfficeID], references: [ID])
 }
 
-model RealStateAD{
-    ID Int @id @default(autoincrement())
-    AD_Maker Int @unique
-    MakerRelation RealEstateOffice @relation(fields: [AD_Maker], references: [ID])
+model RealStateAD {
+  ID            Int              @id @default(autoincrement())
+  AD_Maker      Int              @unique
+  MakerRelation RealEstateOffice @relation(fields: [AD_Maker], references: [ID])
 }
-
-
-
 
 enum Role {
-    ADMIN
-    OFFICE_OWNER
-    BENEFICIARY
-    BUSINESS_BENEFICIARY
-    GOVERMENTAL
-    OTHER
+  ADMIN
+  OFFICE_OWNER
+  BENEFICIARY
+  BUSINESS_BENEFICIARY
+  GOVERMENTAL
+  OTHER
 }
 
 enum OfficeStatus {
-    ACTIVE
-    UNACTIVE
-    TEMP_UNACTIVE
-    RESTRICTED
-    BANNED
+  ACTIVE
+  UNACTIVE
+  TEMP_UNACTIVE
+  RESTRICTED
+  BANNED
 }
 
 enum RealStateType {
-    LAND
-    BAUILDING
-    VILLA
-    STORE
-    AGRICULTURAL
-    OTHER
+  LAND
+  BAUILDING
+  VILLA
+  STORE
+  AGRICULTURAL
+  OTHER
 }
