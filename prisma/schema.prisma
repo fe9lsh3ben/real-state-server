@@ -65,17 +65,26 @@ model User {
   address           Json
   fullName          String[]
   userPhone         String
+  falLicense        String
   other1            Json[]
-  RSOffice          RSOfice[]
+  RE_Office         RE_Office[]
   visitors          Int?
   balance           Decimal?
 }
 
-model RSOfice{
-    id      Int     @id @default(autoincrement())
-    userID  Int
-    user    User    @relation(fields: [userID], references: [id])
+model RealEstateOffice{
+    id  Int @id @default(autoincrement())
+    CommercialRegister    String
+    
 }
+
+model RealEstateUnit{}
+
+model Contract{}
+
+model RealStateStaff{}
+
+model RealStateAD{}
 
 
 // Define a simple Relationship table
