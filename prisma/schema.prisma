@@ -22,11 +22,11 @@ datasource db {
 // Define the Session table
 // Define the Session table
 model Session {
-  id        Int       @id @default(autoincrement())
-  userId    Int       @unique
-  user      User      @relation(fields: [userId], references: [id])
-  token     String    @unique
-  expiresAt DateTime
+  ID        Int       @id @default(autoincrement())
+  UserId    Int       @unique
+  User      User      @relation(fields: [userId], references: [id])
+  Token     String    @unique
+  ExpiresAt DateTime
 }
 
 
@@ -34,66 +34,81 @@ model Session {
 
 // Define the Setting table
 model Setting {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
-  value String
+  ID    Int    @id @default(autoincrement())
+  Name  String @unique
+  Value String
 }
 
 // Define the AuditTrail table
 model AuditTrail {
-  id          Int      @id @default(autoincrement())
-  userId      Int?
-  action      String
-  description String?
-  createdAt   DateTime @default(now())
+  ID          Int      @id @default(autoincrement())
+  UserId      Int?
+  Action      String
+  Description String?
+  CreatedAt   DateTime @default(now())
 }
 
 
 
 // Define the User table
 model User {
-  role              Role     @default(BENEFICIARY)
-  id                Int      @id @default(autoincrement())
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  termsCondetion_ID String
-  username          String   @unique
-  email             String   @unique
-  session           Session?
-  profileImage      Bytes?
-  govID             String?
-  address           Json
-  fullName          String[]
-  userPhone         String
-  falLicense        String
-  other1            Json[]
+  Role              Role     @default(BENEFICIARY)
+  ID                Int      @id @default(autoincrement())
+  CreatedAt         DateTime @default(now())
+  UpdatedAt         DateTime @updatedAt
+  TermsCondetion_ID String
+  Username          String   @unique
+  Email             String   @unique
+  Session           Session?
+  ProfileImage      Bytes?
+  GovID             String?
+  Address           Json
+  FullName          String[]
+  UserPhone         String
+  FalLicense        String
+  Other1            Json[]
   RE_Office         RE_Office[]
-  visitors          Int?
-  balance           Decimal?
+  Visitors          Int?
+  Balance           Decimal?
+  
 }
 
 model RealEstateOffice{
-    id  Int @id @default(autoincrement())
-    commercialRegister    String
-    owner String
-    region String
-    city String
-    address Json
-    status  OfficeStatus
-    staff   OfficeStaff
-    realStateUnits RealEstateUnit[]
-    contracts Contract[]
+    ID  Int @id @default(autoincrement())
+    CommercialRegister    String
+    Owner String
+    Region String
+    City String
+    Address Json
+    Status  OfficeStatus
+    Staff   OfficeStaff[]
+    RealStateUnits RealEstateUnit[]
+    Contracts Contract[]
     ADs RealStateAD[]
-    bargains Bargain[]
-    visitors Int
-    balance Decimal
-    createdAt DateTime
-    updatedAt DateTime
-    tearmsAndAgreements Boolean 
+    Bargains Bargain[]
+    Visitors Int
+    Balance Decimal
+    CreatedAt DateTime
+    UpdatedAt DateTime
+    TearmsAndAgreements Boolean 
 
 }
 
-model RealEstateUnit{}
+model RealEstateUnit{
+    ID Int @id @default(autoincrement())
+    UnitType RealStateType
+    DeedNumber String
+    DeedDate DateTime
+    DeedOwner String[]
+    CreatorID String
+    CreatedBy String 
+    CreatorContactNumber String 
+    Address Json
+    CreatedAt DateTime
+    UpdatedAt DateTime
+    TermsAndAgreements Boolean
+
+}
 
 model Contract{}
 
@@ -105,24 +120,6 @@ model RealStateAD{}
 
 
 
-// Define a simple Relationship table
-model UserContent {
-  id        Int      @id @default(autoincrement())
-  contentId Int
-  content   Content  @relation(fields: [contentId], references: [id])
-  createdAt DateTime @default(now())
-}
-
-// Define the Content table
-model Content {
-  id         Int      @id @default(autoincrement())
-  authorId   Int
-  usercontent UserContent[]
-  title      String
-  body       String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-}
 
 enum Role {
     ADMIN
@@ -134,5 +131,18 @@ enum Role {
 }
 
 enum OfficeStatus {
-    Active
+    ACTIVE
+    UNACTIVE
+    TEMP_UNACTIVE
+    RESTRICTED
+    BANNED
+}
+
+enum RealStateType {
+    LAND
+    BAUILDING
+    VILLA
+    STORE
+    AGRICULTURAL
+    OTHER
 }
