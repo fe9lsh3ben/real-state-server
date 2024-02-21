@@ -74,17 +74,35 @@ model User {
 
 model RealEstateOffice{
     id  Int @id @default(autoincrement())
-    CommercialRegister    String
-    
+    commercialRegister    String
+    owner String
+    region String
+    city String
+    address Json
+    status  OfficeStatus
+    staff   OfficeStaff
+    realStateUnits RealEstateUnit[]
+    contracts Contract[]
+    ADs RealStateAD[]
+    bargains Bargain[]
+    visitors Int
+    balance Decimal
+    createdAt DateTime
+    updatedAt DateTime
+    tearmsAndAgreements Boolean 
+
 }
 
 model RealEstateUnit{}
 
 model Contract{}
 
-model RealStateStaff{}
+model Bargain{}
+
+model OfficeStaff{}
 
 model RealStateAD{}
+
 
 
 // Define a simple Relationship table
@@ -113,4 +131,8 @@ enum Role {
     BUSINESS_BENEFICIARY
     GOVERMENTAL
     OTHER
+}
+
+enum OfficeStatus {
+    Active
 }
