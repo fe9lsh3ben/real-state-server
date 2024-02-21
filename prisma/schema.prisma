@@ -24,7 +24,7 @@ datasource db {
 model Session {
   ID        Int       @id @default(autoincrement())
   UserId    Int       @unique
-  User      User      @relation(fields: [userId], references: [id])
+  User      User      @relation(fields: [UserId], references: [ID])
   Token     String    @unique
   ExpiresAt DateTime
 }
@@ -67,7 +67,7 @@ model User {
   UserPhone         String
   FalLicense        String
   Other1            Json[]
-  RE_Office         RE_Office[]
+  RE_Office         RealEstateOffice[]
   Visitors          Int?
   Balance           Decimal?
   
@@ -76,13 +76,14 @@ model User {
 model RealEstateOffice{
     ID  Int @id @default(autoincrement())
     CommercialRegister    String
-    Owner String
+    OwnerID    Int       @unique
+    Owner      User      @relation(fields: [OwnerID], references: [ID])
     Region String
     City String
     Address Json
     Status  OfficeStatus
     Staff   OfficeStaff[]
-    RealStateUnits RealEstateUnit[]
+    RealStateUnits RealEstateUnit[] @relation("OfficeAndREUnitRelation")
     Contracts Contract[]
     ADs RealStateAD[]
     Bargains Bargain[]
@@ -99,7 +100,8 @@ model RealEstateUnit{
     UnitType RealStateType
     DeedNumber String
     DeedDate DateTime
-    DeedOwner String[]
+    DeedOwner Json[] 
+    RealEstateOffice RealEstateOffice[] @relation("OfficeAndREUnitRelation")
     CreatorID String
     CreatedBy String 
     CreatorContactNumber String 
@@ -110,13 +112,30 @@ model RealEstateUnit{
 
 }
 
-model Contract{}
+model Contract{
+    ID Int @id @default(autoincrement())
+    ResponsableOffice Int @unique
+    ResponsableOfficeRelation RealEstateOffice @relation(fields: [ResponsableOffice], references: [ID])
+}
 
-model Bargain{}
+model Bargain{
+    ID Int @id @default(autoincrement())
+    InitiatorOffice Int @unique
+    OfficeRelation RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
+}
 
-model OfficeStaff{}
+model OfficeStaff{
+    ID Int @id @default(autoincrement())
+    OfficeID Int
+    Office RealEstateOffice @relation(fields: [OfficeID], references: [ID])
+    
+}
 
-model RealStateAD{}
+model RealStateAD{
+    ID Int @id @default(autoincrement())
+    AD_Maker Int @unique
+    MakerRelation RealEstateOffice @relation(fields: [AD_Maker], references: [ID])
+}
 
 
 
