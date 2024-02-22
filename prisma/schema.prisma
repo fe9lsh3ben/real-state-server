@@ -61,7 +61,6 @@ model User {
   FalLicense        String?
   Other1            Json[]      // Admin={Log_records}, OfficeOwner/Staff{Broker_License}, Beneficiary={Beneficiary_class}, Govermental={Other}
   RE_Office         RealEstateOffice[]
-  
   Balance           Decimal?
 }
 
@@ -93,8 +92,9 @@ model RealEstateUnit {
   DeedDate             DateTime
   DeedOwner            Json[]
   RealEstateOffice     RealEstateOffice[] @relation("OfficeAndREUnitRelation")
-  CreatorID            String
-  CreatedBy            String
+  InitiatedBy          String
+  InitiatorID          String
+  InitiatorRelation    InitiatorRelation
   CreatorContactNumber String
   Region               String
   City                 String
@@ -170,4 +170,10 @@ enum RealStateType {
   STORE
   AGRICULTURAL
   OTHER
+}
+
+enum InitiatorRelation {
+    OWNER
+    REPRESNTATIVE
+    OFFICE
 }
