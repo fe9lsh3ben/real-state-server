@@ -177,3 +177,8 @@ enum InitiatorRelation {
     REPRESNTATIVE
     OFFICE
 }
+
+enum StaffStatus {
+    ACTIVE
+    UNACTIVE
+}
