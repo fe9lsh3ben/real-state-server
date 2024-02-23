@@ -103,6 +103,7 @@ model RealEstateUnit {
   CreatedAt            DateTime
   UpdatedAt            DateTime
   Description          Json[] //Based on Unit type
+  UnitAD               RealStateAD?
   TermsAndAgreements   Boolean
 }
 
@@ -141,9 +142,17 @@ model OfficeStaff {
 }
 
 model RealStateAD {
-  ID            Int              @id @default(autoincrement())
-  AD_Maker      Int              @unique
-  MakerRelation RealEstateOffice @relation(fields: [AD_Maker], references: [ID])
+  ID                 Int              @id @default(autoincrement())
+  AD_Maker           Int              @unique
+  MakerRelation      RealEstateOffice @relation(fields: [AD_Maker], references: [ID])
+  AD_License         String
+  CreatedAt          DateTime
+  UpdatedAt          DateTime
+  RealEstate         Int @unique
+  RealEstateRelation RealEstateUnit @relation(fields: [RealEstate], references: [ID])
+  Content            Json
+  TermsAndCondetion  Json
+
 }
 
 enum Role {
