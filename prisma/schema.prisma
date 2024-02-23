@@ -76,7 +76,7 @@ model RealEstateOffice {
   Staff               OfficeStaff[]
   RealStateUnits      RealEstateUnit[] @relation("OfficeAndREUnitRelation")
   Contracts           Contract[]
-  ADs                 RealStateAD[]
+  ADs                 RealEStateAD[]
   Bargains            Bargain[]
   Visitors            Int
   Balance             Decimal
@@ -103,7 +103,7 @@ model RealEstateUnit {
   CreatedAt            DateTime
   UpdatedAt            DateTime
   Description          Json[] //Based on Unit type
-  UnitAD               RealStateAD?
+  UnitAD               RealEStateAD?
   TermsAndAgreements   Boolean
 }
 
@@ -141,7 +141,7 @@ model OfficeStaff {
   Office   RealEstateOffice @relation(fields: [OfficeID], references: [ID])
 }
 
-model RealStateAD {
+model RealEStateAD {
   ID                 Int              @id @default(autoincrement())
   AD_Maker           Int              @unique
   MakerRelation      RealEstateOffice @relation(fields: [AD_Maker], references: [ID])
