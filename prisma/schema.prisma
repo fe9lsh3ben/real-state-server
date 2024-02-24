@@ -16,7 +16,7 @@ datasource db {
 
 // Define the Permission table
 
-// Define the Session table
+
 // Define the Session table
 model Session {
   ID        Int      @id @default(autoincrement())
@@ -54,7 +54,7 @@ model User {
   Session           Session?
   ProfileImage      Bytes?
   GovID             String?            @unique
-  Address           Json
+  Address           Json        //{Destrect, altitude, Longtude}
   FullName          String[]
   UserPhone         String
   BrokerLicense     String?
@@ -71,7 +71,7 @@ model RealEstateOffice {
   Owner               User             @relation(fields: [OwnerID], references: [ID])
   Region              String
   City                String
-  Address             Json
+  Address             Json //{Destrect, altitude, Longtude}
   Status              OfficeStatus
   Staff               OfficeStaff[]
   RealStateUnits      RealEstateUnit[] @relation("OfficeAndREUnitRelation")
@@ -90,7 +90,7 @@ model RealEstateUnit {
   UnitType             RealStateType
   DeedNumber           String             @unique
   DeedDate             DateTime
-  DeedOwner            Json[]
+  DeedOwner            Json[] //{Owner number, Owner Identity}
   RealEstateOffice     RealEstateOffice[] @relation("OfficeAndREUnitRelation")
   InitiatedBy          String
   InitiatorID          String
@@ -110,7 +110,7 @@ model RealEstateUnit {
 model Contract {
   ID                Int              @id //Parties ID +D&T
   InitiatorOffice   Int              
-  InitiatorRelation RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
+  Office            RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
   PartiesConsent    Json[]    //{Name,ID,SignatureOTP}
   Contant           String
   PartiesPhone      Json[]   
@@ -123,7 +123,7 @@ model Contract {
 model Bargain {
   ID                Int              @id //Parties ID +D&T
   InitiatorOffice   Int              
-  InitiatorRelation RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
+  Office            RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
   PartiesConsent    Json[]    //{Name,ID,SignatureOTP}
   Contant           String
   PartiesPhone      Json[]   
@@ -134,11 +134,12 @@ model Bargain {
 }
 
 model OfficeStaff {
-  ID       Int              @id @default(autoincrement())
-  GovID    String
+  ID             Int              @id @default(autoincrement())
+  GovID          String
   BrokageLicense String
-  OfficeID Int
-  Office   RealEstateOffice @relation(fields: [OfficeID], references: [ID])
+  StaffRecords   Json[] //{office_name, join_date, end_of_service_date}
+  OfficeID       Int?
+  Office         RealEstateOffice? @relation(fields: [OfficeID], references: [ID])
 }
 
 model RealEStateAD {
@@ -150,7 +151,8 @@ model RealEStateAD {
   UpdatedAt          DateTime
   RealEstate         Int @unique
   RealEstateRelation RealEstateUnit @relation(fields: [RealEstate], references: [ID])
-  Content            Json
+  Content            Json   //{Type,Descriptio}
+  Expiry             DateTime
   TermsAndCondetion  Json
 
 }
@@ -159,12 +161,12 @@ enum Role {
   ADMIN
   OFFICE_OWNER
   BENEFICIARY
-  BUSINESS_BENEFICIARY
+  BUSINESS_BENEFICIARY //Develope for this BUSINESS_BENEFICIARY
   GOVERMENTAL
   OTHER
 }
 
-enum OfficeStatus {
+enum OfficeStatus {     //Develope in server app previelage
   ACTIVE
   UNACTIVE
   TEMP_UNACTIVE
