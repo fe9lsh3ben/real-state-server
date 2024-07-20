@@ -12,9 +12,59 @@ datasource db {
 
 // run prisma generate
 
+
 // Define the Role table
 
 // Define the Permission table
+
+
+//_________________________________________ Real Estate Concept Modules ________________________________________//
+
+
+////________ Enums Module__________//
+
+enum UserType {
+  ADMIN
+  OFFICE_OWNER
+  BENEFICIARY
+  BUSINESS_BENEFICIARY //Develope for this BUSINESS_BENEFICIARY
+  GOVERMENTAL
+  OTHER
+	@@map("UserType")
+}
+
+enum OfficeStatus {     //Develope in server app previelage
+  ACTIVE
+  UNACTIVE
+  TEMP_UNACTIVE
+  RESTRICTED
+  BANNED
+}
+
+enum RealStateUnitType {
+  LAND
+  BAUILDING
+  VILLA
+  STORE
+  AGRICULTURAL
+  OTHER
+	@@map("RealStateType")
+}
+
+enum InitiatorRelation { // The initiator of the Real Estate in the platform
+    OWNER
+    REPRESNTATIVE
+    OFFICE
+}
+
+enum StaffStatus {
+    ACTIVE
+    UNACTIVE
+}
+
+
+//________ Models Module__________//
+
 
 
 // Define the Session table
@@ -44,7 +94,7 @@ model AuditTrail {
 
 // Define the User table
 model User {
-  Role              Role               @default(BENEFICIARY)
+  Role              UserType           @default(BENEFICIARY)
   ID                Int                @id @default(autoincrement())
   CreatedAt         DateTime           @default(now())
   UpdatedAt         DateTime           @updatedAt
@@ -87,7 +137,7 @@ model RealEstateOffice {
 
 model RealEstateUnit {
   ID                   Int                @id @default(autoincrement())
-  UnitType             RealStateType
+  UnitType             RealStateUnitType
   DeedNumber           String             @unique
   DeedDate             DateTime
   DeedOwner            Json[] //{Owner number, Owner Identity}
@@ -155,41 +205,4 @@ model RealEStateAD {
   Expiry             DateTime
   TermsAndCondetion  Json
 
-}
-
-enum Role {
-  ADMIN
-  OFFICE_OWNER
-  BENEFICIARY
-  BUSINESS_BENEFICIARY //Develope for this BUSINESS_BENEFICIARY
-  GOVERMENTAL
-  OTHER
-}
-
-enum OfficeStatus {     //Develope in server app previelage
-  ACTIVE
-  UNACTIVE
-  TEMP_UNACTIVE
-  RESTRICTED
-  BANNED
-}
-
-enum RealStateType {
-  LAND
-  BAUILDING
-  VILLA
-  STORE
-  AGRICULTURAL
-  OTHER
-}
-
-enum InitiatorRelation {
-    OWNER
-    REPRESNTATIVE
-    OFFICE
-}
-
-enum StaffStatus {
-    ACTIVE
-    UNACTIVE
 }
