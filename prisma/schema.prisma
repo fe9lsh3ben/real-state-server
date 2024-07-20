@@ -99,18 +99,22 @@ model User {
   CreatedAt         DateTime           @default(now())
   UpdatedAt         DateTime           @updatedAt
   TermsCondetion_ID String
+  //___
+
   Username          String             @unique
   Email             String             @unique
   Session           Session?
   ProfileImage      Bytes?
-  GovID             String?            @unique
+  GovID             String             @unique
   Address           Json        //{Destrect, altitude, Longtude}
   FullName          String[]
   UserPhone         String
   BrokerLicense     String?
-  FalLicense        String?
+  //___
+
   Other1            Json[]      // Admin={Log_records}, OfficeOwner/Staff{Broker_License}, Beneficiary={Beneficiary_class}, Govermental={Other}
   RE_Office         RealEstateOffice[]
+  FalLicense        String?
   Balance           Decimal?
 }
 
