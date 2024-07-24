@@ -178,9 +178,8 @@ model Bargain {
   ID                Int              @id //Parties ID +D&T
   InitiatorOffice   Int              
   Office            RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
-  PartiesConsent    Json[]    //{Name,ID,SignatureOTP}
+  Parties           Json[]    //*{{ID,Name,SignatureOTP,Date & Time, Phone number}}
   Contant           String
-  PartiesPhone      Json[]   
   Other             Json[]
   CreatedAt         DateTime
   UpdatedAt         DateTime
@@ -188,12 +187,15 @@ model Bargain {
 }
 
 model OfficeStaff {
-  ID             Int              @id @default(autoincrement())
-  GovID          String
-  BrokageLicense String
-  StaffRecords   Json[] //{office_name, join_date, end_of_service_date}
-  OfficeID       Int?
-  Office         RealEstateOffice? @relation(fields: [OfficeID], references: [ID])
+  ID                Int              @id @default(autoincrement())
+  GovID             String
+  StaffName         String[]
+  PhoneNumber       String
+  SignatureOTP      String
+  BrokerageLicense  String
+  StaffRecords      Json[] //{office_name, join_date, end_of_service_date}
+  CurrentOfficeID   Int?
+  CurrentOffice     RealEstateOffice? @relation(fields: [CurrentOfficeID], references: [ID])
 }
 
 model RealEStateAD {
@@ -205,8 +207,8 @@ model RealEStateAD {
   UpdatedAt          DateTime
   RealEstate         Int @unique
   RealEstateRelation RealEstateUnit @relation(fields: [RealEstate], references: [ID])
-  Content            Json   //{Type,Descriptio}
+  Content            Json   //{Type,Description,TermsAndCondetion,Other}
   Expiry             DateTime
-  TermsAndCondetion  Json
+  
 
 }
