@@ -207,7 +207,7 @@ model RealEStateAD {
   UpdatedAt          DateTime
   RealEstate         Int @unique
   RealEstateRelation RealEstateUnit @relation(fields: [RealEstate], references: [ID])
-  Content            Json   //{Type,Description,TermsAndCondetion,Other}
+  Content            Json   //{Type,Description,Terms&Condetion,Other}
   Expiry             DateTime
   
 
