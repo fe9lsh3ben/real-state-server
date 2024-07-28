@@ -132,8 +132,8 @@ model RealEstateOffice {
   Contracts           Contract[]
   ADs                 RealEStateAD[]
   Bargains            Bargain[]
-  Visitors            Int
-  Balance             Decimal
+  Visitors            Json //{date : number of visitors}
+  Balance             Decimal          @default(0.0)
   CreatedAt           DateTime
   UpdatedAt           DateTime
   TearmsAndAgreements Boolean
@@ -208,6 +208,7 @@ model RealEStateAD {
   RealEstate         Int @unique
   RealEstateRelation RealEstateUnit @relation(fields: [RealEstate], references: [ID])
   Content            Json   //{Type,Description,Terms&Condetion,Other}
+  AD_StartedAt       DateTime
   Expiry             DateTime
   
 
