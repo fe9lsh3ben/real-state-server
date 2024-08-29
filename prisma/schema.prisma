@@ -25,7 +25,8 @@ datasource db {
 
 enum UserType {
   ADMIN
-  OFFICE_OWNER
+  REAL_ESTATE_OFFICE_OWNER
+  REAL_ESTATE_OFFICE_STAFF
   BENEFICIARY
   BUSINESS_BENEFICIARY //Develope for this BUSINESS_BENEFICIARY
   GOVERMENTAL
@@ -34,6 +35,7 @@ enum UserType {
 }
 
 enum OfficeStatus {     //Develope in server app previelage
+  IN_HOLD
   ACTIVE
   UNACTIVE
   TEMP_UNACTIVE
@@ -41,28 +43,41 @@ enum OfficeStatus {     //Develope in server app previelage
   BANNED
 }
 
-enum RealStateUnitType {
+enum RealEstateUnitType {
   LAND
   BAUILDING
+  APARTMENT
   VILLA
   STORE
   AGRICULTURAL
+  STORAGE
+  OFFICE
+  EXHIBITION
   OTHER
-	@@map("RealStateType")
+	@@map("RealEstateType")
 }
 
 enum InitiatorRelation { // The initiator of the Real Estate in the platform
-    OWNER
-    REPRESNTATIVE
+    OWNER //(By platform)
     OFFICE
 }
 
-enum StaffStatus {
-    ACTIVE
-    UNACTIVE
+enum UserStatus {
+  IN_HOLD
+  ACTIVE
+  UNACTIVE
+  TEMP_UNACTIVE
+  RESTRICTED
+  BANNED
 }
 
+enum Committed_By {
+    OFFICE_OWNER
+    OFFICE_STAFF
+    BENEFICIARY //(Normal user)
+    BUSINESS_BENEFICIARY
 
+}
 //________ Models Module__________//
 
 
@@ -106,28 +121,26 @@ model User {
   Session           Session?
   ProfileImage      Bytes?
   GovID             String             @unique
-  Address           Json        //{Destrect, altitude, Longtude}
+  Address           Json        //{Region, City, Destrect, altitude, Longtude}
   FullName          String[]
   UserPhone         String
-  BrokerLicense     String?
   //___
 
-  Other1            Json[]      // Admin={Log_records}, OfficeOwner/Staff{Broker_License}, Beneficiary={Beneficiary_class}, Govermental={Other}
-  RE_Office         RealEstateOffice[]
+  Other1            Json[]      // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
+  RE_Office         RealEstateOffice[] @relation(name: "OwnerRelation")
   FalLicense        String?
   Balance           Decimal?
+  UserStatus        UserStatus
 }
 
 model RealEstateOffice {
   ID                  Int              @id @default(autoincrement())
   CommercialRegister  String
   OwnerID             Int              @unique
-  Owner               User             @relation(fields: [OwnerID], references: [ID])
-  Region              String
-  City                String
-  Address             Json //{Destrect, altitude, Longtude}
+  Owner               User             @relation(name: "OwnerRelation",fields: [OwnerID], references: [ID])
+  Address             Json  //{Region, City, Destrect, altitude, Longtude}
   Status              OfficeStatus
-  Staff               OfficeStaff[]
+  Saff                User[]
   RealStateUnits      RealEstateUnit[] @relation("OfficeAndREUnitRelation")
   Contracts           Contract[]
   ADs                 RealEStateAD[]
@@ -141,7 +154,7 @@ model RealEstateOffice {
 
 model RealEstateUnit {
   ID                   Int                @id @default(autoincrement())
-  UnitType             RealStateUnitType
+  UnitType             RealEstateUnitType
   DeedNumber           String             @unique
   DeedDate             DateTime
   DeedOwner            Json[] //{Owner number, Owner Identity}
