@@ -57,10 +57,6 @@ enum RealEstateUnitType {
 	@@map("RealEstateType")
 }
 
-enum InitiatorRelation { // The initiator of the Real Estate in the platform
-    OWNER //(By platform)
-    OFFICE
-}
 
 enum UserStatus {
   IN_HOLD
@@ -107,13 +103,26 @@ model AuditTrail {
   CreatedAt   DateTime @default(now())
 }
 
+model TermsAndCondetions {
+    ID          String     @id
+    CreatedAt   DateTime   @default(now())
+    Contetn     Json[]
+    Other       Json[]
+    commetedBy  Committed_By
+    Users       User[]
+    MadeBy      String
+
+}
+
 // Define the User table
 model User {
   Role              UserType           @default(BENEFICIARY)
   ID                Int                @id @default(autoincrement())
   CreatedAt         DateTime           @default(now())
   UpdatedAt         DateTime           @updatedAt
-  TermsCondetion_ID String
+  TermsCondetionID  String
+  TermsCondetion    TermsAndCondetions  @relation(fields: [TermsCondetionID], references: [ID])
+
   //___
 
   Username          String             @unique
@@ -127,7 +136,12 @@ model User {
   //___
 
   Other1            Json[]      // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
-  RE_Office         RealEstateOffice[] @relation(name: "OwnerRelation")
+  
+  RE_Offices        RealEstateOffice[] @relation(name: "OwnerRelation")
+  
+  Hired_REO_ID      Int?
+  Hired_REO         RealEstateOffice?  @relation(name: "OfficeStaff", fields: [Hired_REO_ID], references: [ID])
+  
   FalLicense        String?
   Balance           Decimal?
   UserStatus        UserStatus
@@ -140,15 +154,17 @@ model RealEstateOffice {
   Owner               User             @relation(name: "OwnerRelation",fields: [OwnerID], references: [ID])
   Address             Json  //{Region, City, Destrect, altitude, Longtude}
   Status              OfficeStatus
-  Saff                User[]
+ 
+  Staff               User[]           @relation("OfficeStaff")
+ 
   RealStateUnits      RealEstateUnit[] @relation("OfficeAndREUnitRelation")
   Contracts           Contract[]
   ADs                 RealEStateAD[]
-  Bargains            Bargain[]
   Visitors            Json //{date : number of visitors}
+  
   Balance             Decimal          @default(0.0)
-  CreatedAt           DateTime
-  UpdatedAt           DateTime
+  CreatedAt           DateTime         @default(now())
+  UpdatedAt           DateTime         @updatedAt
   TearmsAndAgreements Boolean
 }
 
@@ -158,69 +174,45 @@ model RealEstateUnit {
   DeedNumber           String             @unique
   DeedDate             DateTime
   DeedOwner            Json[] //{Owner number, Owner Identity}
-  RealEstateOffice     RealEstateOffice[] @relation("OfficeAndREUnitRelation")
-  InitiatedBy          String
-  InitiatorID          String
-  InitiatorRelation    InitiatorRelation
-  CreatorContactNumber String
-  Region               String
-  City                 String
-  Address              Json   //{Destrect,Altitude,Longtude}
-  UnitImage            Bytes[]
-  CreatedAt            DateTime
-  UpdatedAt            DateTime
+  
+  AffiliatedOfficeID   Int?
+  AffiliatedOffice     RealEstateOffice? @relation("OfficeAndREUnitRelation", fields: [AffiliatedOfficeID], references: [ID])
+
+  Initiator            Json //{type (office/owner by platform), id, name, contact_number}
+  
+  Address              Json   //{Ragion, City, Destrect, Altitude, Longtude}
+  UnitImages           Bytes[]
+  CreatedAt            DateTime           @default(now())
+  UpdatedAt            DateTime           @updatedAt
+  
   Description          Json[] //Based on Unit type
   UnitAD               RealEStateAD?
-  TermsAndAgreements   Boolean
 }
 
 model Contract {
-  ID                Int              @id //Parties ID +D&T
-  InitiatorOffice   Int              
+  ID                Int              @id @default(autoincrement()) //D&T
+  InitiatorOffice   Int           
   Office            RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
-  PartiesConsent    Json[]    //{Name,ID,SignatureOTP}
-  Contant           String
-  PartiesPhone      Json[]   
+  PartiesConsent    Json[]    //{GOV ID,Name, SignatureOTP, Phone Number}
+  Contant           Json      //{content, contract terms}   
   Other             Json[]
-  CreatedAt         DateTime
-  UpdatedAt         DateTime
-  TermsAndCondetion Json[]
+  CreatedAt         DateTime         @default(now())
+  UpdatedAt         DateTime         @updatedAt
+
 }
 
-model Bargain {
-  ID                Int              @id //Parties ID +D&T
-  InitiatorOffice   Int              
-  Office            RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
-  Parties           Json[]    //*{{ID,Name,SignatureOTP,Date & Time, Phone number}}
-  Contant           String
-  Other             Json[]
-  CreatedAt         DateTime
-  UpdatedAt         DateTime
-  TermsAndCondetion Json[]
-}
-
-model OfficeStaff {
-  ID                Int              @id @default(autoincrement())
-  GovID             String
-  StaffName         String[]
-  PhoneNumber       String
-  SignatureOTP      String
-  BrokerageLicense  String
-  StaffRecords      Json[] //{office_name, join_date, end_of_service_date}
-  CurrentOfficeID   Int?
-  CurrentOffice     RealEstateOffice? @relation(fields: [CurrentOfficeID], references: [ID])
-}
 
 model RealEStateAD {
   ID                 Int              @id @default(autoincrement())
   AD_Maker           Int              @unique
   MakerRelation      RealEstateOffice @relation(fields: [AD_Maker], references: [ID])
   AD_License         String
-  CreatedAt          DateTime
-  UpdatedAt          DateTime
-  RealEstate         Int @unique
-  RealEstateRelation RealEstateUnit @relation(fields: [RealEstate], references: [ID])
-  Content            Json   //{Type,Description,Terms&Condetion,Other}
+  CreatedAt          DateTime         @default(now())
+  UpdatedAt          DateTime         @updatedAt
+
+  RealEstate         Int              @unique
+  RealEstateRelation RealEstateUnit   @relation(fields: [RealEstate], references: [ID])
+  Content            Json   //{Type of estate,Description,Terms&Condetion,Other}
   AD_StartedAt       DateTime
   Expiry             DateTime
   
