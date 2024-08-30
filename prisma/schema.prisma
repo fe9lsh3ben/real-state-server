@@ -132,8 +132,8 @@ model User {
   
   RE_Offices        RealEstateOffice[] @relation(name: "Owner")
   
-  Employer_REO_ID      Int?
-  Employer_REO         RealEstateOffice?  @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [ID])
+  Employer_REO_ID   Int?
+  Employer_REO      RealEstateOffice?  @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [ID])
   
   FalLicense        String?
   Balance           Decimal?
@@ -165,7 +165,7 @@ model RealEstateUnit {
   UnitType             RealEstateUnitType
   DeedNumber           String             @unique
   DeedDate             DateTime
-  DeedOwner            Json[] //{Owner number, Owner Identity Number, Owner name}
+  DeedOwners            Json[] //{Owner number, Owner Identity Number, Owner name}
   
   AffiliatedOfficeID   Int?
   AffiliatedOffice     RealEstateOffice? @relation("OfficeAndREUnit", fields: [AffiliatedOfficeID], references: [ID])
@@ -196,17 +196,17 @@ model Contract {
 
 model RealEStateAD {
   ID                 Int              @id @default(autoincrement())
-  AD_Maker           Int              @unique
-  MakerRelation      RealEstateOffice @relation(fields: [AD_Maker], references: [ID])
+  AD_Initiator       Int              @unique
+  Initiator          RealEstateOffice @relation(fields: [AD_Initiator], references: [ID])
   AD_License         String
   CreatedAt          DateTime         @default(now())
   UpdatedAt          DateTime         @updatedAt
 
-  RealEstate         Int              @unique
-  RealEstateRelation RealEstateUnit   @relation(fields: [RealEstate], references: [ID])
+  RealEstate_ID      Int              @unique
+  RealEstate         RealEstateUnit   @relation(fields: [RealEstate_ID], references: [ID])
   Ad_Content         Json   //{Type of estate,Description, Price, Other}
   AD_StartedAt       DateTime
-  Expiry             DateTime
+  AD_Expiry          DateTime
   Hedden             Boolean
   
 }
