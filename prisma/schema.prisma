@@ -29,12 +29,12 @@ enum UserType {
   REAL_ESTATE_OFFICE_STAFF
   BENEFICIARY
   BUSINESS_BENEFICIARY //Develope for this BUSINESS_BENEFICIARY
-  GOVERMENTAL
+  GOVERMENTAL_AGENT
   OTHER
 	@@map("UserType")
 }
 
-enum OfficeStatus {     //Develope in server app previelage
+enum OfficeOrUserStatus {     //Develope in server app previelage
   IN_HOLD
   ACTIVE
   UNACTIVE
@@ -58,14 +58,7 @@ enum RealEstateUnitType {
 }
 
 
-enum UserStatus {
-  IN_HOLD
-  ACTIVE
-  UNACTIVE
-  TEMP_UNACTIVE
-  RESTRICTED
-  BANNED
-}
+
 
 enum Committed_By {
     OFFICE_OWNER
@@ -137,27 +130,27 @@ model User {
 
   Other1            Json[]      // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
   
-  RE_Offices        RealEstateOffice[] @relation(name: "OwnerRelation")
+  RE_Offices        RealEstateOffice[] @relation(name: "Owner")
   
-  Hired_REO_ID      Int?
-  Hired_REO         RealEstateOffice?  @relation(name: "OfficeStaff", fields: [Hired_REO_ID], references: [ID])
+  Employer_REO_ID      Int?
+  Employer_REO         RealEstateOffice?  @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [ID])
   
   FalLicense        String?
   Balance           Decimal?
-  UserStatus        UserStatus
+  UserStatus        OfficeOrUserStatus
 }
 
 model RealEstateOffice {
   ID                  Int              @id @default(autoincrement())
   CommercialRegister  String
   OwnerID             Int              @unique
-  Owner               User             @relation(name: "OwnerRelation",fields: [OwnerID], references: [ID])
+  Owner               User             @relation(name: "Owner",fields: [OwnerID], references: [ID])
   Address             Json  //{Region, City, Destrect, altitude, Longtude}
-  Status              OfficeStatus
+  Status              OfficeOrUserStatus
  
   Staff               User[]           @relation("OfficeStaff")
  
-  RealStateUnits      RealEstateUnit[] @relation("OfficeAndREUnitRelation")
+  RealStateUnits      RealEstateUnit[] @relation("OfficeAndREUnit")
   Contracts           Contract[]
   ADs                 RealEStateAD[]
   Visitors            Json //{date : number of visitors}
@@ -165,7 +158,6 @@ model RealEstateOffice {
   Balance             Decimal          @default(0.0)
   CreatedAt           DateTime         @default(now())
   UpdatedAt           DateTime         @updatedAt
-  TearmsAndAgreements Boolean
 }
 
 model RealEstateUnit {
@@ -173,19 +165,19 @@ model RealEstateUnit {
   UnitType             RealEstateUnitType
   DeedNumber           String             @unique
   DeedDate             DateTime
-  DeedOwner            Json[] //{Owner number, Owner Identity}
+  DeedOwner            Json[] //{Owner number, Owner Identity Number, Owner name}
   
   AffiliatedOfficeID   Int?
-  AffiliatedOffice     RealEstateOffice? @relation("OfficeAndREUnitRelation", fields: [AffiliatedOfficeID], references: [ID])
+  AffiliatedOffice     RealEstateOffice? @relation("OfficeAndREUnit", fields: [AffiliatedOfficeID], references: [ID])
 
-  Initiator            Json //{type (office/owner by platform), id, name, contact_number}
+  Initiator            Json //{type (office/owner by platform), id, name, contact_id_number}
   
   Address              Json   //{Ragion, City, Destrect, Altitude, Longtude}
   UnitImages           Bytes[]
   CreatedAt            DateTime           @default(now())
   UpdatedAt            DateTime           @updatedAt
   
-  Description          Json[] //Based on Unit type
+  Specifications       Json[] //Based on Unit type
   UnitAD               RealEStateAD?
 }
 
@@ -212,9 +204,9 @@ model RealEStateAD {
 
   RealEstate         Int              @unique
   RealEstateRelation RealEstateUnit   @relation(fields: [RealEstate], references: [ID])
-  Content            Json   //{Type of estate,Description,Terms&Condetion,Other}
+  Ad_Content         Json   //{Type of estate,Description, Price, Other}
   AD_StartedAt       DateTime
   Expiry             DateTime
+  Hedden             Boolean
   
-
 }
