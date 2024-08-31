@@ -177,7 +177,7 @@ model RealEstateUnit {
   CreatedAt            DateTime           @default(now())
   UpdatedAt            DateTime           @updatedAt
   
-  Specifications       Json[] //Based on Unit type
+  Specifications       Json[] //Based on Unit type *Refare at the end of this page.
   UnitAD               RealEStateAD?
 }
 
@@ -210,3 +210,16 @@ model RealEStateAD {
   Hedden             Boolean
   
 }
+
+
+///Real Estate unit specifications feild in JSON: -
+
+/// LAND : {Area, shape, Y-sides, X-sides}
+/// BUILDING : {Floors, apartments, avg_rooms, avg_toilets, stores, elevator, parking}
+/// APARTMENT : {Rooms, Toilets, elevator}
+/// VILLA : {Duplex, Floors, Rooms, Toilets, Parking}
+/// STORE : {Area}
+/// AGRICULTURAL : {Area}
+/// STORAGE : {Area}
+/// OFFICE : {Area}
+/// EXHIBITION : {Area}
