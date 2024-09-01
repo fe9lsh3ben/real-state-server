@@ -137,7 +137,7 @@ model User {
   
   FalLicense        String?
   Balance           Decimal            @default(0.0)
-  UserStatus        OfficeOrUserStatus
+  UserStatus        OfficeOrUserStatus?
 }
 
 model RealEstateOffice {
