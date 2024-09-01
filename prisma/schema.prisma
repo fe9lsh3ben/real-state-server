@@ -123,7 +123,7 @@ model User {
   Session           Session?
   ProfileImage      Bytes?
   GovID             String             @unique
-  Address           Json        //{Region, City, Destrect, altitude, Longtude}
+  Address           Json?        //{Region, City, Destrect, altitude, Longtude}
   FullName          String[]
   UserPhone         String
   //___
@@ -136,7 +136,7 @@ model User {
   Employer_REO      RealEstateOffice?  @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [ID])
   
   FalLicense        String?
-  Balance           Decimal?
+  Balance           Decimal            @default(0.0)
   UserStatus        OfficeOrUserStatus
 }
 
@@ -153,7 +153,7 @@ model RealEstateOffice {
   RealStateUnits      RealEstateUnit[] @relation("OfficeAndREUnit")
   Contracts           Contract[]
   ADs                 RealEStateAD[]
-  Visitors            Json //{date : number of visitors}
+  Visitors            Json? //{date : number of visitors}
   
   Balance             Decimal          @default(0.0)
   CreatedAt           DateTime         @default(now())
