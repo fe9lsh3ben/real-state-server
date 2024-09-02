@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://postgres:1@localhost:5432/real_estate?schema=public"
+  url      = env("DATABASE_URL") //"postgresql://postgres:1@localhost:5432/real_estate?schema=public"
 }
 
 // run prisma generate
