@@ -35,7 +35,9 @@ var options = {
 //___________App______________
 
 
-
+app.get('/', (req,res)=>{
+    res.send("ask for get");
+})
 app.post('/', (req,res)=>{
 
     res.send("response1 ?")
