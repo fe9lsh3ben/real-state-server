@@ -42,9 +42,15 @@ var options = {
 
 app.get('/', (req,res)=>{
     res.send("ask for get");
+    
 })
-app.post('/', (req,res)=>{
+app.post('/signUp', (req,res)=>{
 
+    switch (req.body[roleType]){
+
+
+    }
+    console.log(req.body)
     res.send("response1 ?")
 
 });
