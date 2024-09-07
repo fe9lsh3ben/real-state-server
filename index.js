@@ -37,13 +37,20 @@ var options = {
 };
 
 
-//___________App______________
+
+
+
+
+
+//                                  ___________App______________
 
 
 app.get('/', (req,res)=>{
-    res.send("ask for get");
+    res.send("assssssk for get");
     
 })
+
+
 app.post('/signUp', (req,res)=>{
 
     switch (req.body[roleType]){
@@ -55,7 +62,12 @@ app.post('/signUp', (req,res)=>{
 
 });
 
+
 app.use('/auth&auth',auth);
+
+
+
+
 
 //___________SERVER______________
 
