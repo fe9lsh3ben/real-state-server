@@ -6,6 +6,11 @@ var http = require('http');
 var cors = require('cors');
 var fs = require('fs');
 
+const { PrismaClient } = require('@prisma/client')
+
+const prisma = new PrismaClient()
+
+
 // var a = options.a !== undefined ? options.a : "nothing";
 
 //___________Modules______________
@@ -37,9 +42,15 @@ var options = {
 
 app.get('/', (req,res)=>{
     res.send("ask for get");
+    
 })
-app.post('/', (req,res)=>{
+app.post('/signUp', (req,res)=>{
 
+    switch (req.body[roleType]){
+
+
+    }
+    console.log(req.body)
     res.send("response1 ?")
 
 });
