@@ -74,7 +74,7 @@ app.use('/auth&auth',auth);
 
 const port = 3050;
 const host = '127.0.0.1'
-var server = https.createServer(options, app);
+var server = http.createServer(options, app);
 
 server.listen(port, host, ()=>{
 

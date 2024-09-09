@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "test": "yarn docker:up && yarn prisma migrate deploy && jest -i"
   },
   "author": "",
   "license": "ISC",
