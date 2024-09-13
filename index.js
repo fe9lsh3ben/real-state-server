@@ -63,7 +63,7 @@ app.post('/regT&C',  async (req,res)=>{
    try {
     
     result = await find_last_termsANDconditions(prisma,Committed_By,req)
-    console.log(result)
+    
    } catch (err) {
     result = err;
     console.log( err, ' from OFFICE_OWNER')
