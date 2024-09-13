@@ -23,7 +23,7 @@ datasource db {
 
 ////________ Enums Module__________//
 
-enum UserType {
+enum User_Type {
   ADMIN
   REAL_ESTATE_OFFICE_OWNER
   REAL_ESTATE_OFFICE_STAFF
@@ -34,16 +34,17 @@ enum UserType {
 	@@map("UserType")
 }
 
-enum OfficeOrUserStatus {     //Develope in server app previelage
+enum Office_Or_User_Status {     //Develope in server app previelage
   IN_HOLD
   ACTIVE
   UNACTIVE
   TEMP_UNACTIVE
   RESTRICTED
   BANNED
+	@@map("OfficeOrUserStatus")
 }
 
-enum RealEstateUnitType {
+enum Real_Estate_Unit_Type {
   LAND
   BAUILDING
   APARTMENT
@@ -99,9 +100,9 @@ model AuditTrail {
 model TermsAndCondetions {
     ID          String     @id
     CreatedAt   DateTime   @default(now())
-    Contetn     Json[]
+    Content     Json[]
     Other       Json[]
-    commetedBy  Committed_By
+    CommitedBy  Committed_By
     Users       User[]
     MadeBy      String
 
@@ -109,8 +110,8 @@ model TermsAndCondetions {
 
 // Define the User table
 model User {
-  Role              UserType           @default(BENEFICIARY)
   ID                Int                @id @default(autoincrement())
+  Role              User_Type          @default(BENEFICIARY)
   CreatedAt         DateTime           @default(now())
   UpdatedAt         DateTime           @updatedAt
   TermsCondetionID  String
@@ -137,7 +138,7 @@ model User {
   
   FalLicense        String?
   Balance           Decimal            @default(0.0)
-  UserStatus        OfficeOrUserStatus?
+  UserStatus        Office_Or_User_Status?
 }
 
 model RealEstateOffice {
@@ -146,13 +147,13 @@ model RealEstateOffice {
   OwnerID             Int              @unique
   Owner               User             @relation(name: "Owner",fields: [OwnerID], references: [ID])
   Address             Json  //{Region, City, Destrect, altitude, Longtude}
-  Status              OfficeOrUserStatus
+  Status              Office_Or_User_Status
  
   Staff               User[]           @relation("OfficeStaff")
  
-  RealStateUnits      RealEstateUnit[] @relation("OfficeAndREUnit")
+  RealEstateUnits      RealEstateUnit[] @relation("OfficeAndREUnit")
   Contracts           Contract[]
-  ADs                 RealEStateAD[]
+  Ads                 RealEStateAD[]
   Visitors            Json? //{date : number of visitors}
   
   Balance             Decimal          @default(0.0)
@@ -162,7 +163,7 @@ model RealEstateOffice {
 
 model RealEstateUnit {
   ID                   Int                @id @default(autoincrement())
-  UnitType             RealEstateUnitType
+  UnitType             Real_Estate_Unit_Type
   DeedNumber           String             @unique
   DeedDate             DateTime
   DeedOwners            Json[] //{Owner number, Owner Identity Number, Owner name}
@@ -195,19 +196,19 @@ model Contract {
 
 
 model RealEStateAD {
-  ID                 Int              @id @default(autoincrement())
-  AD_Initiator       Int              @unique
-  Initiator          RealEstateOffice @relation(fields: [AD_Initiator], references: [ID])
-  AD_License         String
-  CreatedAt          DateTime         @default(now())
-  UpdatedAt          DateTime         @updatedAt
+  ID                Int              @id @default(autoincrement())
+  AdInitiator       Int              @unique @map("Ad_Initiator")
+  Initiator         RealEstateOffice @relation(fields: [AdInitiator], references: [ID])
+  AdLicense         String           @map("Ad_License")
+  CreatedAt         DateTime         @default(now())
+  UpdatedAt         DateTime         @updatedAt
 
-  RealEstate_ID      Int              @unique
-  RealEstate         RealEstateUnit   @relation(fields: [RealEstate_ID], references: [ID])
-  Ad_Content         Json   //{Type of estate,Description, Price, Other}
-  AD_StartedAt       DateTime
-  AD_Expiry          DateTime
-  Hedden             Boolean
+  RealEstateID      Int              @unique
+  RealEstate        RealEstateUnit   @relation(fields: [RealEstateID], references: [ID])
+  AdContent         Json   //{Type of estate,Description, Price, Other} @map("Ad_Content")
+  AdStartedAt       DateTime         @map("Ad_StartedAt")
+  AdExpiry          DateTime         @map("Ad_Expiry")
+  Hedden            Boolean
   
 }
 

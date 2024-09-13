@@ -6,7 +6,13 @@ var http = require('http');
 var cors = require('cors');
 var fs = require('fs');
 
-const { PrismaClient } = require('@prisma/client')
+var {find_last_termsANDconditions, createtermsANDcondition} = require('./prismaDB_utilities/Ts&Cs_utilities')
+
+const { PrismaClient, 
+    User_Type,
+    Office_Or_User_Status,
+    Real_Estate_Unit_Type,
+    Committed_By } = require('@prisma/client')
 
 const prisma = new PrismaClient()
 
@@ -50,14 +56,56 @@ app.get('/', (req,res)=>{
     
 })
 
+app.post('/regT&C',  async (req,res)=>{
+
+
+    var result;
+   try {
+    
+    result = await find_last_termsANDconditions(prisma,Committed_By,req)
+    console.log(result)
+   } catch (err) {
+    result = err;
+    console.log( err, ' from OFFICE_OWNER')
+   }
+
+      
+    
+    res.send(result);
+
+    
+})
 
 app.post('/signUp', (req,res)=>{
 
-    switch (req.body[roleType]){
+    switch (req.body.roleType){
+        
+        case "ADMIN":
+            
+            break;
+            
+        case "REAL_ESTATE_OFFICE_OWNER":
+            
+            break;
 
-
+        case "REAL_ESTATE_OFFICE_STAFF":
+            
+            break;
+            
+        case "BENEFICIARY":
+            
+            break;
+                
+        case "BESINUSS_BENEFICIARY":
+            
+            break;
+    
+        case "GOVERMENTAL_AGENT":
+            
+            break;    
     }
     console.log(req.body)
+    console.log(req.body.roleType)
     res.send("response1 ?")
 
 });
@@ -74,7 +122,7 @@ app.use('/auth&auth',auth);
 
 const port = 3050;
 const host = '127.0.0.1'
-var server = https.createServer(options, app);
+var server = http.createServer(options, app);
 
 server.listen(port, host, ()=>{
 
