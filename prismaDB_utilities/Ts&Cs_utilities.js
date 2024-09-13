@@ -46,7 +46,7 @@ const find_last_termsANDconditions = async (prisma, Committed_By, req) => {
             // console.log("in if")
             result = await prisma.termsAndCondetions.create({
                 data:{ ID: TC_ID_type + "_000001", Content:[{"1":req.body.Content}],
-                CommetedBy: TC_type,
+                CommittedBy: TC_type,
                 MadeBy: req.body.MadeBy}
             })
         }else{

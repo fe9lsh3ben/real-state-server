@@ -102,7 +102,7 @@ model TermsAndCondetions {
     CreatedAt   DateTime   @default(now())
     Content     Json[]
     Other       Json[]
-    CommitedBy  Committed_By
+    CommittedBy Committed_By
     Users       User[]
     MadeBy      String
 
