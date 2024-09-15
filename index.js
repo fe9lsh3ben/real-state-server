@@ -6,9 +6,9 @@ var http = require('http');
 var cors = require('cors');
 var fs = require('fs');
 
-var {find_last_termsANDconditions, createtermsANDcondition} = require('./prismaDB_utilities/Ts&Cs_utilities')
+var { find_last_termsANDconditions, createtermsANDcondition } = require('./prismaDB_utilities/Ts&Cs_utilities')
 
-const { PrismaClient, 
+const { PrismaClient,
     User_Type,
     Office_Or_User_Status,
     Real_Estate_Unit_Type,
@@ -22,15 +22,17 @@ const prisma = new PrismaClient()
 //___________Modules______________
 const auth = require('./auth')
 
+const {signUpValidator, requestVerifier} = require('./middlewares/validators')
 
 //___________SERVER SETTINGS______________
 
 var app = express()
 
-app.use(express.json(),cors({
-    origin:"*",
+app.use(express.json(), cors({
+    origin: "*",
     credentials: true,
-    allowedHeaders: "Origin,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,locale"}));
+    allowedHeaders: "Origin,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,locale"
+}));
 
 
 //___________TLS CRADENTIALS______________
@@ -51,67 +53,36 @@ var options = {
 //                                  ___________App______________
 
 
-app.get('/', (req,res)=>{
+app.get('/', (req, res) => {
     res.send("assssssk for get");
-    
+
 })
 
-app.post('/regT&C',  async (req,res)=>{
+app.post('/regT&C', async (req, res) => {
 
 
     var result;
-   try {
-    
-    result = await find_last_termsANDconditions(prisma,Committed_By,req)
-    
-   } catch (err) {
-    result = err;
-    console.log( err, ' from OFFICE_OWNER')
-   }
+    try {
 
-      
-    
+        result = await find_last_termsANDconditions(prisma, Committed_By, req)
+
+    } catch (err) {
+        result = err;
+        console.log(err, ' from OFFICE_OWNER')
+    }
+
     res.send(result);
 
-    
 })
 
-app.post('/signUp', (req,res)=>{
+app.post('/signUp',signUpValidator, requestVerifier, async (req, res) => {
 
-    switch (req.body.roleType){
-        
-        case "ADMIN":
-            
-            break;
-            
-        case "REAL_ESTATE_OFFICE_OWNER":
-            
-            break;
-
-        case "REAL_ESTATE_OFFICE_STAFF":
-            
-            break;
-            
-        case "BENEFICIARY":
-            
-            break;
-                
-        case "BESINUSS_BENEFICIARY":
-            
-            break;
-    
-        case "GOVERMENTAL_AGENT":
-            
-            break;    
-    }
-    console.log(req.body)
-    console.log(req.body.roleType)
-    res.send("response1 ?")
 
 });
 
 
-app.use('/auth&auth',auth);
+
+app.use('/auth&auth', auth);
 
 
 
@@ -124,7 +95,7 @@ const port = 3050;
 const host = '127.0.0.1'
 var server = http.createServer(options, app);
 
-server.listen(port, host, ()=>{
+server.listen(port, host, () => {
 
     console.log(`server listining at ${host}:${port}`)
 });
