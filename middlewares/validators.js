@@ -1,4 +1,4 @@
-const { isEmpty } = require("validator");
+const { isEmpty, contains } = require("validator");
 
 const signUpValidator = (req, res, next) => {
 
@@ -15,14 +15,15 @@ const signUpValidator = (req, res, next) => {
         res.status(400).send('Your details are not complete');
     } else {
         try {
+            
             const { Username, Email, GovID, Address, FullName, UserPhone } = body;
-
+            console.log(Username)
             if (!validator.isAlphanumeric(Username)) {
-
+                
                 res.status(400).send('Username entry should be letters and numaric only!');
                 return
             }
-
+            
             if (!validator.isEmail(Email)) {
 
                 res.status(400).send('enter valid email')
@@ -68,7 +69,7 @@ const signUpValidator = (req, res, next) => {
             // }
 
 
-
+            
             next();
 
         } catch (e) {
@@ -78,19 +79,55 @@ const signUpValidator = (req, res, next) => {
     }
 
 }
-const requestVerifier = (req, res, next) => {
+function requestVerifier(prisma) {
+    return async (req, res, next) => {
 
-    const body = req.body;
+        const { ID, Username, Email, GovID, Address, FullName, UserPhone } = req.body;
 
 
-    try {
-        
+        try {
 
-        next()
-    } catch (error) {
-        res.status(400).send(error.message)
+            const matchedUser = await prisma.user.findFirst({
+                where: {
+                    OR: [
+                        { Username: Username },
+                        { FullName: FullName },
+                        { Email: Email },
+                        { GovID: GovID },
+                        { UserPhone: UserPhone }
+                    ]
+                },
+                select: {
+                    Username: true,
+                    FullName: true,
+                    Email: true,
+                    GovID: true,
+                    UserPhone: true
+                }
+            });
+
+            if (matchedUser) {
+                if (matchedUser.Username) {
+                    res.status(400).send('Username is already taken');
+                    return;
+                } else if (matchedUser.Email) {
+                    res.status(400).send('Email is already taken');
+                    return;
+                } else if (matchedUser.GovID) {
+                    res.status(400).send('GovID is already taken');
+                    return;
+                } else if (matchedUser.UserPhone) {
+                    res.status(400).send('UserPhone is already taken');
+                    return;
+                }
+            }
+
+            next()
+        } catch (error) {
+            res.status(400).send(error.message)
+        }
     }
- }
+}
 
 
 

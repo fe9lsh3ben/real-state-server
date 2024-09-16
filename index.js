@@ -8,21 +8,39 @@ var fs = require('fs');
 
 var { find_last_termsANDconditions, createtermsANDcondition } = require('./prismaDB_utilities/Ts&Cs_utilities')
 
-const { PrismaClient,
+const {
+    PrismaClient,
+    Prisma,
     User_Type,
     Office_Or_User_Status,
     Real_Estate_Unit_Type,
-    Committed_By } = require('@prisma/client')
+    Committed_By } = require('@prisma/client');
 
-const prisma = new PrismaClient()
+
+const prisma = new PrismaClient();
+// const advancedPrisma = prisma.$extends({
+//     model: {
+//         $allModels: {
+//             async uniqueExists(where) {
+//                 // Get the current model at runtime
+//                 const context = Prisma.getExtensionContext(this);
+
+//                 const result = await context.findUnique({ where });
+//                 return result !== null;
+//             }
+//         },
+//     },
+// });
 
 
 // var a = options.a !== undefined ? options.a : "nothing";
 
 //___________Modules______________
+
+
 const auth = require('./auth')
 
-const {signUpValidator, requestVerifier} = require('./middlewares/validators')
+const { signUpValidator, requestVerifier } = require('./middlewares/validators')
 
 //___________SERVER SETTINGS______________
 
@@ -75,11 +93,22 @@ app.post('/regT&C', async (req, res) => {
 
 })
 
-app.post('/signUp',signUpValidator, requestVerifier, async (req, res) => {
-
-
-});
-
+app.post('/signUp',
+    signUpValidator,
+    requestVerifier(prisma),
+    async (req, res) => {
+        
+        await prisma.user.create({
+            data: {
+                Username: Username,
+                Email: Email,
+                GovID: GovID,
+                Address: Address,
+                FullName: FullName,
+                UserPhone: UserPhone
+            }
+        }).then((v)=> console.log(v))
+    });
 
 
 app.use('/auth&auth', auth);
