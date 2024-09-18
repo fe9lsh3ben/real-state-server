@@ -1,6 +1,10 @@
-const { isEmpty, contains } = require("validator");
+const validator = require("validator");
 
-const signUpValidator = (req, res, next) => {
+
+
+
+
+const requestVerifier = (req, res, next) => {
 
 
     const body = req.body;
@@ -15,11 +19,12 @@ const signUpValidator = (req, res, next) => {
         res.status(400).send('Your details are not complete');
     } else {
         try {
-            
+
             const { Username, Email, GovID, Address, FullName, UserPhone } = body;
-            console.log(Username)
+            
+
             if (!validator.isAlphanumeric(Username)) {
-                
+
                 res.status(400).send('Username entry should be letters and numaric only!');
                 return
             }
@@ -29,28 +34,29 @@ const signUpValidator = (req, res, next) => {
                 res.status(400).send('enter valid email')
                 return
             }
-
+            
             if (!validator.isNumeric(GovID)) {
 
                 res.status(400).send('GovID should be numaric entry')
                 return
             }
 
-            if (Address == undefined || isEmpty(Address) || Address == null) {
-
+            if (Address === undefined || Object.keys(Address) === 0 || Address === null) {
+                
                 res.status(400).send('Address should be entered')
                 return
             }
 
+            
+            for (var e in FullName) {
+                if (!validator.isAlpha(FullName[e])) {
 
-            if (!validator.isAlpha(FullName)) {
-
-                res.status(400).send('Name in english has an error')
-                return
+                    res.status(400).send('Name error')
+                    return
+                }
             }
 
-
-
+            
             if (!validator.isNumeric(UserPhone)) {
 
                 res.status(400).send('UserPhone should be numaric entry')
@@ -79,9 +85,10 @@ const signUpValidator = (req, res, next) => {
     }
 
 }
-function requestVerifier(prisma) {
+function signUpValidator (prisma) {
+    
     return async (req, res, next) => {
-
+        
         const { ID, Username, Email, GovID, Address, FullName, UserPhone } = req.body;
 
 
@@ -91,7 +98,6 @@ function requestVerifier(prisma) {
                 where: {
                     OR: [
                         { Username: Username },
-                        { FullName: FullName },
                         { Email: Email },
                         { GovID: GovID },
                         { UserPhone: UserPhone }
@@ -99,7 +105,6 @@ function requestVerifier(prisma) {
                 },
                 select: {
                     Username: true,
-                    FullName: true,
                     Email: true,
                     GovID: true,
                     UserPhone: true
@@ -122,6 +127,7 @@ function requestVerifier(prisma) {
                 }
             }
 
+            
             next()
         } catch (error) {
             res.status(400).send(error.message)
@@ -131,4 +137,4 @@ function requestVerifier(prisma) {
 
 
 
-module.exports = { signUpValidator, requestVerifier }
+module.exports = {signUpValidator, requestVerifier}

@@ -115,7 +115,7 @@ model User {
   CreatedAt         DateTime           @default(now())
   UpdatedAt         DateTime           @updatedAt
   TermsCondetionID  String
-  TermsCondetion    TermsAndCondetions  @relation(fields: [TermsCondetionID], references: [ID])
+  TermsCondetion    TermsAndCondetions @relation(fields: [TermsCondetionID], references: [ID])
 
   //___
 

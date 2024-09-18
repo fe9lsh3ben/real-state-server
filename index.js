@@ -94,20 +94,18 @@ app.post('/regT&C', async (req, res) => {
 })
 
 app.post('/signUp',
-    signUpValidator,
-    requestVerifier(prisma),
+    requestVerifier,
+    signUpValidator(prisma),
     async (req, res) => {
+        try {
+            await prisma.user.create({data: req.body}).then((v)=> res.status(200).send(v))
+        } catch (error) {
+            console.log(error.message)
+        }
         
-        await prisma.user.create({
-            data: {
-                Username: Username,
-                Email: Email,
-                GovID: GovID,
-                Address: Address,
-                FullName: FullName,
-                UserPhone: UserPhone
-            }
-        }).then((v)=> console.log(v))
+
+
+
     });
 
 
