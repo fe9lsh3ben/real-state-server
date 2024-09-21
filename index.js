@@ -70,9 +70,12 @@ var options = {
 
 //                                  ___________App______________
 
-
+const crypto = require('crypto');
+require('dotenv').config(); 
 app.get('/', (req, res) => {
-    res.send("assssssk for get");
+    
+console.log(process.env.JWT_SECRET)
+    //res.send("assssssk for get");
 
 })
 

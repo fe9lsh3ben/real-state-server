@@ -4,9 +4,9 @@ const jwt = require('jsonwebtoken');
 require('dotenv').config(); // For loading environment variables
 
 // Generate a JWT token
-function generateToken(payload) {
+function generateToken(body) {
   const secret = process.env.JWT_SECRET; // Secret stored in environment variables
-  return jwt.sign(payload, secret, { expiresIn: '1h' });
+  return jwt.sign(body.userId, secret, { expiresIn: '1h' });
 }
 
 // Verify a JWT token
