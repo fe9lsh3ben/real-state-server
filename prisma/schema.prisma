@@ -1,6 +1,11 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+
+//Importent:-
+// [npx prisma migrate deploy] :Use Case: Non-development environments (staging, production). Does creat megration file.
+// [npx prisma db push] :Use Case: Development environments for rapid prototyping. Does not creat megration file.
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -72,14 +77,6 @@ enum Committed_By {
 
 
 
-// Define the Session table
-model Session {
-  ID        Int      @id @default(autoincrement())
-  UserId    Int      @unique
-  User      User     @relation(fields: [UserId], references: [ID])
-  Token     String   @unique
-  ExpiresAt DateTime
-}
 
 // Define the Setting table
 model Setting {
@@ -108,6 +105,16 @@ model TermsAndCondetions {
 
 }
 
+// Define the Session table
+model Session {
+  ID        Int      @id @default(autoincrement())
+  UserId    Int      @unique
+  User      User     @relation(fields: [UserId], references: [ID])
+  Token     String   @unique
+  ExpiresAt DateTime
+}
+
+
 // Define the User table
 model User {
   ID                Int                @id @default(autoincrement())
@@ -121,6 +128,8 @@ model User {
 
   Username          String             @unique
   Email             String             @unique
+  Password          String
+  refreshTokens     RefreshToken[]
   Session           Session?
   ProfileImage      Bytes?
   GovID             String             @unique
@@ -140,6 +149,19 @@ model User {
   Balance           Decimal            @default(0.0)
   UserStatus        Office_Or_User_Status?
 }
+
+
+model RefreshToken {
+  id            Int      @id @default(autoincrement())
+  refreshToken  String
+  userId        Int
+  user          User     @relation(fields: [userId], references: [ID])
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime
+}
+
+
+
 
 model RealEstateOffice {
   ID                  Int              @id @default(autoincrement())

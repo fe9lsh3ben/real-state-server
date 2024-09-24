@@ -39,8 +39,8 @@ const prisma = new PrismaClient();
 
 
 const auth = require('./auth')
-
-const { signUpValidator, requestVerifier } = require('./middlewares/validators')
+const {signupFunction} = require('./functions/signup_function')
+const { signupValidator, signupVerifier } = require('./middlewares/validators')
 
 //___________SERVER SETTINGS______________
 
@@ -70,11 +70,11 @@ var options = {
 
 //                                  ___________App______________
 
-const crypto = require('crypto');
-require('dotenv').config(); 
+
+require('dotenv').config();
 app.get('/', (req, res) => {
-    
-console.log(process.env.JWT_SECRET)
+
+    console.log(process.env.JWT_SECRET)
     //res.send("assssssk for get");
 
 })
@@ -96,20 +96,43 @@ app.post('/regT&C', async (req, res) => {
 
 })
 
-app.post('/signUp',
-    requestVerifier,
-    signUpValidator(prisma),
-    async (req, res) => {
-        try {
-            await prisma.user.create({data: req.body}).then((v)=> res.status(200).send(v))
-        } catch (error) {
-            console.log(error.message)
-        }
-        
+app.post('/signup',
+    signupVerifier,
+    signupValidator(prisma),
+    signupFunction(prisma));
 
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
 
-
+    // Find the user in the database
+    const user = await prisma.user.findUnique({
+        where: { username: username },
     });
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Validate the password
+    try {
+        const validPassword = await argon2.verify(hashedPassword, password);
+        console.log(validPassword)
+        if (!validPassword) {
+            return res.status(403).json({ message: 'Invalid password' });
+        }
+    } catch (err) {
+        throw new Error('Password verification failed');
+    }
+
+
+    // Generate JWT using RS256
+    // const accessToken = generateAccessToken(user);
+
+    // res.json({
+    //     accessToken,
+    //     message: 'Login successful',
+    // });
+});
 
 
 app.use('/auth&auth', auth);
