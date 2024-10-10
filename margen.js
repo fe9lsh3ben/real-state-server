@@ -8,9 +8,15 @@ require('dotenv').config(); // For loading environment variables
 const PRIVATE_KEY = fs.readFileSync('./private_key.pem', 'utf8'); //generate asymetric keys
 const PUBLIC_KEY = fs.readFileSync('./public_key.pem', 'utf8');
 
-function generateToken(body) {
+
+function generateTokenBySecret(body) {
     const secret = process.env.JWT_SECRET; // Secret stored in environment variables
-    jwt.sign(body.userId, secret, { expiresIn: '1h' });
+    return jwt.sign(body.userId, secret, { expiresIn: '1h' });
+}
+
+
+function generateTokenByPrivate_key(body){
+
     return jwt.sign(
         {
             id: body.userId,
@@ -26,16 +32,22 @@ function generateToken(body) {
 }
 
 // Verify a JWT token
-function verifyToken(token) {
+function verifyTokenBySecret(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
     const secret = process.env.JWT_SECRET;
-    try {
-        return jwt.verify(token, secret);
-    } catch (err) {
-        throw new Error('Invalid token');
-    }
+   
+        return jwt.verify(token, secret,(err, user)=>{
+            if (err) {
+                return res.status(403).json({ message: 'Invalid or expired token' });
+            }
+            req.user = user; // Attach the user to the request object
+            next();
+        });
+    
 }
 
-function authenticateToken(req, res, next) {
+function verifyTokenByPublic_Key(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -55,12 +67,15 @@ function authenticateToken(req, res, next) {
 
 
 // Usage
-const token = generateToken({ userId: 123 });
+var token = generateTokenByPrivate_key({ userId: 123, userName:"fe9lsh3ben",role: "normal user" });
 console.log('Generated Token:', token);
 
-const decoded = verifyToken(token);
-console.log('Decoded Token:', decoded);
+token = generateTokenBySecret({ userId: 123, userName:"fe9lsh3ben",role: "normal user" });
+console.log('Generated Token:', token);
 
+
+verifyTokenBySecret(req);
+verifyTokenByPublic_Key(req);
 
 
 

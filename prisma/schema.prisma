@@ -153,7 +153,7 @@ model User {
 
 model RefreshToken {
   id            Int      @id @default(autoincrement())
-  refreshToken  String
+  refreshToken  String   @unique
   userId        Int
   user          User     @relation(fields: [userId], references: [ID])
   createdAt     DateTime @default(now())
