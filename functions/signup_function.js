@@ -1,21 +1,92 @@
-const argon2 = require('argon2')
+const {jwt, argon2, PRIVATE_KEY, PUBLIC_KEY} = require('../libraries/auth_lib');
+const {
+    generateTokenByPrivate_key, 
+    verifyTokenByPublic_Key,
+    } = require('./token_functions');
 
+    
+const signupFunction = (prisma) => async (req, res) => {
 
-const signupFunction =  (prisma) => async (req, res) => {
+    const {
+        role,
+        termsCondetionID,
+        username,
+        email,
+        password,
+        govID,
+        address,
+        fullName,
+        userPhone,
+        other1,
+        employerREOID,
+        falLicense,
+        balance,
+        userStatus,
+    } = req.body;
+
     try {
-        
-        
+
+
         try {
-            console.log(req.body.Password)
-            req.body.password =  await argon2.hash(req.body.Password);
+
+            const hashedPass = await argon2.hash(req.body.Password);
+            req.body.Password = hashedPass;
+
         } catch (err) {
             res.status(400).send(err);
-            throw new Error('Password hashing failed');
+            throw new Error(err.message);
         }
 
-        await prisma.user.create({ data: req.body }).then((v) => res.status(200).send(v))
+        const body = req.body
+        
+        await prisma.user.create({ 
+            data: {
+                TermsCondetion: {connect: {ID: body.TermsCondetion,}},
+                Username: body.Username,
+                Email: body.Email,
+                Password: body.Password,
+                GovID: body.GovID,
+                Address: body.Address,
+                FullName: body.FullName,
+                UserPhone: body.UserPhone,
+                
+        } }).then((v) => {
+            const accessToken = generateTokenByPrivate_key(v,'1h');
+            const refreshToken = generateTokenByPrivate_key(v,'14d');
+            var decoded = jwt.decode(refreshToken)
+            var expiryDate = new Date(decoded.exp * 1000);
+            prisma.refreshToken.create({
+                data: {
+                    RefreshToken: refreshToken,
+                    User: {connect: {ID: v.ID}},
+                    ExpiresAt: expiryDate
+                }
+            }).then((v) => refreshToken = v.RefreshToken);
+
+            decoded = jwt.decode(accessToken)
+            expiryDate = new Date(decoded.exp * 1000);
+            prisma.Session.create({
+                data: {
+                    User : {connect: {ID: v.ID}},
+                    Token : accessToken,
+                    ExpiresAt: expiryDate
+                }
+            }).then((v) => accessToken = v.Token);
+
+
+            console.log(generateTokenByPrivate_key(v))
+            
+            res.status(200).send({
+                data: v,
+                accessToken: accessToken,
+                refreshToken: refreshToken
+            });
+        })
+        
+    
     } catch (error) {
-        console.log(error.message)
+        res.status(400).send(error);
+        throw Error(error.message)
     }
 
 

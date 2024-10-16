@@ -99,12 +99,15 @@ app.post('/regT&C', async (req, res) => {
 })
 
 
-//Request's body example: {"Username": "fe9lsh3ben", "Password":"10890Fsh", "Email":"fe9olsh3ben@gmail.com", "GovID":"1089036089", "Address":"Makkah-Makkah-Shuqeyah", "FullName":"Faisal Mohammed", "UserPhone": "0546737456"}
+//Request's body example: {"Username": "fe9lsh3ben", "Password":"10890Fsh", "Email":"fe9olsh3ben@gmail.com", "GovID":"1089036089", "Address":"Makkah-Makkah-Shuqeyah", "FullName":["Faisal", "Mohammed"], "UserPhone": "0546737456","TermsCondetion":"B_000001"}
 app.post('/signup',
     signupVerifier,
     signupValidator(prisma),
     signupFunction(prisma));
 
+
+
+    
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
 

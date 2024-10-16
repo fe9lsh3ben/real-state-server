@@ -152,12 +152,12 @@ model User {
 
 
 model RefreshToken {
-  id            Int      @id @default(autoincrement())
-  refreshToken  String   @unique
-  userId        Int
-  user          User     @relation(fields: [userId], references: [ID])
-  createdAt     DateTime @default(now())
-  expiresAt     DateTime
+  ID            Int      @id @default(autoincrement())
+  RefreshToken  String   @unique
+  UserId        Int
+  User          User     @relation(fields: [UserId], references: [ID])
+  CreatedAt     DateTime @default(now())
+  ExpiresAt     DateTime
 }
 
 

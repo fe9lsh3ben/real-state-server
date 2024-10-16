@@ -13,15 +13,17 @@ function validatePassword(password) {
 // signup verifier example : {"Username": "fe9lsh3ben", "Password":"10890Fsh", "Email":"fe9olsh3ben@gmail.com", "GovID":"1089036089", "Address":"Makkah-Makkah-Shuqeyah", "FullName":"Faisal Mohammed", "UserPhone": "0546737456"}
 const signupVerifier = (req, res, next) => {
 
-
+    
     const body = req.body;
-
+   
     if (body == undefined) {
+        
         console.log(1)
         res.status(400).send('No details entered');
         return
 
     } else if (!(body.Username || body.Password || body.Email || body.GovID || body.Address || body.FullName || body.UserPhone)) {
+        console.log('d')
         console.log(2)
         res.status(400).send('Your details are not complete');
     } else {
@@ -37,7 +39,6 @@ const signupVerifier = (req, res, next) => {
             }
 
             var validatedPassword = validatePassword(Password);
-            console.log(validatedPassword)
             if (validatedPassword) {
                 if (validatePassword.isValidLength) {
                     res.status(400).send('Unvalid password lingth!');
@@ -69,7 +70,7 @@ const signupVerifier = (req, res, next) => {
             }
 
 
-            for (var namePart of FullName.split(' ')) {
+            for (var namePart of FullName) {
                 if (!validator.isAlpha(namePart)) {
                     console.log(namePart, 'ddd');
                     res.status(400).send('Name error');
@@ -109,7 +110,7 @@ const signupVerifier = (req, res, next) => {
 }
 
 function signupValidator(prisma) {
-
+    
     return async (req, res, next) => {
 
         const { ID, Username, Password, Email, GovID, Address, FullName, UserPhone } = req.body;
@@ -135,16 +136,17 @@ function signupValidator(prisma) {
             });
 
             if (matchedUser) {
-                if (matchedUser.Username) {
+                console.log(matchedUser)
+                if (matchedUser.Username == Username) {
                     res.status(400).send('Username is already taken');
                     return;
-                } else if (matchedUser.Email) {
+                } else if (matchedUser.Email == Email) {
                     res.status(400).send('Email is already taken');
                     return;
-                } else if (matchedUser.GovID) {
+                } else if (matchedUser.GovID == GovID) {
                     res.status(400).send('GovID is already taken');
                     return;
-                } else if (matchedUser.UserPhone) {
+                } else if (matchedUser.UserPhone == UserPhone) {
                     res.status(400).send('UserPhone is already taken');
                     return;
                 }
