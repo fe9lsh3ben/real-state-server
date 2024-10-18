@@ -98,7 +98,7 @@ const signupVerifier = (req, res, next) => {
             // }
 
 
-
+            
             next();
 
         } catch (e) {
@@ -134,9 +134,8 @@ function signupValidator(prisma) {
                     UserPhone: true
                 }
             });
-
+            
             if (matchedUser) {
-                console.log(matchedUser)
                 if (matchedUser.Username == Username) {
                     res.status(400).send('Username is already taken');
                     return;
@@ -152,7 +151,7 @@ function signupValidator(prisma) {
                 }
             }
 
-
+            
             next()
         } catch (error) {
             res.status(400).send(error.message)

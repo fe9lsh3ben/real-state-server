@@ -39,9 +39,9 @@ const prisma = new PrismaClient();
 
 
 const auth = require('./auth')
-const {signupFunction} = require('./functions/signup_function')
-const { signupValidator, signupVerifier } = require('./middlewares/validators')
-
+const {signupFunction} = require('./functions/signup_function');
+const {signupValidator, signupVerifier } = require('./middlewares/validators')
+const {loginFunction} = require('./functions/login_function');
 //___________SERVER SETTINGS______________
 
 var app = express()
@@ -83,7 +83,6 @@ app.get('/', (req, res) => {
 //Request's body example: {"CommittedBy":"BENEFICIARY","Content":"T&Cs content","MadeBy":"Admin"}
 app.post('/regT&C', async (req, res) => {
 
-
     var result;
     try {
 
@@ -107,39 +106,8 @@ app.post('/signup',
 
 
 
-    
-app.post('/login', async (req, res) => {
-    const { username, password } = req.body;
 
-    // Find the user in the database
-    const user = await prisma.user.findUnique({
-        where: { username: username },
-    });
-
-    if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Validate the password
-    try {
-        const validPassword = await argon2.verify(hashedPassword, password);
-        console.log(validPassword)
-        if (!validPassword) {
-            return res.status(403).json({ message: 'Invalid password' });
-        }
-    } catch (err) {
-        throw new Error('Password verification failed');
-    }
-
-
-    // Generate JWT using RS256
-    // const accessToken = generateAccessToken(user);
-
-    // res.json({
-    //     accessToken,
-    //     message: 'Login successful',
-    // });
-});
+app.post('/login', loginFunction(prisma));
 
 
 app.use('/auth&auth', auth);

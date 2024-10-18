@@ -6,11 +6,8 @@ var {requestValidator, signupValidator} = require('./middlewareValidator.js')
 
 authRouter.route('/')
     .post(requestValidator, signupValidator,(req,res)=> {
-        
-        
-        
-    })
-    .get((req,res,next)=> {
+
+    }).get((req,res,next)=> {
 
     })
     .put((req,res,next)=> {

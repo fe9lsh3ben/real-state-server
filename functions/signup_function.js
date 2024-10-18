@@ -1,7 +1,6 @@
 const {jwt, argon2, PRIVATE_KEY, PUBLIC_KEY} = require('../libraries/auth_lib');
 const {
     generateTokenByPrivate_key, 
-    verifyTokenByPublic_Key,
     } = require('./token_functions');
 
     
@@ -51,8 +50,8 @@ const signupFunction = (prisma) => async (req, res) => {
                 UserPhone: body.UserPhone,
                 
         } }).then((v) => {
-            const accessToken = generateTokenByPrivate_key(v,'1h');
-            const refreshToken = generateTokenByPrivate_key(v,'14d');
+            var accessToken = generateTokenByPrivate_key(v,"1h");
+            var refreshToken = generateTokenByPrivate_key(v,"14d");
             var decoded = jwt.decode(refreshToken)
             var expiryDate = new Date(decoded.exp * 1000);
             prisma.refreshToken.create({
@@ -74,7 +73,7 @@ const signupFunction = (prisma) => async (req, res) => {
             }).then((v) => accessToken = v.Token);
 
 
-            console.log(generateTokenByPrivate_key(v))
+            
             
             res.status(200).send({
                 data: v,
