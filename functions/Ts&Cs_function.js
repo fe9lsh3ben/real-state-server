@@ -1,7 +1,7 @@
 
 
 
-const find_last_termsANDconditions = async (prisma, Committed_By, req) => {
+const findLast_TC_orCreateFunction = (prisma, Committed_By) => async (req, res) => {
 
 
     var result
@@ -46,7 +46,8 @@ const find_last_termsANDconditions = async (prisma, Committed_By, req) => {
             // console.log("in if")
             result = await prisma.termsAndCondetions.create({
                 data: {
-                    ID: TC_ID_type + "_000001", Content: [{ "1": req.body.Content }],
+                    ID: TC_ID_type + "_000001",
+                    Content: [{ "1": req.body.Content }],
                     CommittedBy: TC_type,
                     MadeBy: req.body.MadeBy
                 }
@@ -69,8 +70,7 @@ const find_last_termsANDconditions = async (prisma, Committed_By, req) => {
 
 
         }
-        console.log(result)
-        return result;
+        res.send(result);
 
     } catch (err) {
 
@@ -83,4 +83,4 @@ const find_last_termsANDconditions = async (prisma, Committed_By, req) => {
 
 
 
-module.exports = { find_last_termsANDconditions }
+module.exports = {findLast_TC_orCreateFunction }

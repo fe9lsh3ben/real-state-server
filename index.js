@@ -1,12 +1,13 @@
-//___________Library______________
-var express = require('express');
-const bcrypt = require('bcrypt');
-var https = require('https');
-var http = require('http');
-var cors = require('cors');
-var fs = require('fs');
+//___________Utilities______________
+const  {express, bcrypt, https, http, cors, fs} = require('./libraries/utilities')
 
-var { find_last_termsANDconditions, createtermsANDcondition } = require('./prismaDB_utilities/Ts&Cs_utilities')
+
+//___________Functions______________
+
+
+
+
+
 
 const {
     PrismaClient,
@@ -17,31 +18,15 @@ const {
     Committed_By } = require('@prisma/client');
 
 
+
+
 const prisma = new PrismaClient();
-// const advancedPrisma = prisma.$extends({
-//     model: {
-//         $allModels: {
-//             async uniqueExists(where) {
-//                 // Get the current model at runtime
-//                 const context = Prisma.getExtensionContext(this);
-
-//                 const result = await context.findUnique({ where });
-//                 return result !== null;
-//             }
-//         },
-//     },
-// });
 
 
-// var a = options.a !== undefined ? options.a : "nothing";
-
-//___________Modules______________
 
 
-const auth = require('./auth')
-const {signupFunction} = require('./functions/signup_function');
-const {signupValidator, signupVerifier } = require('./middlewares/validators')
-const {loginFunction} = require('./functions/login_function');
+
+
 //___________SERVER SETTINGS______________
 
 var app = express()
@@ -71,46 +56,42 @@ var options = {
 //                                  ___________App______________
 
 
-require('dotenv').config();
-app.get('/', (req, res) => {
 
-    console.log(process.env.JWT_SECRET)
-    //res.send("assssssk for get");
-
-})
+//___________Modules______________
 
 
-//Request's body example: {"CommittedBy":"BENEFICIARY","Content":"T&Cs content","MadeBy":"Admin"}
-app.post('/regT&C', async (req, res) => {
+const auth = require('./auth')
 
-    var result;
-    try {
+const {T_AND_C, signup, login, changeUserType,
+    REO, contract, RE_AD} = require('./libraries/routes_lib');
+ 
 
-        result = await find_last_termsANDconditions(prisma, Committed_By, req)
-
-    } catch (err) {
-        result = err;
-        console.log(err, ' from OFFICE_OWNER')
-    }
-
-    res.send(result);
-
-})
+app.use('/T&C', T_AND_C);
 
 
-//Request's body example: {"Username": "fe9lsh3ben", "Password":"10890Fsh", "Email":"fe9olsh3ben@gmail.com", "GovID":"1089036089", "Address":"Makkah-Makkah-Shuqeyah", "FullName":["Faisal", "Mohammed"], "UserPhone": "0546737456","TermsCondetion":"B_000001"}
-app.post('/signup',
-    signupVerifier,
-    signupValidator(prisma),
-    signupFunction(prisma));
+app.use('/profile', signup);
+
+app.use('/profile', login);
+
+app.use('/profile', changeUserType);
+
+
+
+app.use('/REO', REO);
+
+
+app.use('/contract', contract);
+
+
+app.use('/generate_RE_AD', RE_AD)
 
 
 
 
-app.post('/login', loginFunction(prisma));
+app.post('/generate_RE_AD', generate_RE_AD(prisma));
 
+app.post('/generate_Contract', generateContract(prisma));
 
-app.use('/auth&auth', auth);
 
 
 
