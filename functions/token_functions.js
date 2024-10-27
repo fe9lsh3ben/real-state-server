@@ -1,6 +1,6 @@
 // 1-JWT example  *Take care of expiry token
 
-const {jwt, PRIVATE_KEY, PUBLIC_KEY} = require('../libraries/auth_lib');
+const {jwt, PRIVATE_KEY, PUBLIC_KEY} = require('../libraries/authTools_lib');
 require('dotenv').config();
 
 
@@ -74,7 +74,9 @@ function verifyTokenByPublic_Key(req, res, next) {
 // console.log('Generated Token:', token);
 
 
-
+const renewAccessToken = (refrshToken) =>{
+     
+}
 
 
 

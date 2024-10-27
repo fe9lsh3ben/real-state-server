@@ -9,7 +9,7 @@ const {changeUserTypeFunction} = require('../functions/userType_function');
 const {build_up_REO_Function} = require('../functions/build_up_REO');
 const {build_up_REU_Function} = require('../functions/build_up_REU');
 const {generateContractFunction} = require('../functions/contract_function');
-const {generate_RE_AD} = require('../functions/RE_AD_function')
+const {generateRE_ADFunction} = require('../functions/RE_AD_function')
 
 
 //________________Middlewares___________________
@@ -26,7 +26,7 @@ module.exports = {
     build_up_REO_Function, 
     build_up_REU_Function, 
     generateContractFunction,
-    generate_RE_AD,
+    generateRE_ADFunction,
 
     signupVerifier,
     signupValidator,

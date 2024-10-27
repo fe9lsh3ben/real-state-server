@@ -1,4 +1,4 @@
-const {jwt, argon2, PRIVATE_KEY, PUBLIC_KEY} = require('../libraries/auth_lib');
+const {jwt, argon2, PRIVATE_KEY, PUBLIC_KEY} = require('../libraries/authTools_lib');
 const {
     generateTokenByPrivate_key, 
     } = require('./token_functions');
@@ -26,15 +26,11 @@ const signupFunction = (prisma) => async (req, res) => {
     try {
 
 
-        try {
+      
 
-            const hashedPass = await argon2.hash(req.body.Password);
-            req.body.Password = hashedPass;
+        const hashedPass = await argon2.hash(req.body.Password);
+        req.body.Password = hashedPass;
 
-        } catch (err) {
-            res.status(400).send(err);
-            throw new Error(err.message);
-        }
 
         const body = req.body
         
@@ -52,8 +48,10 @@ const signupFunction = (prisma) => async (req, res) => {
         } }).then((v) => {
             var accessToken = generateTokenByPrivate_key(v,"1h");
             var refreshToken = generateTokenByPrivate_key(v,"14d");
-            var decoded = jwt.decode(refreshToken)
+            var decoded = jwt.decode(refreshToken);
             var expiryDate = new Date(decoded.exp * 1000);
+            console.log(decoded);
+
             prisma.refreshToken.create({
                 data: {
                     RefreshToken: refreshToken,
@@ -61,7 +59,7 @@ const signupFunction = (prisma) => async (req, res) => {
                     ExpiresAt: expiryDate
                 }
             }).then((v) => refreshToken = v.RefreshToken);
-
+ 
             decoded = jwt.decode(accessToken)
             expiryDate = new Date(decoded.exp * 1000);
             prisma.Session.create({
@@ -72,8 +70,6 @@ const signupFunction = (prisma) => async (req, res) => {
                 }
             }).then((v) => accessToken = v.Token);
 
-
-            
             
             res.status(200).send({
                 data: v,

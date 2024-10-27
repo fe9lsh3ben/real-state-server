@@ -3,10 +3,10 @@ const { prisma} = require('../libraries/prisma_utilities');
 const {generateContractFunction} = require('../libraries/functions&middlewares_lib');
 
 
-const contract = express.Router();
+const Contract = express.Router();
 
 
-contract.route('/')
+Contract.route('/')
     //Request's body example: 
 
     .post(generateContractFunction(prisma))
@@ -17,4 +17,4 @@ contract.route('/')
 
 
 
-module.exports = {contract}
+module.exports = {Contract}

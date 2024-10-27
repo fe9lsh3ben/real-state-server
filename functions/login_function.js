@@ -1,26 +1,26 @@
-const {argon2} = require('../libraries/auth_lib')
+const {argon2} = require('../libraries/authTools_lib')
 const {generateTokenByPrivate_key} = require('./token_functions');
 
 
 
 const loginFunction = (prisma) => async (req, res) => {
 
-
-const { Username, Password } = req.body;
-
-// Find the user in the database
-const user = await prisma.User.findUnique({
-    where: { Username: Username },
-});
-
-if (!user) {
-    return res.status(404).json({ message: 'User not found' });
-}
-
-// Validate the password
 try {
+    const { Username, Password } = req.body;
+
+    // Find the user in the database
+    const user = await prisma.User.findUnique({
+        where: { Username: Username },
+    });
+
+    if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Validate the password
+
     const validPassword = await argon2.verify(user.Password, Password);
-    console.log(validPassword)
+    
     if (!validPassword) {
         return res.status(403).json({ message: 'Invalid password' });
     }
@@ -43,7 +43,7 @@ try {
 } catch (err) {
     console.log(err)
     res.status(400).send(err.message)
-    throw new Error('Password verification failed');
+    throw new Error('Password verification failed, resoan:-\n', err.message);
 }
 
 

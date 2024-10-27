@@ -10,6 +10,9 @@ const { signupFunction, signupValidator, signupVerifier,
 const signup = express.Router();
 const login = express.Router();
 const changeUserType = express.Router();
+const getProfile = express.Router();
+const editProfile = express.Router();
+
 
 signup.route('/signup')
     //Request's body example: {"Username": "fe9lsh3ben", "Password":"10890Fsh", "Email":"fe9olsh3ben@gmail.com", "GovID":"1089036089", "Address":"Makkah-Makkah-Shuqeyah", "FullName":["Faisal", "Mohammed"], "UserPhone": "0546737456","TermsCondetion":"B_000001"}
@@ -39,4 +42,16 @@ changeUserType.route('/change_user_type')
     .delete();
 
 
-module.exports = { signup, login, changeUserType };
+
+getProfile.route('/get_profile')
+
+    .get();
+
+
+
+editProfile.route('/edit_profile')
+
+    .put();
+
+
+module.exports = { signup, login, changeUserType, getProfile, editProfile};

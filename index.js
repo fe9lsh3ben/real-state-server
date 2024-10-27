@@ -62,8 +62,15 @@ var options = {
 
 const auth = require('./auth')
 
-const {T_AND_C, signup, login, changeUserType,
-    REO, contract, RE_AD} = require('./libraries/routes_lib');
+const {
+    T_AND_C,
+    signup, login, changeUserType, getProfile, editProfile,
+    REO,
+    REU,
+    Contract,
+    RE_AD
+
+} = require('./libraries/routes_lib');
  
 
 app.use('/T&C', T_AND_C);
@@ -80,7 +87,7 @@ app.use('/profile', changeUserType);
 app.use('/REO', REO);
 
 
-app.use('/contract', contract);
+app.use('/contract', Contract);
 
 
 app.use('/generate_RE_AD', RE_AD)

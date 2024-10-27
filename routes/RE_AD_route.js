@@ -1,6 +1,6 @@
 const { express } = require('../libraries/utilities');
 const { prisma } = require('../libraries/prisma_utilities');
-const {generate_RE_AD} = require('../libraries/functions&middlewares_lib');
+const {generateRE_ADFunction} = require('../libraries/functions&middlewares_lib');
 
 
 const RE_AD = express.Router();
@@ -9,7 +9,7 @@ const RE_AD = express.Router();
 RE_AD.route('/')
     //Request's body example: 
 
-    .post(generate_RE_AD(prisma))
+    .post(generateRE_ADFunction(prisma))
     .put()
     .get()
     .delete();
