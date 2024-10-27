@@ -3,7 +3,7 @@ const { prisma, User_Type } = require('../libraries/prisma_utilities');
 
 const { signupFunction, signupValidator, signupVerifier,
     loginFunction, changeUserTypeFunction
-} = require('../libraries/functions_lib');
+} = require('../libraries/functions&middlewares_lib');
 
 
 

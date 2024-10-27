@@ -1,13 +1,13 @@
 const { express } = require('../libraries/utilities');
 const { prisma } = require('../libraries/prisma_utilities');
-const {build_up_REO_Function} = require('../libraries/functions&middlewares_lib')
-const REO = express.Router();
+const {build_up_REU_Function} = require('../libraries/functions&middlewares_lib')
+const REU = express.Router();
 
 
-REO.route('/')
+REU.route('/')
     //Request's body example: 
 
-    .post(build_up_REO_Function(prisma))
+    .post(build_up_REU_Function(prisma))
     .put()
     .get()
     .delete();
@@ -15,4 +15,4 @@ REO.route('/')
 
 
 
-module.exports = {REO}
+module.exports = {REU}

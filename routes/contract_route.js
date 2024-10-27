@@ -1,6 +1,6 @@
 const { express } = require('../libraries/utilities');
 const { prisma} = require('../libraries/prisma_utilities');
-const {generateContractFunction} = require('../libraries/functions_lib');
+const {generateContractFunction} = require('../libraries/functions&middlewares_lib');
 
 
 const contract = express.Router();
