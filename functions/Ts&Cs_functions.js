@@ -1,7 +1,8 @@
+const { Committed_By } = require("@prisma/client")
 
 
 
-const findLast_TC_orCreateFunction = (prisma, Committed_By) => async (req, res) => {
+const createNewTandC = (prisma, Committed_By) => async (req, res) => {
 
 
     var result
@@ -81,6 +82,44 @@ const findLast_TC_orCreateFunction = (prisma, Committed_By) => async (req, res) 
 
 }
 
+const getLastTerms = (prisma) => async (req, res) => {
+
+    try {
+
+        var result
+        var TC_ID_type
+
+        switch (req.body.CommittedBy) {
+
+            case ("OFFICE_OWNER"):
+                TC_ID_type = 'OO'
+                break;
+
+            case ("OFFICE_STAFF"):
+                TC_ID_type = 'OS'
+                break;
+
+            case ("BENEFICIARY"):
+                TC_ID_type = 'B'
+                break;
+
+            case ("BUSINESS_BENEFICIARY"):
+                TC_ID_type = 'BB'
+                break;
 
 
-module.exports = {findLast_TC_orCreateFunction }
+
+        }
+
+        await prisma.termsAndCondetions.findMany({
+            where: { ID: { contains: TC_ID_type } }, orderBy: { ID: 'desc' }, take: 1,
+        }).then((v) => {
+            result = v[0];
+        })
+        res.status(200).send(result);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+module.exports = {createNewTandC, getLastTerms}

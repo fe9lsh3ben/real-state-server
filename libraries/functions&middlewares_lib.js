@@ -1,15 +1,17 @@
 
 //________________Funtions___________________
-const {findLast_TC_orCreateFunction} = require('../functions/Ts&Cs_function');
+const {createNewTandC, getLastTerms} = require('../functions/Ts&Cs_functions');
 
-const {signupFunction} = require('../functions/signup_function');
-const {loginFunction} = require('../functions/login_function');
-const {changeUserTypeFunction} = require('../functions/userType_function');
+const {generateTokenByPrivate_key, tokenVerifier, tokenMiddlewere, generatTokenByRefreshToken} = require('../functions/token_functions');
 
-const {build_up_REO_Function} = require('../functions/build_up_REO');
-const {build_up_REU_Function} = require('../functions/build_up_REU');
-const {generateContractFunction} = require('../functions/contract_function');
-const {generateRE_ADFunction} = require('../functions/RE_AD_function')
+const {signupFunction, loginFunction, changeUserTypeFunction,
+    getProfile, getProfiles, editProfile
+} = require('../functions/Profile_functions');
+
+const {build_up_REO_Function, update_REO} = require('../functions/REO_functions');
+const {build_up_REU_Function} = require('../functions/REU_functions');
+const {generateContractFunction} = require('../functions/contract_functions');
+const {generateRE_ADFunction} = require('../functions/RE_AD_functions')
 
 
 //________________Middlewares___________________
@@ -17,13 +19,20 @@ const {signupValidator, signupVerifier } = require('../middlewares/validators');
 
 
 module.exports = { 
-    findLast_TC_orCreateFunction,
+    createNewTandC,
+    getLastTerms,
 
+    tokenVerifier, tokenMiddlewere, generatTokenByRefreshToken,
+    
     signupFunction,
     loginFunction,
-    changeUserTypeFunction, 
+    changeUserTypeFunction,
+    getProfile,
+    getProfiles,
+    editProfile,
 
-    build_up_REO_Function, 
+    build_up_REO_Function,
+    update_REO,
     build_up_REU_Function, 
     generateContractFunction,
     generateRE_ADFunction,

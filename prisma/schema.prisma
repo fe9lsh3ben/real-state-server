@@ -129,15 +129,15 @@ model User {
   Username          String             @unique
   Email             String             @unique
   Password          String
-  refreshTokens     RefreshToken[]
-  Session           Session?
+  RefreshTokens     RefreshToken?
+  Session           Session? 
   ProfileImage      Bytes?
   GovID             String             @unique
   Address           Json?        //{Region, City, Destrect, altitude, Longtude}
   FullName          String[]
   UserPhone         String
   //___
-
+  
   Other1            Json[]      // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
   
   RE_Offices        RealEstateOffice[] @relation(name: "Owner")
@@ -147,14 +147,14 @@ model User {
   
   FalLicense        String?
   Balance           Decimal            @default(0.0)
-  UserStatus        Office_Or_User_Status?
+  UserStatus        Office_Or_User_Status?  @default(ACTIVE)
 }
 
 
 model RefreshToken {
   ID            Int      @id @default(autoincrement())
   RefreshToken  String   @unique
-  UserId        Int
+  UserId        Int      @unique
   User          User     @relation(fields: [UserId], references: [ID])
   CreatedAt     DateTime @default(now())
   ExpiresAt     DateTime
@@ -168,12 +168,14 @@ model RealEstateOffice {
   CommercialRegister  String
   OwnerID             Int              @unique
   Owner               User             @relation(name: "Owner",fields: [OwnerID], references: [ID])
+  OfficeName          String
+  OfficeImage         Bytes?
   Address             Json  //{Region, City, Destrect, altitude, Longtude}
   Status              Office_Or_User_Status
  
   Staff               User[]           @relation("OfficeStaff")
  
-  RealEstateUnits      RealEstateUnit[] @relation("OfficeAndREUnit")
+  RealEstateUnits     RealEstateUnit[] @relation("OfficeAndREUnit")
   Contracts           Contract[]
   Ads                 RealEStateAD[]
   Visitors            Json? //{date : number of visitors}
@@ -188,7 +190,7 @@ model RealEstateUnit {
   UnitType             Real_Estate_Unit_Type
   DeedNumber           String             @unique
   DeedDate             DateTime
-  DeedOwners            Json[] //{Owner number, Owner Identity Number, Owner name}
+  DeedOwners           Json[] //{Owner number, Owner Identity Number, Owner name,  Owner UserID @Recomended}
   
   AffiliatedOfficeID   Int?
   AffiliatedOffice     RealEstateOffice? @relation("OfficeAndREUnit", fields: [AffiliatedOfficeID], references: [ID])

@@ -60,11 +60,10 @@ var options = {
 //___________Modules______________
 
 
-const auth = require('./auth')
 
 const {
     T_AND_C,
-    signup, login, changeUserType, getProfile, editProfile,
+    profile,
     REO,
     REU,
     Contract,
@@ -76,15 +75,13 @@ const {
 app.use('/T&C', T_AND_C);
 
 
-app.use('/profile', signup);
-
-app.use('/profile', login);
-
-app.use('/profile', changeUserType);
-
+app.use('/profile', profile);
 
 
 app.use('/REO', REO);
+
+
+app.use('/REU', REU);
 
 
 app.use('/contract', Contract);
@@ -95,9 +92,8 @@ app.use('/generate_RE_AD', RE_AD)
 
 
 
-app.post('/generate_RE_AD', generate_RE_AD(prisma));
 
-app.post('/generate_Contract', generateContract(prisma));
+
 
 
 

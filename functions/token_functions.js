@@ -1,6 +1,8 @@
 // 1-JWT example  *Take care of expiry token
 
-const {jwt, PRIVATE_KEY, PUBLIC_KEY} = require('../libraries/authTools_lib');
+const { where } = require('sequelize');
+const { jwt, PRIVATE_KEY, PUBLIC_KEY } = require('../libraries/authTools_lib');
+const { prisma } = require('../libraries/prisma_utilities');
 require('dotenv').config();
 
 
@@ -10,8 +12,8 @@ require('dotenv').config();
 // }
 
 
-function generateTokenByPrivate_key(body, period){
-    
+function generateTokenByPrivate_key(body, period) {
+
     return jwt.sign(
         {
             ID: body.ID,
@@ -36,7 +38,7 @@ function generateTokenByPrivate_key(body, period){
 //     const authHeader = req.headers['authorization'];
 //     const token = authHeader && authHeader.split(' ')[1];
 //     const secret = process.env.JWT_SECRET;
-   
+
 //         return jwt.verify(token, secret,(err, user)=>{
 //             if (err) {
 //                 return res.status(403).json({ message: 'Invalid or expired token' });
@@ -44,27 +46,144 @@ function generateTokenByPrivate_key(body, period){
 //             req.user = user; // Attach the user to the request object
 //             next();
 //         });
-    
+
 // }
 
-function verifyTokenByPublic_Key(req, res, next) {
+const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
+
+    const authHeader = req.headers['authorization'];
+    const refreshToken = authHeader && authHeader.split(' ')[1];
+    
+    if (!refreshToken) {
+
+        return { 'verified': false, 'message': 'toke is required!' };
+        
+    }
+
+    jwt.verify(refreshToken, PUBLIC_KEY, async (err, data) => {
+        
+        if (err) {
+            if (err.name === 'TokenExpiredError') {
+                
+                res.status(404).json({ 'verified': false, 'message': err.message }); //message: jwt expired
+                return;
+
+                // Take action for expired token, like refreshing or prompting re-authentication
+            } else {
+                res.status(404).json({ 'verified': false, 'message': `Refresh Token verification failed: ${err.message}` });
+                return;
+
+                // Handle other types of errors, like invalid token
+            }
+        }
+        
+        var accessToken = generateTokenByPrivate_key(data,"4h");
+        var refreshToken = generateTokenByPrivate_key(data,"14d");
+        var decoded = jwt.decode(refreshToken);
+        var expiryDate = new Date(decoded.exp * 1000);
+       
+        console.log(expiryDate);
+        console.log(Date())
+        await prisma.User.update({
+            where: { ID: data.ID },
+            data:{
+                RefreshTokens:{
+                    update: {
+                        data: {
+                            RefreshToken: refreshToken,
+                            ExpiresAt: expiryDate
+                        }
+                    }
+                }
+            }
+        });
+
+
+
+
+        decoded = jwt.decode(accessToken)
+        expiryDate = new Date(decoded.exp * 1000);
+
+        await prisma.User.update({
+            where: { ID: data.ID },
+            data:{
+                Session:{
+                    update: {
+                        data: {
+                            Token: accessToken,
+                            ExpiresAt: expiryDate
+                        }
+                    }
+                }
+            }
+        });
+
+        prisma.Session.findUnique({
+            where: {UserId : data.ID},
+            include: { 
+                User:true
+            },
+        }).then((v)=> null);
+
+
+        res.status(200).send({
+            data: data,
+            accessToken: accessToken,
+            refreshToken: refreshToken
+        });
+        
+        
+    }); 
+
+
+
+
+
+}
+
+function tokenVerifier(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ message: 'Token required' });
+        res.status(401).json({'verified': false, 'message': 'toke is required!' });
+
     }
 
     jwt.verify(token, PUBLIC_KEY, (err, user) => {
         if (err) {
-            return res.status(403).json({ message: 'Invalid or expired token' });
+            if (err.name === 'TokenExpiredError') {
+
+                res.status(401).json({ 'verified': false, 'message': "jwt expired" });
+
+
+                // Take action for expired token, like refreshing or prompting re-authentication
+            } else {
+                res.status(401).json({ 'verified': false, 'message': `Token verification failed: ${err.message}`});
+
+                // Handle other types of errors, like invalid token
+            }
         }
-        req.user.ID = user.ID; // Attach the user to the request object
+
+        req.body.ID = user.ID; // Attach the user to the request object
         next();
     });
+
+
 }
 
 
+function tokenMiddlewere(req, res, next) {
+    const result = tokenVerifier(req);
+    if (!result.verified) {
+        res.status(404).send(result.message);
+        return;
+    }
+
+
+    next();
+
+}
 
 // Usage
 // var token = generateTokenByPrivate_key({ userId: 123, userName:"fe9lsh3ben",role: "normal user" });
@@ -74,10 +193,6 @@ function verifyTokenByPublic_Key(req, res, next) {
 // console.log('Generated Token:', token);
 
 
-const renewAccessToken = (refrshToken) =>{
-     
-}
 
 
-
-module.exports = { generateTokenByPrivate_key, verifyTokenByPublic_Key}
+module.exports = { generateTokenByPrivate_key, generatTokenByRefreshToken, tokenVerifier, tokenMiddlewere }
