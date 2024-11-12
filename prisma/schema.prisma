@@ -201,7 +201,8 @@ model RealEstateUnit {
   UnitImages           Bytes[]
   CreatedAt            DateTime           @default(now())
   UpdatedAt            DateTime           @updatedAt
-  
+  Polygon              Unsupported("POLYGON")?
+
   Specifications       Json[] //Based on Unit type *Refare at the end of this page.
   UnitAD               RealEStateAD?
 }
