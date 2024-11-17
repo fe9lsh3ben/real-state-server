@@ -2,14 +2,14 @@
 //________________Funtions___________________
 const {createNewTandC, getLastTerms} = require('../functions/Ts&Cs_functions');
 
-const {generateTokenByPrivate_key, tokenVerifier, tokenMiddlewere, generatTokenByRefreshToken} = require('../functions/token_functions');
+const {generateTokenByPrivate_key, tokenMiddlewere, generatTokenByRefreshToken} = require('../functions/token_functions');
 
 const {signupFunction, loginFunction, changeUserTypeFunction,
     getProfile, getProfiles, editProfile
 } = require('../functions/Profile_functions');
 
 const {build_up_REO_Function, update_REO} = require('../functions/REO_functions');
-const {build_up_REU_Function} = require('../functions/REU_functions');
+const {build_up_REU_Function, updatePolygon} = require('../functions/REU_functions');
 const {generateContractFunction} = require('../functions/contract_functions');
 const {generateRE_ADFunction} = require('../functions/RE_AD_functions')
 
@@ -22,7 +22,7 @@ module.exports = {
     createNewTandC,
     getLastTerms,
 
-    tokenVerifier, tokenMiddlewere, generatTokenByRefreshToken,
+    tokenMiddlewere, generatTokenByRefreshToken,
     
     signupFunction,
     loginFunction,
@@ -33,7 +33,7 @@ module.exports = {
 
     build_up_REO_Function,
     update_REO,
-    build_up_REU_Function, 
+    build_up_REU_Function, updatePolygon, 
     generateContractFunction,
     generateRE_ADFunction,
 

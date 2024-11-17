@@ -1,28 +1,5 @@
 //___________Utilities______________
-const  {express, bcrypt, https, http, cors, fs} = require('./libraries/utilities')
-
-
-//___________Functions______________
-
-
-
-
-
-
-const {
-    PrismaClient,
-    Prisma,
-    User_Type,
-    Office_Or_User_Status,
-    Real_Estate_Unit_Type,
-    Committed_By } = require('@prisma/client');
-
-
-
-
-const prisma = new PrismaClient();
-
-
+const  {express, https, http, cors, fs} = require('./libraries/utilities')
 
 
 
@@ -47,13 +24,6 @@ var options = {
     /** Home *///cert: fs.readFileSync('./real_state_TSL_cradentiales_Home/localhost+2.pem')
 };
 
-
-
-
-
-
-
-//                                  ___________App______________
 
 
 
@@ -87,7 +57,7 @@ app.use('/REU', REU);
 app.use('/contract', Contract);
 
 
-app.use('/generate_RE_AD', RE_AD)
+app.use('/RE_AD', RE_AD)
 
 
 

@@ -1,16 +1,15 @@
 const { express } = require('../libraries/utilities');
 const { prisma} = require('../libraries/prisma_utilities');
-const {generateContractFunction} = require('../libraries/functions&middlewares_lib');
+const {generateContractFunction,tokenMiddlewere} = require('../libraries/functions&middlewares_lib');
 
 
 const Contract = express.Router();
 
 
-Contract.route('/')
+Contract.route('/generate_contracts')
     //Request's body example: 
 
-    .post(generateContractFunction(prisma))
-    .put()
+    .post(tokenMiddlewere,generateContractFunction(prisma))
     .get()
     .delete();
 

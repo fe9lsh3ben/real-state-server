@@ -141,12 +141,12 @@ const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
 
 }
 
-function tokenVerifier(req, res, next) {
+function tokenVerifier(req) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        res.status(401).json({'verified': false, 'message': 'toke is required!' });
+        return {'verified': false, 'message': 'toke is required!' };
 
     }
 
@@ -154,19 +154,19 @@ function tokenVerifier(req, res, next) {
         if (err) {
             if (err.name === 'TokenExpiredError') {
 
-                res.status(401).json({ 'verified': false, 'message': "jwt expired" });
+                return { 'verified': false, 'message': "jwt expired" };
 
 
                 // Take action for expired token, like refreshing or prompting re-authentication
             } else {
-                res.status(401).json({ 'verified': false, 'message': `Token verification failed: ${err.message}`});
+                return { 'verified': false, 'message': `Token verification failed: ${err.message}`};
 
                 // Handle other types of errors, like invalid token
             }
         }
 
         req.body.ID = user.ID; // Attach the user to the request object
-        next();
+        
     });
 
 

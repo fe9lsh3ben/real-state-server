@@ -5,7 +5,7 @@ const { signupFunction, signupValidator, signupVerifier,
     loginFunction, changeUserTypeFunction,getProfile,getProfiles,
     editProfile,
 
-    tokenVerifier, generatTokenByRefreshToken
+    tokenMiddlewere, generatTokenByRefreshToken
 } = require('../libraries/functions&middlewares_lib');
 
 
@@ -29,23 +29,23 @@ profile.route('/login')
 
 profile.route('/change_user_type')
 //Request's body example: {"ChangeToRole": "REAL_ESTATE_OFFICE_OWNER","FalLicense":"5311864512"}
-.put(tokenVerifier,changeUserTypeFunction(prisma, User_Type))
+.put(tokenMiddlewere,changeUserTypeFunction(prisma, User_Type))
 
     
 
 
 profile.route('/get_profile')
-.get(tokenVerifier,getProfile(prisma));
+.get(tokenMiddlewere,getProfile(prisma));
 
 
 
 profile.route('/get_profiles')
-.get(tokenVerifier,getProfiles(prisma));
+.get(tokenMiddlewere,getProfiles(prisma));
 
 
 profile.route('/edit_profile')
 //Request's body example: {"Email":"fe9olsh3ben@gmail.com","Address":"Makkah-Makkah-Shuqeyah","FalLicense":"53135223","Other1":[{"":""}]}
-.put(tokenVerifier,editProfile(prisma));
+.put(tokenMiddlewere,editProfile(prisma));
 
 
 profile.route('/renewToken')

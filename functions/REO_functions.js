@@ -2,46 +2,72 @@
 
 
 const build_up_REO_Function = (prisma) => async (req, res) => {
-
     try {
-
-        if(!(req.body.CommercialRegister | req.body.ID | req.body.Address | req.body.OfficeName)){
-            res.status(400).send(" CommercialRegister & Address & Office name are required!");
-            return;
-        }
-        req.body.OwnerID = req.body.ID;
-        const dataEntry = {};
-
-        dataEntry.CommercialRegister = req.body.CommercialRegister;
-        dataEntry.OwnerID = req.body.OwnerID;
-        dataEntry.Address = req.body.Address;
-        dataEntry.OfficeName = req.body.OfficeName;
-        if(req.body.OfficeImage){dataEntry.OfficeImage = req.body.OfficeImage}
-
-        prisma.realEstateOffice.create({
-            data:{dataEntry}
-        }).then((v)=>{
-            res.status(201).json({
-                "message":"Real Estate Office was successfully created!",
-                "office content": v
-            })
-        });
+      if (!(req.body.CommercialRegister && req.body.ID && req.body.Address && req.body.OfficeName)) {
+        res.status(400).send("CommercialRegister, OwnerID, Address, and OfficeName are required!");
+        return;
+      }
+  
+      const dataEntry = {
+        CommercialRegister: req.body.CommercialRegister,
+        Owner: { connect: { ID: parseInt(req.body.OwnerID) } },
+        OfficeName: req.body.OfficeName,
+        Address: req.body.Address,
+        Status: req.body.Status || 'ACTIVE', // Assuming a default status
+      };
+  
+      if (req.body.OfficeImage) {
+        dataEntry.OfficeImage = Buffer.from(req.body.OfficeImage, 'base64'); // Convert to Bytes
+      }
+  
+      const createdOffice = await prisma.realEstateOffice.create({
+        data: dataEntry
+      });
+  
+      res.status(201).json({
+        message: "Real Estate Office was successfully created!",
+        "office content": createdOffice
+      });
     } catch (error) {
-        res.status(500).send(`Error occured:- ${error.message}`)
+      if (error.code === 'P2002') {
+        res.status(400).send('A Real Estate Office with this Owner already exists.');
+      } else {
+        res.status(500).send(`Error occurred: ${error.message}`);
+      }
     }
-
-
-}
-
-
-const update_REO = (prisma) => async (req,res) =>{
-
+  };
+  const update_REO = (prisma) => async (req, res) => {
     try {
-        
+      if (!req.body.ID) {
+        res.status(400).send("Real Estate Office ID is required!");
+        return;
+      }
+  
+      const id = parseInt(req.body.ID);
+      const updateData = {};
+  
+      if (req.body.CommercialRegister) updateData.CommercialRegister = req.body.CommercialRegister;
+      if (req.body.OfficeName) updateData.OfficeName = req.body.OfficeName;
+      if (req.body.Address) updateData.Address = req.body.Address;
+      if (req.body.OfficeImage) updateData.OfficeImage = Buffer.from(req.body.OfficeImage, 'base64');
+  
+      const updatedOffice = await prisma.realEstateOffice.update({
+        where: { ID: id },
+        data: updateData
+      });
+  
+      res.status(200).json({
+        message: "Real Estate Office was successfully updated!",
+        "updated office content": updatedOffice
+      });
     } catch (error) {
-        
+      if (error.code === 'P2025') {
+        res.status(404).send('Real Estate Office not found.');
+      } else {
+        res.status(500).send(`Error occurred: ${error.message}`);
+      }
     }
-}
+  };
 
 
 module.exports = {build_up_REO_Function, update_REO}
