@@ -1,5 +1,3 @@
-const { Committed_By } = require("@prisma/client")
-
 
 
 const createNewTandC = (prisma, Committed_By) => async (req, res) => {
@@ -37,7 +35,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
         }
 
         await prisma.termsAndCondetions.findMany({
-            where: { ID: { contains: TC_ID_type } }, orderBy: { ID: 'desc' }, take: 1,
+            where: { TC_ID: { contains: TC_ID_type } }, orderBy: { TC_ID: 'desc' }, take: 1,
         }).then((v) => {
             result = v[0];
         })
@@ -47,7 +45,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
             // console.log("in if")
             result = await prisma.termsAndCondetions.create({
                 data: {
-                    ID: TC_ID_type + "_000001",
+                    TC_ID: TC_ID_type + "_000001",
                     Content: [{ "1": req.body.Content }],
                     CommittedBy: TC_type,
                     MadeBy: req.body.MadeBy
@@ -55,14 +53,14 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
             })
         } else {
 
-            const extractedStrings = result.ID.match(/^([A-Za-z_]+)(\d+)$/);
+            const extractedStrings = result.TC_ID.match(/^([A-Za-z_]+)(\d+)$/);
             const IDnumberedPart = extractedStrings[2]
             const incremented = (parseInt(extractedStrings[2], 10) + 1).toString()
             const paddedIncrement = incremented.padStart(IDnumberedPart.length, '0')
 
             result = await prisma.termsAndCondetions.create({
                 data: {
-                    ID: `${extractedStrings[1]}${paddedIncrement}`,
+                    TC_ID: `${extractedStrings[1]}${paddedIncrement}`,
                     Content: [{ "1": req.body.Content }],
                     CommittedBy: TC_type,
                     MadeBy: req.body.MadeBy
@@ -112,7 +110,7 @@ const getLastTerms = (prisma) => async (req, res) => {
         }
 
         await prisma.termsAndCondetions.findMany({
-            where: { ID: { contains: TC_ID_type } }, orderBy: { ID: 'desc' }, take: 1,
+            where: { TC_ID: { contains: TC_ID_type } }, orderBy: { TC_ID: 'desc' }, take: 1,
         }).then((v) => {
             result = v[0];
         })

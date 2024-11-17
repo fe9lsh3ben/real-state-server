@@ -13,7 +13,7 @@ const generateContractFunction = (prisma) => async (req, res) => {
         }
 
         const dataEntry = {
-            OfficeID: req.body.OfficeID, 
+            Office_ID: req.body.Office_ID, 
             PartiesConsent: req.body.PartiesConsent,
             Contant: req.body.Contant
         }

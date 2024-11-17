@@ -56,9 +56,9 @@ prisma.$extends({
                 }
 
                 const unit = await prisma.realEstateUnit.findUnique({
-                    where: { ID: id },
+                    where: { REU_ID: id },
                     select: {
-                        id: true,
+                        REU_ID: true,
                     }
                 });
 
@@ -99,10 +99,10 @@ prisma.$extends({
 
 
                 const updatedUnit = await prisma.realEstateUnit.update({
-                    where: { id },
+                    where: { REU_ID: id },
                     data: updateData,
                     select: {
-                        id: true,
+                        REU_ID: true,
                         Polygon: true
                     }
                 });

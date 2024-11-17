@@ -3,14 +3,14 @@
 
 const build_up_REO_Function = (prisma) => async (req, res) => {
     try {
-      if (!(req.body.CommercialRegister && req.body.ID && req.body.Address && req.body.OfficeName)) {
-        res.status(400).send("CommercialRegister, OwnerID, Address, and OfficeName are required!");
+      if (!(req.body.CommercialRegister && req.body.User_ID && req.body.Address && req.body.OfficeName)) {
+        res.status(400).send("CommercialRegister, Owner_ID, Address, and OfficeName are required!");
         return;
       }
   
       const dataEntry = {
         CommercialRegister: req.body.CommercialRegister,
-        Owner: { connect: { ID: parseInt(req.body.OwnerID) } },
+        Owner: { connect: { User_ID: parseInt(req.body.User_ID) } },
         OfficeName: req.body.OfficeName,
         Address: req.body.Address,
         Status: req.body.Status || 'ACTIVE', // Assuming a default status
@@ -38,7 +38,7 @@ const build_up_REO_Function = (prisma) => async (req, res) => {
   };
   const update_REO = (prisma) => async (req, res) => {
     try {
-      if (!req.body.ID) {
+      if (!req.body.Office_ID) {
         res.status(400).send("Real Estate Office ID is required!");
         return;
       }
@@ -50,7 +50,7 @@ const build_up_REO_Function = (prisma) => async (req, res) => {
             res.status(400).send('no data sent to change!')
             return}; 
 
-      const id = parseInt(req.body.ID);
+      const Office_ID = parseInt(req.body.Office_ID);
       const updateData = {};
   
       if (req.body.CommercialRegister) updateData.CommercialRegister = req.body.CommercialRegister;
@@ -59,7 +59,7 @@ const build_up_REO_Function = (prisma) => async (req, res) => {
       if (req.body.OfficeImage) updateData.OfficeImage = Buffer.from(req.body.OfficeImage, 'base64');
   
       const updatedOffice = await prisma.realEstateOffice.update({
-        where: { ID: id },
+        where: { Office_ID: Office_ID },
         data: updateData
       });
   

@@ -113,7 +113,7 @@ function signupValidator(prisma) {
     
     return async (req, res, next) => {
 
-        const { ID, Username, Password, Email, GovID, Address, FullName, UserPhone } = req.body;
+        const { Username, Email, GovID, UserPhone } = req.body;
 
 
         try {

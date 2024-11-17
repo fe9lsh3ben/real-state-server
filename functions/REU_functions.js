@@ -22,7 +22,7 @@ const build_up_REU_Function = (prisma) => async (req, res) => {
             DeedNumber: req.body.DeedNumber,
             DeedDate: req.body.DeedDate,
             DeedOwners: req.body.DeedOwners,
-            AffiliatedOffice: { connect: { ID: parseInt(req.body.OfficeID) } },
+            AffiliatedOffice: { connect: { Office_ID: parseInt(req.body.Office_ID) } },
             Initiator: req.body.Initiator,
             Address: req.body.Address,
             Polygon: polygon,
@@ -56,7 +56,7 @@ const build_up_REU_Function = (prisma) => async (req, res) => {
 const updatePolygon = (prisma) => async (req, res) => {
 
     try {
-        const updatedPolygon = await prisma.realEstateUnit.updatePolygon(req.body.UnitID,req.body.Polygon);
+        const updatedPolygon = await prisma.realEstateUnit.updatePolygon(req.body.REU_ID,req.body.Polygon);
         res.status(201).json({
             message: "Land's Polygon was successfully created!",
             content: updatedPolygon

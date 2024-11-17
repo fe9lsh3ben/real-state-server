@@ -1,6 +1,5 @@
 // 1-JWT example  *Take care of expiry token
 
-const { where } = require('sequelize');
 const { jwt, PRIVATE_KEY, PUBLIC_KEY } = require('../libraries/authTools_lib');
 const { prisma } = require('../libraries/prisma_utilities');
 require('dotenv').config();
@@ -8,7 +7,7 @@ require('dotenv').config();
 
 // function generateTokenBySecret(body) {
 //     const secret = process.env.JWT_SECRET; // Secret stored in environment variables
-//     return jwt.sign(body.userId, secret, { expiresIn: '1h' });
+//     return jwt.sign(body.User_ID, secret, { expiresIn: '1h' });
 // }
 
 
@@ -16,7 +15,7 @@ function generateTokenByPrivate_key(body, period) {
 
     return jwt.sign(
         {
-            ID: body.ID,
+            User_ID: body.User_ID,
             Username: body.Username,
             Role: body.Role,
             iat: Math.floor(Date.now() / 1000),
@@ -82,10 +81,10 @@ const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
         var decoded = jwt.decode(refreshToken);
         var expiryDate = new Date(decoded.exp * 1000);
        
-        console.log(expiryDate);
-        console.log(Date())
+        // console.log(expiryDate);
+        // console.log(Date())
         await prisma.User.update({
-            where: { ID: data.ID },
+            where: { User_ID: data.User_ID },
             data:{
                 RefreshTokens:{
                     update: {
@@ -105,7 +104,7 @@ const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
         expiryDate = new Date(decoded.exp * 1000);
 
         await prisma.User.update({
-            where: { ID: data.ID },
+            where: { User_ID: data.User_ID },
             data:{
                 Session:{
                     update: {
@@ -117,13 +116,6 @@ const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
                 }
             }
         });
-
-        prisma.Session.findUnique({
-            where: {UserId : data.ID},
-            include: { 
-                User:true
-            },
-        }).then((v)=> null);
 
 
         res.status(200).send({
@@ -165,7 +157,7 @@ function tokenVerifier(req) {
             }
         }
 
-        req.body.ID = user.ID; // Attach the user to the request object
+        req.body.User_ID = user.User_ID; // Attach the user to the request object
         
     });
 
@@ -186,10 +178,10 @@ function tokenMiddlewere(req, res, next) {
 }
 
 // Usage
-// var token = generateTokenByPrivate_key({ userId: 123, userName:"fe9lsh3ben",role: "normal user" });
+// var token = generateTokenByPrivate_key({ User_ID: 123, userName:"fe9lsh3ben",role: "normal user" });
 // console.log('Generated Token:', token);
 
-// token = generateTokenBySecret({ userId: 123, userName:"fe9lsh3ben",role: "normal user" });
+// token = generateTokenBySecret({ User_ID: 123, userName:"fe9lsh3ben",role: "normal user" });
 // console.log('Generated Token:', token);
 
 

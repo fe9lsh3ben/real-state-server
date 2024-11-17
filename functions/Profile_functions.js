@@ -18,7 +18,7 @@ const signupFunction = (prisma) => async (req, res) => {
 
         await prisma.user.create({
             data: {
-                TermsCondetion: { connect: { ID: body.TermsCondetion, } },
+                TermsCondetion: { connect: { TC_ID: body.TC_ID, } },
                 Username: body.Username,
                 Email: body.Email,
                 Password: body.Password,
@@ -38,7 +38,7 @@ const signupFunction = (prisma) => async (req, res) => {
             prisma.refreshToken.create({
                 data: {
                     RefreshToken: refreshToken,
-                    User: { connect: { ID: v.ID } },
+                    User: { connect: { User_ID: v.User_ID } },
                     ExpiresAt: expiryDate
                 }
             }).then((v) => refreshToken = v.RefreshToken);
@@ -47,7 +47,7 @@ const signupFunction = (prisma) => async (req, res) => {
             expiryDate = new Date(decoded.exp * 1000);
             prisma.Session.create({
                 data: {
-                    User: { connect: { ID: v.ID } },
+                    User: { connect: { User_ID: v.User_ID } },
                     Token: accessToken,
                     ExpiresAt: expiryDate
                 }
@@ -101,7 +101,7 @@ const loginFunction = (prisma) => async (req, res) => {
         var expiryDate = new Date(decoded.exp * 1000);
 
         await prisma.User.update({
-            where: { ID: user.ID },
+            where: { User_ID: user.User_ID },
             data: {
                 Session: {
                     update: {
@@ -119,7 +119,7 @@ const loginFunction = (prisma) => async (req, res) => {
         expiryDate = new Date(decoded.exp * 1000);
 
         await prisma.User.update({
-            where: { ID: user.ID },
+            where: { User_ID: user.User_ID },
             data: {
                 RefreshTokens: {
                     update: {
@@ -150,20 +150,19 @@ const loginFunction = (prisma) => async (req, res) => {
 const changeUserTypeFunction = (prisma, User_Type) => async (req, res) => {
 
     try {
-
+        let newRole;
+        let resultMessage = "your role is changed to ";
         switch (req.body.ChangeToRole) {
 
             case "BUSINESS_BENEFICIARY":
 
                 await prisma.User.update({
-                    where: { ID: req.body.ID },
+                    where: { User_ID: req.body.User_ID },
                     data: {
                         Role: User_Type.BUSINESS_BENEFICIARY
                     }
-                }).then((v) => {
-                    res.status(200).send(`your role is changed to ${v.Role}`)
-                });
-
+                }).then((v) => newRole = v.Role)
+                    
                 break;
 
             case "REAL_ESTATE_OFFICE_OWNER":
@@ -171,14 +170,12 @@ const changeUserTypeFunction = (prisma, User_Type) => async (req, res) => {
                 if (!req.body.FalLicense) { res.status(404).send("Fal License is required!"); return; }
 
                 await prisma.User.update({
-                    where: { ID: req.body.ID },
+                    where: { User_ID: req.body.User_ID },
                     data: {
                         Role: User_Type.REAL_ESTATE_OFFICE_OWNER,
                         FalLicense: req.body.FalLicense
                     }
-                }).then((v) => {
-                    res.status(200).send(`your role is changed to ${v.Role}`)
-                });
+                }).then((v) => newRole = v.Role);
 
                 break;
 
@@ -187,35 +184,33 @@ const changeUserTypeFunction = (prisma, User_Type) => async (req, res) => {
                 if (!req.body.FalLicense) { res.status(404).send("Fal License is required!"); return; }
 
                 await prisma.User.update({
-                    where: { ID: req.body.ID },
+                    where: { User_ID: req.body.User_ID },
                     data: {
                         Role: User_Type.REAL_ESTATE_OFFICE_STAFF,
                         FalLicense: req.body.FalLicense
                     }
-                }).then((v) => {
-                    res.status(200).send(`your role is changed to ${v.Role}`)
-                });
+                }).then((v) => newRole = v.Role);
 
                 break;
 
             case "OTHER":
                 await prisma.User.update({
-                    where: { ID: req.body.ID },
+                    where: { User_ID: req.body.User_ID },
                     data: {
                         Role: User_Type.OTHER
                     }
-                }).then((v) => {
-                    res.status(200).send(`your role is changed to ${v.Role}`)
-                });
+                }).then((v) => newRole = v.Role);
 
                 break;
 
             default:
-                res.status(200).send("Nothing change!")
+                resultMessage = "Nothing change!";
+                newRole = ''
                 break;
         }
 
-
+        res.status(200).send(`${resultMessage} ${v.Role}`);
+        
     } catch (error) {
         res.status(500).send(`error: ${error.message}`)
     }
@@ -227,7 +222,7 @@ const getProfile = (prisma) => async (req, res) => {
 
     try {
         prisma.User.findUnique({
-            where: { ID: req.body.profile.ID },
+            where: { User_ID: req.body.profile.User_ID },
             select: {
                 ProfileImage: true,
                 Username: true,
@@ -262,7 +257,10 @@ const editProfile = (prisma) => async (req, res) => {
             req.body.ProfileImage || 
             req.body.Address || 
             req.body.FalLicense || 
-            req.body.Other1)) return;
+            req.body.Other1)){
+                res.status(400).send('Nothing to change?!...')
+                return;
+            }
         
         const updateData = {};
         if (req.body.Email) updateData.Email = req.body.Email;
@@ -272,7 +270,7 @@ const editProfile = (prisma) => async (req, res) => {
         if (req.body.Other1) updateData.Other1 = req.body.Other1;
 
         prisma.User.Update({
-            where: {ID: req.body.ID},
+            where: {User_ID: req.body.User_ID},
             data: {updateData}
         }).then((v)=>{
 

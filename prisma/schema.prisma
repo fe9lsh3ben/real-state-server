@@ -80,14 +80,14 @@ enum Committed_By {
 
 // Define the Setting table
 model Setting {
-  ID    Int    @id @default(autoincrement())
+  Setting_ID   Int    @id @default(autoincrement())
   Name  String @unique
   Value String
 }
 
 // Define the AuditTrail table
 model AuditTrail {
-  ID          Int      @id @default(autoincrement())
+  AT_ID       Int      @id @default(autoincrement())
   UserId      Int?
   Action      String
   Description String?
@@ -95,7 +95,7 @@ model AuditTrail {
 }
 
 model TermsAndCondetions {
-    ID          String     @id
+    TC_ID       String     @id
     CreatedAt   DateTime   @default(now())
     Content     Json[]
     Other       Json[]
@@ -107,9 +107,9 @@ model TermsAndCondetions {
 
 // Define the Session table
 model Session {
-  ID        Int      @id @default(autoincrement())
+  SToken_ID Int      @id @default(autoincrement())
   UserId    Int      @unique
-  User      User     @relation(fields: [UserId], references: [ID])
+  User      User     @relation(fields: [UserId], references: [User_ID])
   Token     String   @unique
   ExpiresAt DateTime
 }
@@ -117,12 +117,12 @@ model Session {
 
 // Define the User table
 model User {
-  ID                Int                @id @default(autoincrement())
+  User_ID            Int                @id @default(autoincrement())
   Role              User_Type          @default(BENEFICIARY)
   CreatedAt         DateTime           @default(now())
   UpdatedAt         DateTime           @updatedAt
   TermsCondetionID  String
-  TermsCondetion    TermsAndCondetions @relation(fields: [TermsCondetionID], references: [ID])
+  TermsCondetion    TermsAndCondetions @relation(fields: [TermsCondetionID], references: [TC_ID])
 
   //___
 
@@ -143,7 +143,7 @@ model User {
   RE_Offices        RealEstateOffice[] @relation(name: "Owner")
   
   Employer_REO_ID   Int?
-  Employer_REO      RealEstateOffice?  @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [ID])
+  Employer_REO      RealEstateOffice?  @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [Office_ID])
   
   FalLicense        String?
   Balance           Decimal            @default(0.0)
@@ -152,10 +152,10 @@ model User {
 
 
 model RefreshToken {
-  ID            Int      @id @default(autoincrement())
+  RToken_ID     Int      @id @default(autoincrement())
   RefreshToken  String   @unique
   UserId        Int      @unique
-  User          User     @relation(fields: [UserId], references: [ID])
+  User          User     @relation(fields: [UserId], references: [User_ID])
   CreatedAt     DateTime @default(now())
   ExpiresAt     DateTime
 }
@@ -164,10 +164,10 @@ model RefreshToken {
 
 
 model RealEstateOffice {
-  ID                  Int              @id @default(autoincrement())
+  Office_ID           Int              @id @default(autoincrement())
   CommercialRegister  String
-  OwnerID             Int              @unique
-  Owner               User             @relation(name: "Owner",fields: [OwnerID], references: [ID])
+  Owner_ID            Int              @unique
+  Owner               User             @relation(name: "Owner",fields: [Owner_ID], references: [User_ID])
   OfficeName          String
   OfficeImage         Bytes?
   Address             Json  //{Region, City, Destrect, altitude, Longtude}
@@ -186,14 +186,14 @@ model RealEstateOffice {
 }
 
 model RealEstateUnit {
-  ID                   Int                @id @default(autoincrement())
+  REU_ID               Int                @id @default(autoincrement())
   UnitType             Real_Estate_Unit_Type
   DeedNumber           String             @unique
   DeedDate             DateTime
-  DeedOwners           Json[] //{Owner number, Owner Identity Number, Owner name,  Owner UserID @Recomended}
+  DeedOwners           Json[] //{Owner_Phone_Number, Owner_GovID, Owner_Name}
   
   AffiliatedOfficeID   Int?
-  AffiliatedOffice     RealEstateOffice? @relation("OfficeAndREUnit", fields: [AffiliatedOfficeID], references: [ID])
+  AffiliatedOffice     RealEstateOffice? @relation("OfficeAndREUnit", fields: [AffiliatedOfficeID], references: [Office_ID])
 
   Initiator            Json //{type (office/owner by platform), id, name, contact_id_number}
   
@@ -208,9 +208,9 @@ model RealEstateUnit {
 }
 
 model Contract {
-  ID                Int              @id @default(autoincrement()) //D&T
+  Contract_ID       Int              @id @default(autoincrement()) //D&T
   InitiatorOffice   Int           
-  OfficeID          RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
+  OfficeID          RealEstateOffice @relation(fields: [InitiatorOffice], references: [Office_ID])
   PartiesConsent    Json[]    //{GOV ID,Name, SignatureOTP, Phone Number}
   Contant           Json      //{content, contract terms}   
   Other             Json[]
@@ -221,15 +221,15 @@ model Contract {
 
 
 model RealEStateAD {
-  ID                Int              @id @default(autoincrement())
+  AD_ID             Int              @id @default(autoincrement())
   AdInitiator       Int              @unique @map("Ad_Initiator")
-  Initiator         RealEstateOffice @relation(fields: [AdInitiator], references: [ID])
+  Initiator         RealEstateOffice @relation(fields: [AdInitiator], references: [Office_ID])
   AdLicense         String           @map("Ad_License")
   CreatedAt         DateTime         @default(now())
   UpdatedAt         DateTime         @updatedAt
 
   RealEstateID      Int              @unique
-  RealEstate        RealEstateUnit   @relation(fields: [RealEstateID], references: [ID])
+  RealEstate        RealEstateUnit   @relation(fields: [RealEstateID], references: [REU_ID])
   AdContent         Json   //{Type of estate,Description, Price, Other} @map("Ad_Content")
   AdStartedAt       DateTime         @map("Ad_StartedAt")
   AdExpiry          DateTime         @map("Ad_Expiry")
