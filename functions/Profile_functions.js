@@ -258,10 +258,10 @@ const editProfile = (prisma) => async (req, res) => {
 
     try {
 
-        if(!(req.body.Email &
-            req.body.ProfileImage & 
-            req.body.Address & 
-            req.body.FalLicense & 
+        if(!(req.body.Email ||
+            req.body.ProfileImage || 
+            req.body.Address || 
+            req.body.FalLicense || 
             req.body.Other1)) return;
         
         const updateData = {};

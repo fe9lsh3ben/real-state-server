@@ -210,7 +210,7 @@ model RealEstateUnit {
 model Contract {
   ID                Int              @id @default(autoincrement()) //D&T
   InitiatorOffice   Int           
-  Office            RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
+  OfficeID          RealEstateOffice @relation(fields: [InitiatorOffice], references: [ID])
   PartiesConsent    Json[]    //{GOV ID,Name, SignatureOTP, Phone Number}
   Contant           Json      //{content, contract terms}   
   Other             Json[]
@@ -233,7 +233,7 @@ model RealEStateAD {
   AdContent         Json   //{Type of estate,Description, Price, Other} @map("Ad_Content")
   AdStartedAt       DateTime         @map("Ad_StartedAt")
   AdExpiry          DateTime         @map("Ad_Expiry")
-  Hedden            Boolean
+  Hedden            Boolean         @default(false)
   
 }
 

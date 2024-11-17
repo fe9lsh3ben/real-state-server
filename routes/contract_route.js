@@ -7,8 +7,9 @@ const Contract = express.Router();
 
 
 Contract.route('/generate_contracts')
-    //Request's body example: 
-
+    /** Request's body example: {"OfficeID":234 ,"PartiesConsent"://{GOV ID,Name, SignatureOTP, Phone Number},
+    "Contant":{content, contract terms} }
+    **/
     .post(tokenMiddlewere,generateContractFunction(prisma))
     .get()
     .delete();

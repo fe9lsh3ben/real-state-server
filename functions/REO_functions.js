@@ -42,7 +42,14 @@ const build_up_REO_Function = (prisma) => async (req, res) => {
         res.status(400).send("Real Estate Office ID is required!");
         return;
       }
-  
+      
+      if(!(req.body.CommercialRegister ||
+        req.body.OfficeName || 
+        req.body.Address || 
+        req.body.OfficeImage)) {
+            res.status(400).send('no data sent to change!')
+            return}; 
+
       const id = parseInt(req.body.ID);
       const updateData = {};
   
