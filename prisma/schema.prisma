@@ -198,7 +198,8 @@ model RealEstateUnit {
   Initiator            Json //{type (office/owner by platform), id, name, contact_id_number}
   
   Address              Json   //{Ragion, City, Destrect, Altitude, Longtude}
-  UnitImages           Bytes[]
+  OutdoorUnitImages    Bytes[]
+  IndoorUnitImages     Bytes[]
   CreatedAt            DateTime           @default(now())
   UpdatedAt            DateTime           @updatedAt
   Polygon              Unsupported("POLYGON")?
