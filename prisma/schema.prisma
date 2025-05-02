@@ -188,6 +188,7 @@ model RealEstateOffice {
 model RealEstateUnit {
   REU_ID               Int                @id @default(autoincrement())
   UnitType             Real_Estate_Unit_Type
+  RE_Name              String
   DeedNumber           String             @unique
   DeedDate             DateTime
   DeedOwners           Json[] //{Owner_Phone_Number, Owner_GovID, Owner_Name}
