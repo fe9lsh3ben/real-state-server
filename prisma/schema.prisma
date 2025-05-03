@@ -55,7 +55,7 @@ enum Real_Estate_Unit_Type {
   APARTMENT
   VILLA
   STORE
-  AGRICULTURAL
+  FARM
   STORAGE
   OFFICE
   EXHIBITION
