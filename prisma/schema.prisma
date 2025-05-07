@@ -63,14 +63,6 @@ enum Real_Estate_Unit_Type {
 	@@map("RealEstateType")
 }
 
-enum Ad_Type {
-    RENT
-    SELL
-    INVESTMENT
-    SERVICE
-    
-}
-
 
 enum Committed_By {
     OFFICE_OWNER
@@ -236,10 +228,9 @@ model RealEStateAD {
   CreatedAt         DateTime         @default(now())
   UpdatedAt         DateTime         @updatedAt
 
-  AdType            Ad_Type
-  RealEstateID      Int              @unique
+   RealEstateID      Int              @unique
   RealEstate        RealEstateUnit   @relation(fields: [RealEstateID], references: [REU_ID])
-  AdContent         Json []  //{Type of estate,Description, Price, Other} @map("Ad_Content")
+  AdContent         Json []  //{AdType ,Description , Price, Other} 
   AdStartedAt       DateTime         @map("Ad_StartedAt")
   AdExpiry          DateTime         @map("Ad_Expiry")
   Hedden            Boolean         @default(false)
