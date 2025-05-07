@@ -55,7 +55,7 @@ enum Real_Estate_Unit_Type {
   APARTMENT
   VILLA
   STORE
-  AGRICULTURAL
+  FARM
   STORAGE
   OFFICE
   EXHIBITION
@@ -63,7 +63,13 @@ enum Real_Estate_Unit_Type {
 	@@map("RealEstateType")
 }
 
-
+enum Ad_Type {
+    RENT
+    SELL
+    INVESTMENT
+    SERVICE
+    
+}
 
 
 enum Committed_By {
@@ -188,6 +194,7 @@ model RealEstateOffice {
 model RealEstateUnit {
   REU_ID               Int                @id @default(autoincrement())
   UnitType             Real_Estate_Unit_Type
+  RE_Name              String
   DeedNumber           String             @unique
   DeedDate             DateTime
   DeedOwners           Json[] //{Owner_Phone_Number, Owner_GovID, Owner_Name}
@@ -198,7 +205,8 @@ model RealEstateUnit {
   Initiator            Json //{type (office/owner by platform), id, name, contact_id_number}
   
   Address              Json   //{Ragion, City, Destrect, Altitude, Longtude}
-  UnitImages           Bytes[]
+  OutdoorUnitImages    Bytes[]
+  IndoorUnitImages     Bytes[]
   CreatedAt            DateTime           @default(now())
   UpdatedAt            DateTime           @updatedAt
   Polygon              Unsupported("POLYGON")?
@@ -228,6 +236,7 @@ model RealEStateAD {
   CreatedAt         DateTime         @default(now())
   UpdatedAt         DateTime         @updatedAt
 
+  AdType            Ad_Type
   RealEstateID      Int              @unique
   RealEstate        RealEstateUnit   @relation(fields: [RealEstateID], references: [REU_ID])
   AdContent         Json []  //{Type of estate,Description, Price, Other} @map("Ad_Content")
