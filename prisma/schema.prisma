@@ -167,6 +167,7 @@ model RealEstateOffice {
   Owner_ID            Int              @unique
   Owner               User             @relation(name: "Owner",fields: [Owner_ID], references: [User_ID])
   OfficeName          String
+  OfficePhone         String
   OfficeImage         Bytes?
   Address             Json  //{Region, City, Destrect, altitude, Longtude}
   Status              Office_Or_User_Status
