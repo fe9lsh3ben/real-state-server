@@ -56,9 +56,10 @@ enum Real_Estate_Unit_Type {
   VILLA
   STORE
   FARM
+  CORRAL
   STORAGE
   OFFICE
-  EXHIBITION
+  SHOWROOM
   OTHER
 	@@map("RealEstateType")
 }
