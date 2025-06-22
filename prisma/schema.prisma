@@ -229,8 +229,8 @@ model RealEStateAD {
   AdLicense         String           @map("Ad_License")
   CreatedAt         DateTime         @default(now())
   UpdatedAt         DateTime         @updatedAt
-
-   RealEstateID      Int              @unique
+  Address           Json   	     //{Ragion, City, Destrect, Altitude, Longtude}
+  RealEstateID      Int              @unique
   RealEstate        RealEstateUnit   @relation(fields: [RealEstateID], references: [REU_ID])
   AdContent         Json []  //{AdType ,Description , Price, Other} 
   AdStartedAt       DateTime         @map("Ad_StartedAt")
