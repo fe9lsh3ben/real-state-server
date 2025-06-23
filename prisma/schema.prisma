@@ -232,7 +232,7 @@ model RealEStateAD {
   Address           Json   	     //{Ragion, City, Destrect, Altitude, Longtude}
   RealEstateID      Int              @unique
   RealEstate        RealEstateUnit   @relation(fields: [RealEstateID], references: [REU_ID])
-  AdContent         Json []  //{AdType ,Description , Price, Other} 
+  AdContent         Json   //{AdType ,Description , Price, Other} 
   AdStartedAt       DateTime         @map("Ad_StartedAt")
   AdExpiry          DateTime         @map("Ad_Expiry")
   Hedden            Boolean         @default(false)
