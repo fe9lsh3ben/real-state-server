@@ -204,7 +204,7 @@ model RealEstateUnit {
   Updated_At             DateTime           @updatedAt
   Polygon                Unsupported("POLYGON")?
 
-  Unit_AD                RealEStateAD?
+  Unit_AD                RealEStateAD[]
 }
 
 model Contract {
