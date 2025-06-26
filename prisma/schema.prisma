@@ -75,7 +75,7 @@ enum AD_Type {
     SELL
     INVESTMENT
     SERVICE
- }
+}
 
 //________ Models Module__________//
 
@@ -215,15 +215,15 @@ model Contract {
 }
 
 model RealEStateAD {
-    AD_ID         Int              @id @default(autoincrement())
-    AD_Initiator  Int              @unique @map("Ad_Initiator")
-    Initiator     RealEstateOffice @relation(fields: [AD_Initiator], references: [Office_ID])
-    AD_License    String           @map("Ad_License") //Fal license
-    Created_At    DateTime         @default(now())
-    Updated_At    DateTime         @updatedAt
-    RealEstate_ID Int              @unique
-    RealEstate    RealEstateUnit   @relation(fields: [RealEstate_ID], references: [REU_ID])
-    AD_Type       AD_Type
+    AD_ID              Int              @id @default(autoincrement())
+    AD_Initiator       Int              @unique @map("Ad_Initiator")
+    Initiator          RealEstateOffice @relation(fields: [AD_Initiator], references: [Office_ID])
+    AD_License         String           @map("Ad_License") //Fal license
+    Created_At         DateTime         @default(now())
+    Updated_At         DateTime         @updatedAt
+    RealEstate_ID      Int              @unique
+    RealEstate         RealEstateUnit   @relation(fields: [RealEstate_ID], references: [REU_ID])
+    AD_Type            AD_Type
 
     AD_Unit_Type       Real_Estate_Unit_Type
     Indoor_Unit_Images Bytes[]
