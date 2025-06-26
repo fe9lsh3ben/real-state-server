@@ -144,7 +144,7 @@ model User {
     Employer_REO_ID Int?
     Employer_REO    RealEstateOffice? @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [Office_ID])
 
-    Fal_License String?
+    
     Balance     Decimal                @default(0.0)
     User_Status Office_Or_User_Status? @default(ACTIVE)
 }
@@ -168,17 +168,18 @@ model RealEstateOffice {
     Office_Image        Bytes?
     Address             Json //{Region, City, Destrect, altitude, Longtude}
     Status              Office_Or_User_Status
+    Fal_License         String?
 
-    Staff User[] @relation("OfficeStaff")
+    Staff               User[] @relation("OfficeStaff")
 
-    RealEstate_Units RealEstateUnit[] @relation("OfficeAndREUnit")
-    Contracts        Contract[]
-    ADs              RealEStateAD[]
-    Visitors         Json? //{date : number of visitors}
+    RealEstate_Units    RealEstateUnit[] @relation("OfficeAndREUnit")
+    Contracts           Contract[]
+    ADs                 RealEStateAD[]
+    Visitors            Json? //{date : number of visitors}
 
-    Balance    Decimal  @default(0.0)
-    Created_At DateTime @default(now())
-    Updated_At DateTime @updatedAt
+    Balance             Decimal  @default(0.0)
+    Created_At          DateTime @default(now())
+    Updated_At          DateTime @updatedAt
 }
 
 model RealEstateUnit {
