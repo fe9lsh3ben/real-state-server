@@ -108,7 +108,7 @@ model TermsAndCondetions {
 model Session {
   SToken_ID  Int      @id @default(autoincrement())
   User_ID    Int      @unique
-  User       User     @relation(fields: [UserId], references: [User_ID])
+  User       User     @relation(fields: [User_ID], references: [User_ID])
   Token      String   @unique
   Expires_At DateTime
 }
@@ -121,7 +121,7 @@ model User {
   Created_At         DateTime           @default(now())
   Updated_At         DateTime           @updatedAt
   TermsCondetion_ID  String
-  TermsCondetion     TermsAndCondetions @relation(fields: [TermsCondetionID], references: [TC_ID])
+  TermsCondetion     TermsAndCondetions @relation(fields: [TermsCondetion_ID], references: [TC_ID])
 
   //___
 
@@ -154,7 +154,7 @@ model RefreshToken {
   RToken_ID      Int      @id @default(autoincrement())
   Refresh_Token  String   @unique
   UserID         Int      @unique
-  User           User     @relation(fields: [UserId], references: [User_ID])
+  User           User     @relation(fields: [UserID], references: [User_ID])
   Created_At     DateTime @default(now())
   Expires_At     DateTime
 }
@@ -194,7 +194,7 @@ model RealEstateUnit {
   Deed_Owners            Json[] //{Owner_Phone_Number, Owner_GovID, Owner_Name}
   
   Affiliated_Office_ID   Int?
-  Affiliated_Office      RealEstateOffice? @relation("OfficeAndREUnit", fields: [AffiliatedOfficeID], references: [Office_ID])
+  Affiliated_Office      RealEstateOffice? @relation("OfficeAndREUnit", fields: [Affiliated_Office_ID], references: [Office_ID])
 
   Initiator              Json //{Type (office/owner), Id, Name, Contact_Number}
   
@@ -210,7 +210,7 @@ model RealEstateUnit {
 model Contract {
   Contract_ID        Int              @id @default(autoincrement()) //D&T
   Initiator_Office   Int           
-  Office_ID          RealEstateOffice @relation(fields: [InitiatorOffice], references: [Office_ID])
+  Office_ID          RealEstateOffice @relation(fields: [Initiator_Office], references: [Office_ID])
   Parties_Consent    Json[]    //{GOV ID,Name, SignatureOTP, Phone Number}
   Contant            Json      //{content, contract terms}   
   Other              Json
@@ -223,12 +223,12 @@ model Contract {
 model RealEStateAD {
   AD_ID               Int              @id @default(autoincrement())
   AD_Initiator        Int              @unique @map("Ad_Initiator")
-  Initiator           RealEstateOffice @relation(fields: [AdInitiator], references: [Office_ID])
+  Initiator           RealEstateOffice @relation(fields: [AD_Initiator], references: [Office_ID])
   AD_License          String           @map("Ad_License") //Fal license
   Created_At          DateTime         @default(now())
   Updated_At          DateTime         @updatedAt
   RealEstate_ID       Int              @unique
-  RealEstate          RealEstateUnit   @relation(fields: [RealEstateID], references: [REU_ID])
+  RealEstate          RealEstateUnit   @relation(fields: [RealEstate_ID], references: [REU_ID])
 
   AD_Unit_Type        Real_Estate_Unit_Type
   Indoor_Unit_Images  Bytes[]
