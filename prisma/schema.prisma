@@ -203,7 +203,7 @@ model RealEstateUnit {
   Created_At             DateTime           @default(now())
   Updated_At             DateTime           @updatedAt
   Polygon                Unsupported("POLYGON")?
-
+  Specifications         Json
   Unit_AD                RealEStateAD[]
 }
 
