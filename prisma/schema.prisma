@@ -168,7 +168,7 @@ model RealEstateOffice {
     Office_Image        Bytes?
     Address             Json //{Region, City, Destrect, altitude, Longtude}
     Status              Office_Or_User_Status
-    Fal_License         String?
+    Office_Fal_License         String?
 
     Staff               User[] @relation("OfficeStaff")
 
