@@ -168,7 +168,9 @@ model RealEstateOffice {
     Office_Image        Bytes?
     Address             Json //{Region, City, Destrect, altitude, Longtude}
     Status              Office_Or_User_Status
-    Office_Fal_License         String?
+
+    Fal_License_ID      Int?
+    Fal_License         FalLicense? @relation("FalLicense", fields: [Fal_License_ID], references: [ID])
 
     Staff               User[] @relation("OfficeStaff")
 
@@ -181,6 +183,13 @@ model RealEstateOffice {
     Created_At          DateTime @default(now())
     Updated_At          DateTime @updatedAt
 }
+
+model FalLicense{
+    ID                  Int    @id @default(autoincrement())
+    Fal_License         String
+    Expiry_Date         DateTime  
+}
+
 
 model RealEstateUnit {
     REU_ID      Int                   @id @default(autoincrement())
