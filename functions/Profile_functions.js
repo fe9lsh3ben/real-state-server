@@ -3,8 +3,7 @@ const { User_Type } = require("@prisma/client");
 const {
     generateTokenByPrivate_key,
 } = require('./token_functions');
-const { where } = require('sequelize');
-const { prisma } = require('../libraries/prisma_utilities');
+ const { prisma } = require('../libraries/prisma_utilities');
 
 
 const signupFunction = (prisma) => async (req, res) => {

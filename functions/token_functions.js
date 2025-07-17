@@ -158,7 +158,7 @@ function tokenVerifier(req) {
         }
 
         req.body.User_ID = user.User_ID; // Attach the user to the request object
-        
+        return { verified: true };
     });
 
 
