@@ -1,5 +1,6 @@
 const validator = require("validator");
 
+
 function validatePassword(password) {
     // Check if password is at least 8 characters long
     const isValidLength = validator.isLength(password, { min: 8 });
@@ -22,14 +23,14 @@ const signupVerifier = (req, res, next) => {
         res.status(400).send('No details entered');
         return
 
-    } else if (!(body.Username || body.Password || body.Email || body.GovID || body.Address || body.FullName || body.UserPhone)) {
+    } else if (!(body.Username || body.Password || body.Email || body.Gov_ID || body.Address || body.Full_Name || body.User_Phone)) {
         console.log('d')
         console.log(2)
         res.status(400).send('Your details are not complete');
     } else {
         try {
 
-            const { Username, Password, Email, GovID, Address, FullName, UserPhone } = body;
+            const { Username, Password, Email,   Gov_ID, Address,  Full_Name,  User_Phone } = body;
 
 
             if (!validator.isAlphanumeric(Username)) {
@@ -39,17 +40,29 @@ const signupVerifier = (req, res, next) => {
             }
 
             var validatedPassword = validatePassword(Password);
-            if (validatedPassword) {
-                if (validatePassword.isValidLength) {
-                    res.status(400).send('Unvalid password lingth!');
-                    return
-                }
-
-                if (validatePassword.hasUpperCaseAndLowerCase) {
-                    res.status(400).send('Unvalid password upper and lowercase!');
-                    return
-                }
+            
+            if(!validatedPassword.isValidLength){
+                res.status(400).send('Password should be at least 8 characters long!');
+                re
+                turn
             }
+            
+            if(!validatedPassword.hasUpperCaseAndLowerCase){
+                res.status(400).send('Password should contain both uppercase and lowercase letters!');
+                return
+            }
+
+            // if (validatedPassword) {
+            //     if (validatePassword.isValidLength) {
+            //         res.status(400).send('Unvalid password lingth!');
+            //         return
+            //     }
+
+            //     if (validatePassword.hasUpperCaseAndLowerCase) {
+            //         res.status(400).send('Unvalid password upper and lowercase!');
+            //         return
+            //     }
+            // }
 
             if (!validator.isEmail(Email)) {
 
@@ -57,7 +70,7 @@ const signupVerifier = (req, res, next) => {
                 return
             }
 
-            if (!validator.isNumeric(GovID)) {
+            if (!validator.isNumeric(Gov_ID)) {
 
                 res.status(400).send('GovID should be numaric entry')
                 return
@@ -70,19 +83,18 @@ const signupVerifier = (req, res, next) => {
             }
 
 
-            for (var namePart of FullName) {
+            for (var namePart of Full_Name) {
                 if (!validator.isAlpha(namePart)) {
-                    console.log(namePart, 'ddd');
-                    res.status(400).send('Name error');
+                    res.status(400).send('name should be letters only!');
                     return;
                 }
             }
 
 
 
-            if (!validator.isNumeric(UserPhone)) {
+            if (!validator.isNumeric(User_Phone)) {
 
-                res.status(400).send('UserPhone should be numaric entry')
+                res.status(400).send('User Phone should be numaric entry')
                 return
             }
 
@@ -113,7 +125,7 @@ function signupValidator(prisma) {
     
     return async (req, res, next) => {
 
-        const { Username, Email, GovID, UserPhone } = req.body;
+        const { Username, Email, Gov_ID, User_Phone } = req.body;
 
 
         try {
@@ -123,15 +135,15 @@ function signupValidator(prisma) {
                     OR: [
                         { Username: Username },
                         { Email: Email },
-                        { GovID: GovID },
-                        { UserPhone: UserPhone }
+                        { Gov_ID: Gov_ID },
+                        { User_Phone: User_Phone }
                     ]
                 },
                 select: {
                     Username: true,
                     Email: true,
-                    GovID: true,
-                    UserPhone: true
+                    Gov_ID: true,
+                    User_Phone: true
                 }
             });
             
@@ -142,10 +154,10 @@ function signupValidator(prisma) {
                 } else if (matchedUser.Email == Email) {
                     res.status(400).send('Email is already taken');
                     return;
-                } else if (matchedUser.GovID == GovID) {
+                } else if (matchedUser.Gov_ID == Gov_ID) {
                     res.status(400).send('GovID is already taken');
                     return;
-                } else if (matchedUser.UserPhone == UserPhone) {
+                } else if (matchedUser.User_Phone == User_Phone) {
                     res.status(400).send('UserPhone is already taken');
                     return;
                 }

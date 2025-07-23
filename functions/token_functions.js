@@ -10,13 +10,19 @@ require('dotenv').config();
 //     return jwt.sign(body.User_ID, secret, { expiresIn: '1h' });
 // }
 
+const TokenType = Object.freeze( {
+    ACCESS_TOKEN: 'access_token',
+    REFRESH_TOKEN: 'refresh_token',
+});
+function generateTokenByPrivate_key(body, period, tokenType = TokenType.ACCESS_TOKEN) {
 
-function generateTokenByPrivate_key(body, period) {
-
-    return jwt.sign(
+    if (tokenType === TokenType.ACCESS_TOKEN) {
+        
+        return jwt.sign(
         {
             User_ID: body.User_ID,
             Username: body.Username,
+            tokenType: TokenType.ACCESS_TOKEN,
             Role: body.Role,
             iat: Math.floor(Date.now() / 1000),
         },
@@ -26,6 +32,24 @@ function generateTokenByPrivate_key(body, period) {
             expiresIn: period,
         }
     );
+
+    } else if (tokenType === TokenType.REFRESH_TOKEN) {
+
+        return jwt.sign(
+        {
+            User_ID: body.User_ID,
+            Username: body.Username,
+            tokenType: TokenType.REFRESH_TOKEN,
+            Role: body.Role,
+            iat: Math.floor(Date.now() / 1000),
+        },
+        PRIVATE_KEY,
+        {
+            algorithm: 'RS256',
+            expiresIn: period,
+        }
+    );
+    }
 }
 
 
@@ -86,11 +110,11 @@ const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
         await prisma.User.update({
             where: { User_ID: data.User_ID },
             data:{
-                RefreshTokens:{
+                Refresh_Tokens:{
                     update: {
                         data: {
-                            RefreshToken: refreshToken,
-                            ExpiresAt: expiryDate
+                            Refresh_Token: refreshToken,
+                            Expires_At: expiryDate
                         }
                     }
                 }
@@ -110,7 +134,7 @@ const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
                     update: {
                         data: {
                             Token: accessToken,
-                            ExpiresAt: expiryDate
+                            Expires_At: expiryDate
                         }
                     }
                 }
@@ -136,13 +160,14 @@ const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
 function tokenVerifier(req) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
-
+     
     if (!token) {
         return {'verified': false, 'message': 'toke is required!' };
 
     }
 
-    jwt.verify(token, PUBLIC_KEY, (err, user) => {
+    var resutl = jwt.verify(token, PUBLIC_KEY, (err, user) => {
+        
         if (err) {
             if (err.name === 'TokenExpiredError') {
 
@@ -157,15 +182,20 @@ function tokenVerifier(req) {
             }
         }
 
-        req.body.User_ID = user.User_ID; // Attach the user to the request object
-        return { verified: true };
+        if(user.tokenType === TokenType.REFRESH_TOKEN){
+            return { 'verified': true, 'message': "Token is valid" };
+        }
+        else{
+            return { 'verified': false, 'message': "Refresh token is required!" };
+        }
+        
     });
-
+     return resutl;
 
 }
 
 
-function tokenMiddlewere(req, res, next) {
+async function tokenMiddlewere(req, res, next) {
     const result = tokenVerifier(req);
     if (!result.verified) {
         res.status(404).send(result.message);

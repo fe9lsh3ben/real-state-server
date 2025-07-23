@@ -42,7 +42,7 @@ const {
 } = require('./libraries/routes_lib');
  
 
-app.use('/T&C', T_AND_C);
+app.use('/terms-and-conditions', T_AND_C);
 
 
 app.use('/profile', profile);
@@ -58,6 +58,11 @@ app.use('/contract', Contract);
 
 
 app.use('/RE_AD', RE_AD)
+
+app.get('/', (req, res) => {
+
+    res.status(200).send('Server is running!');
+})
 
 
 
