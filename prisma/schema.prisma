@@ -6,14 +6,13 @@
 // [npx prisma db push] :Use Case: Development environments for rapid prototyping. Does not creat megration file.
 
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    // url      = env("DATABASE_URL")
-    url      =  "postgresql://myuser:mypassword@localhost:5432/RE_DB?schema=public"
-   
+  provider = "postgresql"
+  // url      = env("DATABASE_URL")
+  url      = "postgresql://myuser:mypassword@localhost:5432/RE_DB?schema=public"
 }
 
 // run prisma generate
@@ -27,224 +26,223 @@ datasource db {
 ////________ Enums Module__________//
 
 enum User_Type {
-    ADMIN
-    REAL_ESTATE_OFFICE_OWNER
-    REAL_ESTATE_OFFICE_STAFF
-    BENEFICIARY
-    BUSINESS_BENEFICIARY //Develope for this BUSINESS_BENEFICIARY
-    GOVERMENTAL_AGENT
-    OTHER
+  ADMIN
+  REAL_ESTATE_OFFICE_OWNER
+  REAL_ESTATE_OFFICE_STAFF
+  BENEFICIARY
+  BUSINESS_BENEFICIARY //Develope for this BUSINESS_BENEFICIARY
+  GOVERMENTAL_AGENT
+  OTHER
 
-    @@map("UserType")
+  @@map("UserType")
 }
 
 enum Office_Or_User_Status {
-    IN_HOLD
-    ACTIVE
-    UNACTIVE
-    TEMP_UNACTIVE
-    RESTRICTED
-    BANNED
+  IN_HOLD
+  ACTIVE
+  UNACTIVE
+  TEMP_UNACTIVE
+  RESTRICTED
+  BANNED
 
-    @@map("OfficeOrUserStatus")
+  @@map("OfficeOrUserStatus")
 }
 
 enum Real_Estate_Unit_Type {
-    LAND
-    BAUILDING
-    APARTMENT
-    VILLA
-    STORE
-    FARM
-    CORRAL
-    STORAGE
-    OFFICE
-    SHOWROOM
-    OTHER
+  LAND
+  BAUILDING
+  APARTMENT
+  VILLA
+  STORE
+  FARM
+  CORRAL
+  STORAGE
+  OFFICE
+  SHOWROOM
+  OTHER
 
-    @@map("RealEstateType")
+  @@map("RealEstateType")
 }
 
 enum Committed_By {
-    OFFICE_OWNER
-    OFFICE_STAFF
-    BENEFICIARY //(Normal user)
-    BUSINESS_BENEFICIARY
+  OFFICE_OWNER
+  OFFICE_STAFF
+  BENEFICIARY //(Normal user)
+  BUSINESS_BENEFICIARY
 }
 
 enum AD_Type {
-    RENT
-    SELL
-    INVESTMENT
-    SERVICE
+  RENT
+  SELL
+  INVESTMENT
+  SERVICE
 }
 
 //________ Models Module__________//
 
 // Define the Setting table
 model Setting {
-    Setting_ID Int    @id @default(autoincrement())
-    Name       String @unique
-    Value      String
+  Setting_ID Int    @id @default(autoincrement())
+  Name       String @unique
+  Value      String
 }
 
 // Define the AuditTrail table
 model AuditTrail {
-    AT_ID       Int      @id @default(autoincrement())
-    User_ID     Int?
-    Action      String
-    Description String?
-    CreatedAt   DateTime @default(now())
+  AT_ID       Int      @id @default(autoincrement())
+  User_ID     Int?
+  Action      String
+  Description String?
+  CreatedAt   DateTime @default(now())
 }
 
 model TermsAndCondetions {
-    TC_ID        String       @id
-    Created_At   DateTime     @default(now())
-    Content      Json[]
-    Other        Json[]
-    Committed_By Committed_By
-    Users        User[]
-    Made_By      String
+  TC_ID        String       @id
+  Created_At   DateTime     @default(now())
+  Content      Json[]
+  Other        Json[]
+  Committed_By Committed_By
+  Users        User[]
+  Made_By      String
 }
 
 // Define the Session table
 model Session {
-    SToken_ID  Int      @id @default(autoincrement())
-    User_ID    Int      @unique
-    User       User     @relation(fields: [User_ID], references: [User_ID])
-    Token      String   @unique
-    Expires_At DateTime
+  SToken_ID  Int      @id @default(autoincrement())
+  User_ID    Int      @unique
+  User       User     @relation(fields: [User_ID], references: [User_ID])
+  Token      String   @unique
+  Expires_At DateTime
 }
 
 // Define the User table
 model User {
-    User_ID           Int                @id @default(autoincrement())
-    Role              User_Type          @default(BENEFICIARY)
-    Created_At        DateTime           @default(now())
-    Updated_At        DateTime           @updatedAt
-    TermsCondetion_ID String
-    TermsCondetion    TermsAndCondetions @relation(fields: [TermsCondetion_ID], references: [TC_ID])
+  User_ID           Int                @id @default(autoincrement())
+  Role              User_Type          @default(BENEFICIARY)
+  Created_At        DateTime           @default(now())
+  Updated_At        DateTime           @updatedAt
+  TermsCondetion_ID String
+  TermsCondetion    TermsAndCondetions @relation(fields: [TermsCondetion_ID], references: [TC_ID])
 
-    //___
+  //___
 
-    Username       String        @unique
-    Email          String        @unique
-    Password       String
-    Refresh_Tokens RefreshToken?
-    Session        Session?
-    Profile_Image  Bytes?
-    Gov_ID         String        @unique
-    Address        Json? //{Region, City, Destrect, altitude, Longtude}
-    Full_Name      String[]
-    User_Phone     String
-    //___
+  Username       String        @unique
+  Email          String        @unique
+  Password       String
+  Refresh_Tokens RefreshToken?
+  Session        Session?
+  Profile_Image  Bytes?
+  Gov_ID         String        @unique
+  Address        Json? //{Region, City, Destrect, altitude, Longtude}
+  Full_Name      String[]
+  User_Phone     String
+  //___
 
-    Other1 Json[] // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
+  Other1 Json[] // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
 
-    RE_Offices RealEstateOffice[] @relation(name: "Owner")
+  RE_Offices RealEstateOffice[] @relation(name: "Owner")
 
-    Employer_REO_ID Int?
-    Employer_REO    RealEstateOffice? @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [Office_ID])
+  Employer_REO_ID Int?
+  Employer_REO    RealEstateOffice? @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [Office_ID])
 
-    
-    Balance     Decimal                @default(0.0)
-    User_Status Office_Or_User_Status? @default(ACTIVE)
+  Balance     Decimal                @default(0.0)
+  User_Status Office_Or_User_Status? @default(ACTIVE)
 }
 
 model RefreshToken {
-    RToken_ID     Int      @id @default(autoincrement())
-    Refresh_Token String   @unique
-    UserID        Int      @unique
-    User          User     @relation(fields: [UserID], references: [User_ID])
-    Created_At    DateTime @default(now())
-    Expires_At    DateTime
+  RToken_ID     Int      @id @default(autoincrement())
+  Refresh_Token String   @unique
+  UserID        Int      @unique
+  User          User     @relation(fields: [UserID], references: [User_ID])
+  Created_At    DateTime @default(now())
+  Expires_At    DateTime
 }
 
 model RealEstateOffice {
-    Office_ID           Int                   @id @default(autoincrement())
-    Commercial_Register String
-    Owner_ID            Int                   @unique
-    Owner               User                  @relation(name: "Owner", fields: [Owner_ID], references: [User_ID])
-    Office_Name         String
-    Office_Phone        String
-    Office_Image        Bytes?
-    Address             Json //{Region, City, Destrect, altitude, Longtude}
-    Status              Office_Or_User_Status
- 
-    Fal_License         FalLicense? @relation("FalLicense")
+  Office_ID           Int                   @id @default(autoincrement())
+  Commercial_Register String
+  Owner_ID            Int                   @unique
+  Owner               User                  @relation(name: "Owner", fields: [Owner_ID], references: [User_ID])
+  Office_Name         String
+  Office_Phone        String
+  Office_Image        Bytes?
+  Address             Json //{Region, City, Destrect, Direction, Altitude, Longitude || Max_Altitude, Min_Altitude, Max_Longitude, Min_Longitude}
+  Status              Office_Or_User_Status
 
-    Staff               User[] @relation("OfficeStaff")
+  Fal_License      FalLicense?  @relation("FalLicense")
 
-    RealEstate_Units    RealEstateUnit[] @relation("OfficeAndREUnit")
-    Contracts           Contract[]
-    ADs                 RealEStateAD[]
-    Visitors            Json? //{date : number of visitors}
+  Staff            User[]       @relation("OfficeStaff")
 
-    Balance             Decimal  @default(0.0)
-    Created_At          DateTime @default(now())
-    Updated_At          DateTime @updatedAt
+  RealEstate_Units RealEstateUnit[] @relation("OfficeAndREUnit")
+  Contracts        Contract[]
+  ADs              RealEStateAD[]
+  Visitors         Json? //{date : number of visitors}
+
+  Balance    Decimal  @default(0.0)
+  Created_At DateTime @default(now())
+  Updated_At DateTime @updatedAt
 }
 
-model FalLicense{
-    ID                    Int    @id @default(autoincrement())
-    Fal_License           String
-    Expiry_Date           DateTime
-    RealEstateOfficeID    Int @unique
-    RealEstateOffice      RealEstateOffice @relation(name: "FalLicense", fields: [RealEstateOfficeID], references: [Office_ID])
+model FalLicense {
+  ID                 Int              @id @default(autoincrement())
+  Fal_License        String
+  Expiry_Date        DateTime
+  RealEstateOfficeID Int              @unique
+  RealEstateOffice   RealEstateOffice @relation(name: "FalLicense", fields: [RealEstateOfficeID], references: [Office_ID])
 }
-
 
 model RealEstateUnit {
-    REU_ID      Int                   @id @default(autoincrement())
-    Unit_Type   Real_Estate_Unit_Type
-    RE_Name     String
-    Deed_Number String                @unique
-    Deed_Date   DateTime
-    Deed_Owners Json[] //{Owner_Phone_Number, Owner_GovID, Owner_Name}
+  REU_ID      Int                   @id @default(autoincrement())
+  Unit_Type   Real_Estate_Unit_Type
+  RE_Name     String
+  Deed_Number String                @unique
+  Deed_Date   DateTime
+  Deed_Owners Json[] //{Owner_Phone_Number, Owner_GovID, Owner_Name}
 
-    Affiliated_Office_ID Int?
-    Affiliated_Office    RealEstateOffice? @relation("OfficeAndREUnit", fields: [Affiliated_Office_ID], references: [Office_ID])
+  Affiliated_Office_ID Int?
+  Affiliated_Office    RealEstateOffice? @relation("OfficeAndREUnit", fields: [Affiliated_Office_ID], references: [Office_ID])
 
-    Initiator Json //{Type (office/owner), Id, Name, Contact_Number}
+  Initiator Json //{Type (office/owner), Id, Name, Contact_Number}
 
-    Address             Json //{Ragion, City, Destrect, Altitude, Longtude}
-    Outdoor_Unit_Images Bytes[]
-    Created_At          DateTime                @default(now())
-    Updated_At          DateTime                @updatedAt
-    Polygon             Unsupported("POLYGON")?
-    Specifications      Json
-    Unit_AD             RealEStateAD[]
-}
-
-model Contract {
-    Contract_ID      Int              @id @default(autoincrement()) //D&T
-    Initiator_Office Int
-    Office_ID        RealEstateOffice @relation(fields: [Initiator_Office], references: [Office_ID])
-    Parties_Consent  Json[] //{GOV ID,Name, SignatureOTP, Phone Number}
-    Contant          Json //{content, contract terms}   
-    Other            Json
-    Created_At       DateTime         @default(now())
-    Updated_At       DateTime         @updatedAt
+  Address             Json //{Ragion, City, Destrect, Altitude, Longtude}
+  Outdoor_Unit_Images Bytes[]
+  Created_At          DateTime                @default(now())
+  Updated_At          DateTime                @updatedAt
+  Polygon             Unsupported("POLYGON")?
+  Specifications      Json
+  Unit_AD             RealEStateAD[]
 }
 
 model RealEStateAD {
-    AD_ID              Int              @id @default(autoincrement())
-    AD_Initiator       Int              @unique @map("Ad_Initiator")
-    Initiator          RealEstateOffice @relation(fields: [AD_Initiator], references: [Office_ID])
-    AD_License         String           @map("Ad_License") //Fal license
-    Created_At         DateTime         @default(now())
-    Updated_At         DateTime         @updatedAt
-    RealEstate_ID      Int              @unique
-    RealEstate         RealEstateUnit   @relation(fields: [RealEstate_ID], references: [REU_ID])
-    AD_Type            AD_Type
+  AD_ID         Int              @id @default(autoincrement())
+  AD_Initiator  Int              @unique @map("Ad_Initiator")
+  Initiator     RealEstateOffice @relation(fields: [AD_Initiator], references: [Office_ID])
+  AD_License    String           @map("Ad_License") //Fal license
+  Created_At    DateTime         @default(now())
+  Updated_At    DateTime         @updatedAt
+  RealEstate_ID Int              @unique
+  RealEstate    RealEstateUnit   @relation(fields: [RealEstate_ID], references: [REU_ID])
+  AD_Type       AD_Type
 
-    AD_Unit_Type       Real_Estate_Unit_Type
-    Indoor_Unit_Images Bytes[]
-    AD_Content         Json //{Description , Price, Other} 
-    AD_Started_At      DateTime              @map("Ad_StartedAt")
-    AD_Expiry          DateTime              @map("Ad_Expiry")
-    Hedden             Boolean               @default(false)
+  AD_Unit_Type       Real_Estate_Unit_Type
+  Indoor_Unit_Images Bytes[]
+  AD_Content         Json //{Description , Price, Other} 
+  AD_Started_At      DateTime              @map("Ad_StartedAt")
+  AD_Expiry          DateTime              @map("Ad_Expiry")
+  Hedden             Boolean               @default(false)
 }
+
+model Contract {
+  Contract_ID      Int              @id @default(autoincrement()) //D&T
+  Initiator_Office Int
+  Office_ID        RealEstateOffice @relation(fields: [Initiator_Office], references: [Office_ID])
+  Parties_Consent  Json[] //{GOV ID,Name, SignatureOTP, Phone Number}
+  Contant          Json //{content, contract terms}   
+  Other            Json
+  Created_At       DateTime         @default(now())
+  Updated_At       DateTime         @updatedAt
+}
+
 
 ///Real Estate unit specifications feild in JSON: -
 

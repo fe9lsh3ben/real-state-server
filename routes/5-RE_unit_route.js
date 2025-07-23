@@ -1,10 +1,15 @@
 const { express } = require('../libraries/utilities');
 const { prisma } = require('../libraries/prisma_utilities');
-const { build_up_REU_Function, tokenMiddlewere, updatePolygon } = require('../libraries/functions&middlewares_lib')
+const { 
+    generate_REU,
+    get_REU,
+    update_REU,
+    delete_REU,
+    tokenMiddlewere, updatePolygon } = require('../libraries/functions&middlewares_lib')
 const REU = express.Router();
 
 
-REU.route('/create_REU')
+REU.route('/REU')
 
     /**Request's body example: {
     "UnitType":"LAND","DeedNumber": "43-42308432","DeedDate": 1990/12/12,
@@ -15,16 +20,18 @@ REU.route('/create_REU')
     "Office_ID":"234"
     }
     **/
-    .post(tokenMiddlewere, build_up_REU_Function(prisma));
-
+   
+   
+    .post(tokenMiddlewere, generate_REU(prisma))
+    .get(tokenMiddlewere, get_REU(prisma))
+    .put(tokenMiddlewere, update_REU(prisma))
+    .delete(tokenMiddlewere, delete_REU(prisma));
 
     /**Request's body example: {
      "REU_ID" : 234
      "Polygon": [[32.323,34.2322],[32.445,32.545],[32.897,32.123],[32.323,34.2322]],"Specifications":[{"area":"300 m","ready":"yes"}],
     }
      */
-REU.route('/update_Land_polygon')
-    .put(tokenMiddlewere, updatePolygon(prisma));
-
+ 
 
 module.exports = { REU }
