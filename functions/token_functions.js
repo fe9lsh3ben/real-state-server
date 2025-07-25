@@ -1,7 +1,7 @@
 // 1-JWT example  *Take care of expiry token
 
 const { jwt, PRIVATE_KEY, PUBLIC_KEY } = require('../libraries/authTools_lib');
-const { prisma } = require('../libraries/prisma_utilities');
+const { prisma, User_Type } = require('../libraries/prisma_utilities');
 require('dotenv').config();
 
 
@@ -14,8 +14,8 @@ const TokenType = Object.freeze( {
     ACCESS_TOKEN: 'access_token',
     REFRESH_TOKEN: 'refresh_token',
 });
-function generateTokenByPrivate_key(body, period, tokenType = TokenType.ACCESS_TOKEN) {
-
+async function generateTokenByPrivate_key(body, period, tokenType = TokenType.ACCESS_TOKEN) {
+    
     if (tokenType === TokenType.ACCESS_TOKEN) {
         
         return jwt.sign(

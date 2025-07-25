@@ -19,7 +19,6 @@ const {generate_REO, get_REO, update_REO,} = require('../functions/3-REO_functio
 const {
     generate_FalLicense,
     get_FalLicense,
-    update_FalLicense,
     delete_FalLicense,} = require('../functions/4-FalLicense_function');
 
 //Real Estate functions
@@ -72,7 +71,6 @@ module.exports = {
     // Fall License functions
     generate_FalLicense,
     get_FalLicense,
-    update_FalLicense,
     delete_FalLicense,
 
     //Real Estate unit functions

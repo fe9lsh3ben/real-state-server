@@ -111,9 +111,10 @@ const getLastTerms = (prisma) => async (req, res) => {
         await prisma.termsAndCondetions.findMany({
             where: { TC_ID: { contains: TC_ID_type } }, orderBy: { TC_ID: 'desc' }, take: 1,
         }).then((v) => {
-            result = v[0];
+            if (!v) res.status(404).send('Terms and Condetions not found.');
+            res.status(200).send(v);
         })
-        res.status(200).send(result);
+         
     } catch (error) {
         res.status(400).send(error.message);
     }

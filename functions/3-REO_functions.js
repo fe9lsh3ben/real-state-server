@@ -55,7 +55,7 @@ const get_REO = (prisma) => async (req, res) => {
                     where: { Office_ID: parseInt(req.body.Office_ID) }
                 }).then((v) => {
                     if (!v) res.status(404).send('Real Estate Office not found.');
-                    res.status(200).json({ message: 'Real Estate Office was successfully found!', "office content": v });
+                    res.status(200).send(v);
                     return;
                 });
                 break;
@@ -65,7 +65,7 @@ const get_REO = (prisma) => async (req, res) => {
                     where: { Address: { city: req.body.city } }
                 }).then((v) => {
                     if (!v) res.status(404).send('Real Estate Offices not found.');
-                    res.status(200).json({ message: 'Real Estate Offices were successfully found!', "offices content": v });
+                    res.status(200).send(v);
                     return;
                 });
                 break;
@@ -76,23 +76,23 @@ const get_REO = (prisma) => async (req, res) => {
                         AND: [
                             {
                                 Address: {
-                                    path: ['altitude'],
-                                    gt: minAltitude,
-                                    lt: maxAltitude,
+                                    path: ['Altitude'],
+                                    gte: req.body.coordinates.minAltitude,
+                                    lte: req.body.coordinates.maxAltitude,
                                 },
                             },
                             {
                                 Address: {
                                     path: ['Longitude'],
-                                    gt: minLongitude,
-                                    lt: maxLongitude,
+                                    gte: req.body.coordinates.minLongitude,
+                                    lte: req.body.coordinates.maxLongitude,
                                 },
                             },
                         ],
                     },
                 }).then((v) => {
                     if (!v) res.status(404).send('Real Estate Offices not found.');
-                    res.status(200).json({ message: 'Real Estate Offices were successfully found!', "offices content": v });
+                    res.status(200).send(v);
                     return;
                 })
                 break;
@@ -102,7 +102,7 @@ const get_REO = (prisma) => async (req, res) => {
                     where: { Address: { Direction: req.body.direction } }
                 }).then((v) => {
                     if (!v) res.status(404).send('Real Estate Offices not found.');
-                    res.status(200).json({ message: 'Real Estate Offices were successfully found!', "offices content": v });
+                    res.status(200).send(v);
                     return;
                 })
                 break;
@@ -110,11 +110,7 @@ const get_REO = (prisma) => async (req, res) => {
             default:
                 res.status(400).send('Invalid search type.');
         }
-        var offices
 
-        await prisma.realEstateOffice.findMany({
-            where: { Address: { city: req.body.city } }
-        }).then((v) => offices = v)
     } catch (error) {
         res.status(500).send(`Error occurred: ${error.message}`);
     }
@@ -122,42 +118,42 @@ const get_REO = (prisma) => async (req, res) => {
 
 const update_REO = (prisma) => async (req, res) => {
     try {
-        if (!req.body.Office_ID) {
-            res.status(400).send("Real Estate Office ID is required!");
+
+        if (!(
+            req.body.Office_Phone ||
+            req.body.Office_Image ||
+            req.body.Address
+        )) {
+            res.status(400).send('Nothing to change?!...')
             return;
         }
 
-        if (!(req.body.Commercial_Register ||
-            req.body.Office_Name ||
-            req.body.Address ||
-            req.body.Office_Image)) {
-            res.status(400).send('no data sent to change!')
-            return
+        const updateData = {};
+        if (req.body.Office_Phone) updateData.Office_Phone = req.body.Office_Phone;
+        if (req.body.Office_Image) updateData.Office_Image = req.body.Office_Image;
+        if (req.body.Address) updateData.Address = req.body.Address;
+        if (req.body.Fal_License) updateData.Fal_License = {
+            create: {
+                Fal_License_Number: req.body.Fal_License.Fal_License_Number,
+                Expiry_Date: req.body.Fal_License.Expiry_Date,
+            }
         };
 
-        const Office_ID = parseInt(req.body.Office_ID);
-        const updateData = {};
-
-        if (req.body.Commercial_Register) updateData.Commercial_Register = req.body.Commercial_Register;
-        if (req.body.Office_Name) updateData.Office_Name = req.body.Office_Name;
-        if (req.body.Address) updateData.Address = req.body.Address;
-        if (req.body.Office_Image) updateData.Office_Image = Buffer.from(req.body.Office_Image, 'base64');
-
-        const updatedOffice = await prisma.realEstateOffice.update({
-            where: { Office_ID: Office_ID },
+        await prisma.realEstateOffice.update({
+            where: { Office_ID: req.body.Office_ID },
             data: updateData
+        }).then((v) => {
+
+            res.status(202).json({
+                message: 'Data was updated',
+                data: v
+            });
+
+
         });
 
-        res.status(200).json({
-            message: "Real Estate Office was successfully updated!",
-            "updated office content": updatedOffice
-        });
     } catch (error) {
-        if (error.code === 'P2025') {
-            res.status(404).send('Real Estate Office not found.');
-        } else {
-            res.status(500).send(`Error occurred: ${error.message}`);
-        }
+        res.status(500).send(`error occured:- \n ${error.message}`)
     }
 };
 

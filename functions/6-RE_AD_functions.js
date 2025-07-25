@@ -1,7 +1,13 @@
 
 
 
-    
+
+const SearchType = Object.freeze({
+    SEARCH_ONE: 'search_one',
+    SEARCH_MANY: 'search_many',
+    SEARCH_ON_SCREEN: 'search_on_screen',
+    SEARCH_DIRECTION: 'search_direction',
+});
 
 
 const generate_READ = (prisma) => async (req, res, next) => {
@@ -35,7 +41,7 @@ const generate_READ = (prisma) => async (req, res, next) => {
         });
 
     } catch (error) {
-        
+
         if (error.code === 'P2002') {
             res.status(400).send('P2002 error!');
         } else {
@@ -44,37 +50,134 @@ const generate_READ = (prisma) => async (req, res, next) => {
     }
 }
 
-const get_READ = (prisma) => async (req, res, next) => {
+const get_READ = (prisma) => async (req, res) => {
 
     try {
-        
+
+        switch (req.body.searchType) {
+
+            case SearchType.SEARCH_ONE:
+                await prisma.realEStateAD.findUnique({
+                    where: { AD_ID: parseInt(req.body.AD_ID) }
+                }).then((v) => {
+                    if (!v) res.status(404).send('Real Estate AD not found.');
+                    res.status(200).send(v);
+                    return;
+                });
+                break;
+
+            case SearchType.SEARCH_MANY:
+                await prisma.realEStateAD.findMany({
+                    where: {
+                        RealEstate: {
+                            connect: { Address: { City: req.body.city } }
+                        }
+                    }
+                }).then((v) => {
+                    if (!v) res.status(404).send('Real Estate ADs not found.');
+                    res.status(200).send(v);
+                    return;
+                });
+                break;
+
+            case SearchType.SEARCH_ON_SCREEN:
+                await prisma.realEStateAD.findMany({
+                    where: {
+                        AND: [
+                            {
+                                RealEstate: {
+                                    Address: {
+                                        path: ['Altitude'], // Ensure this matches your JSON key
+                                        gt: req.body.coordinates.minAltitude,
+                                        lt: req.body.coordinates.maxAltitude,
+                                    },
+                                },
+                            },
+                            {
+                                RealEstate: {
+                                    Address: {
+                                        path: ['Longitude'], // Ensure this matches your JSON key
+                                        gt: req.body.coordinates.minLongitude,
+                                        lt: req.body.coordinates.maxLongitude,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                }).then((v) => {
+                    if (!v) res.status(404).send('Real Estate ADs not found.');
+                    res.status(200).send(v);
+                    return;
+                })
+                break;
+
+            case SearchType.SEARCH_DIRECTION:
+                await prisma.realEStateAD.findMany({
+                    where: { RealEstate: { Address: { Direction: req.coordinates.direction } } }
+                }).then((v) => {
+                    if (!v) res.status(404).send('Real Estate ADs not found.');
+                    res.status(200).send(v);
+                    return;
+                })
+                break;
+
+            default:
+                res.status(400).send('Invalid search type.');
+        }
+
     } catch (error) {
-        
+        res.status(500).send(`Error occurred: ${error.message}`);
     }
 }
 
-const edit_READ = (prisma) => async (req, res, next) => {
-    
+const edit_READ = (prisma) => async (req, res) => {
+
     try {
-        
+
+        if (!(
+            req.body.AD_Type ||
+            req.body.Outdoor_Unit_Images ||
+            req.body.Unit_Type ||
+            req.body.Specifications
+        )) {
+            res.status(400).send('Nothing to change?!...')
+            return;
+        }
+
+        const updateData = {};
+        if (req.body.Deed_Owners) updateData.Deed_Owners = req.body.Deed_Owners;
+        if (req.body.Outdoor_Unit_Images) updateData.Outdoor_Unit_Images = req.body.Outdoor_Unit_Images;
+        if (req.body.Unit_Type) updateData.Unit_Type = req.body.Unit_Type;
+        if (req.body.Specifications) updateData.Specifications = req.body.Specifications;
+
+        await prisma.realEstateUnit.update({
+            where: { REU_ID: req.body.REU_ID },
+            data: updateData
+        }).then((v) => {
+            res.status(202).json({
+                message: 'Data was updated',
+                data: v
+            });
+        });
+
     } catch (error) {
-        
+        res.status(500).send(`error occured:- \n ${error.message}`)
     }
 }
 
-const delete_READ = (prisma) => async (req, res, next) => {
-    
+const delete_READ = (prisma) => async (req, res) => {
+
     try {
-        
+
     } catch (error) {
-        
+
     }
 }
 
 
-module.exports = { 
+module.exports = {
     generate_READ,
-    get_READ, 
-    edit_READ, 
+    get_READ,
+    edit_READ,
     delete_READ,
 }

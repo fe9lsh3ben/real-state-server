@@ -26,13 +26,13 @@ const signup = (prisma) => async (req, res) => {
                 User_Phone: body.User_Phone,
 
             }
-        }).then((v) => {
-            var accessToken = generateTokenByPrivate_key(v, "4h");
-            var refreshToken = generateTokenByPrivate_key(v, "14d");
+        }).then(async (v) => {
+            var accessToken = await generateTokenByPrivate_key(v, "4h");
+            var refreshToken = await generateTokenByPrivate_key(v, "14d");
             var decoded = jwt.decode(refreshToken);
             var expiryDate = new Date(decoded.exp * 1000);
 
-            prisma.refreshToken.create({
+            await prisma.refreshToken.create({
                 data: {
                     Refresh_Token: refreshToken,
                     User: { connect: { User_ID: v.User_ID } },
@@ -42,7 +42,7 @@ const signup = (prisma) => async (req, res) => {
 
             decoded = jwt.decode(accessToken)
             expiryDate = new Date(decoded.exp * 1000);
-            prisma.Session.create({
+            await prisma.Session.create({
                 data: {
                     User: { connect: { User_ID: v.User_ID } },
                     Token: accessToken,
@@ -67,8 +67,6 @@ const signup = (prisma) => async (req, res) => {
 
 
 }
-
-
 
 
 const login = (prisma) => async (req, res) => {
@@ -172,7 +170,7 @@ const becomeOfficeStaff = (prisma, User_Type) => async (req, res) => {
 const get_Profile = (prisma) => async (req, res) => {
 
     try {
-        prisma.User.findUnique({
+        await prisma.User.findUnique({
             where: { User_ID: req.body.User_ID },
             select: {
                 User_ID: true,
@@ -189,6 +187,7 @@ const get_Profile = (prisma) => async (req, res) => {
                 Balance: true,
             }
         }).then((v) => {
+            if (!v) res.status(404).send('profile not found.');
             res.status(200).send(v);
         });
     } catch (error) {
@@ -218,19 +217,14 @@ const edit_Profile = (prisma) => async (req, res) => {
         if (req.body.Other1) updateData.Other1 = req.body.Other1;
 
         
-        prisma.user.update({
+        await prisma.user.update({
             where: {User_ID: req.body.User_ID},
             data: updateData
         }).then((v)=>{
              
             res.status(202).json({
             message: 'Data was updated',
-            data: {
-                Email: v.Email,
-                Address: v.Address,
-                Profile_Image: v.Profile_Image,
-                Other1: v.Other1
-            }
+            data: v
         });
 
 
