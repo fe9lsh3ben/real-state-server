@@ -166,12 +166,12 @@ model RealEstateOffice {
   Office_Name         String
   Office_Phone        String
   Office_Image        Bytes?
-  Address             Json //{Region, City, Destrect, Direction, Altitude, Longitude || Max_Altitude, Min_Altitude, Max_Longitude, Min_Longitude}
+  Address             Json //{Region, City, Destrect, Direction, Altitude, Longitude}
   Status              Office_Or_User_Status
 
-  Fal_License      FalLicense?  @relation("FalLicense")
+  Fal_License FalLicense? @relation("FalLicense")
 
-  Staff            User[]       @relation("OfficeStaff")
+  Staff User[] @relation("OfficeStaff")
 
   RealEstate_Units RealEstateUnit[] @relation("OfficeAndREUnit")
   Contracts        Contract[]
@@ -185,7 +185,7 @@ model RealEstateOffice {
 
 model FalLicense {
   ID                 Int              @id @default(autoincrement())
-  Fal_License        String
+  Fal_License_Number String
   Expiry_Date        DateTime
   RealEstateOfficeID Int              @unique
   RealEstateOffice   RealEstateOffice @relation(name: "FalLicense", fields: [RealEstateOfficeID], references: [Office_ID])
@@ -204,7 +204,7 @@ model RealEstateUnit {
 
   Initiator Json //{Type (office/owner), Id, Name, Contact_Number}
 
-  Address             Json //{Ragion, City, Destrect, Altitude, Longtude}
+  Address             Json //{Ragion, City, Destrect, Direction, Altitude, Longitude}
   Outdoor_Unit_Images Bytes[]
   Created_At          DateTime                @default(now())
   Updated_At          DateTime                @updatedAt
@@ -217,7 +217,6 @@ model RealEStateAD {
   AD_ID         Int              @id @default(autoincrement())
   AD_Initiator  Int              @unique @map("Ad_Initiator")
   Initiator     RealEstateOffice @relation(fields: [AD_Initiator], references: [Office_ID])
-  AD_License    String           @map("Ad_License") //Fal license
   Created_At    DateTime         @default(now())
   Updated_At    DateTime         @updatedAt
   RealEstate_ID Int              @unique
@@ -242,7 +241,6 @@ model Contract {
   Created_At       DateTime         @default(now())
   Updated_At       DateTime         @updatedAt
 }
-
 
 ///Real Estate unit specifications feild in JSON: -
 
