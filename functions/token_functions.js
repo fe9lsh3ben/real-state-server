@@ -53,25 +53,6 @@ async function generateTokenByPrivate_key(body, period, tokenType = TokenType.AC
 }
 
 
-
-// Verify a JWT token
-
-
-// function verifyTokenBySecret(req, res, next) {
-//     const authHeader = req.headers['authorization'];
-//     const token = authHeader && authHeader.split(' ')[1];
-//     const secret = process.env.JWT_SECRET;
-
-//         return jwt.verify(token, secret,(err, user)=>{
-//             if (err) {
-//                 return res.status(403).json({ message: 'Invalid or expired token' });
-//             }
-//             req.user = user; // Attach the user to the request object
-//             next();
-//         });
-
-// }
-
 const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
 
     const authHeader = req.headers['authorization'];
@@ -169,7 +150,7 @@ function tokenVerifier(req) {
 
     }
 
-    var resutl = jwt.verify(token, PUBLIC_KEY, (err, user) => {
+    var resutl = jwt.verify(token, PUBLIC_KEY, (err, data) => {
         if (err) {
             if (err.name === 'TokenExpiredError') {
 
@@ -184,12 +165,12 @@ function tokenVerifier(req) {
             }
         }
 
-        if(user.tokenType === TokenType.ACCESS_TOKEN){
-            req.body.User_ID = user.User_ID;
+        if(data.tokenType === TokenType.ACCESS_TOKEN){
+            req.body.User_ID = data.User_ID;
             return { 'verified': true, 'message': "Token is valid" };
         }
         else{
-            req.body.User_ID = user.User_ID;
+             
             return { 'verified': false, 'message': "Access token is required!" };
         }
         

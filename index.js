@@ -35,6 +35,7 @@ const {
     T_AND_C,
     profile,
     REO,
+    FalLicense,
     REU,
     Contract,
     RE_AD
@@ -50,6 +51,7 @@ app.use('/profile', profile);
 
 app.use('/REO', REO);
 
+app.use('/FalLicense', FalLicense);
 
 app.use('/REU', REU);
 

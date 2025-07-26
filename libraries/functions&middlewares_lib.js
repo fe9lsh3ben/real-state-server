@@ -5,7 +5,7 @@
 const {createNewTandC, getLastTerms} = require('../functions/1-Ts&Cs_functions');
 
 //token functions
-const {generateTokenByPrivate_key, tokenMiddlewere, generatTokenByRefreshToken} = require('../functions/token_functions');
+const {tokenMiddlewere, generatTokenByRefreshToken} = require('../functions/token_functions');
 
 //profile functions
 const {signup , login , becomeOfficeStaff,

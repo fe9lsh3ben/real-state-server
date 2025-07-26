@@ -7,15 +7,15 @@ const {
     get_FalLicense,
     delete_FalLicense
 } = require('../libraries/functions&middlewares_lib')
-const FalLice = express.Router();
+const FalLicense = express.Router();
 
 
  
-FalLice.route('/Fal_License')
-.post(tokenMiddlewere, generate_FalLicense(prisma))
-.get(tokenMiddlewere, get_FalLicense(prisma))
-.delete(tokenMiddlewere, delete_FalLicense(prisma));
+FalLicense.route('/')
+.post(tokenMiddlewere,officeAuthentication, generate_FalLicense(prisma))
+.get(tokenMiddlewere,officeAuthentication, get_FalLicense(prisma))
+.delete(tokenMiddlewere,officeAuthentication, delete_FalLicense(prisma));
 
 
 
-module.exports = {FalLice}
+module.exports = {FalLicense}

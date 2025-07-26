@@ -3,6 +3,8 @@
 const generate_FalLicense = (prisma) => async (req, res) => {
     
     try {
+        console.log(req.body)
+        return
         if (!(req.body.Fal_License_Number && req.body.Expiry_Date && req.body.Office_ID)) {
             res.status(400).send("Fal License Number, and expiry date are required!");
             return;
