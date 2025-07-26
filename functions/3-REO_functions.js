@@ -9,8 +9,7 @@ const SearchType = Object.freeze({
 
 const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, res) => {
     try {
-                    console.log((!req.body.Commercial_Register || !req.body.Office_Phone || !req.body.User_ID || !req.body.Address || !req.body.Office_Name))
-        console.log(req.body.User_ID)
+
         if (!req.body.Commercial_Register || !req.body.Office_Phone || !req.body.User_ID || !req.body.Address || !req.body.Office_Name) {
             res.status(400).send("Commercial Register, Address, and Office Name are required!");
             return;
@@ -38,7 +37,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
                 }
             })
         });
-        
+
         res.status(201).json({
             message: "Real Estate Office was successfully created!",
             note: "Your role become Real Estate Office owner",
@@ -56,72 +55,84 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 const get_REO = (prisma) => async (req, res) => {
 
     try {
-
-        switch (req.body.searchType) {
+        // console.log(req.query)
+        // console.log(typeof req.query.Search_Type)
+        switch (req.query.Search_Type) {
 
             case SearchType.SEARCH_ONE:
                 await prisma.realEstateOffice.findUnique({
-                    where: { Office_ID: parseInt(req.body.Office_ID) }
+                    where: { Office_ID: parseInt(req.query.Office_ID) }
                 }).then((v) => {
-                    if (!v) res.status(404).send('Real Estate Office not found.');
-                    res.status(200).send(v);
-                    return;
+                    if (!v) return res.status(404).send('Real Estate Office not found.');
+                    return res.status(200).send(v);
+
                 });
                 break;
 
             case SearchType.SEARCH_MANY:
-                await prisma.realEstateOffice.findMany({
-                    where: { Address: { city: req.body.city } }
+                 await prisma.realEstateOffice.findMany({
+                    where: {
+                        Address: {
+                            path: ['City'],
+                            equals: req.query.City
+                        }
+                    }
                 }).then((v) => {
-                    if (!v) res.status(404).send('Real Estate Offices not found.');
-                    res.status(200).send(v);
-                    return;
+                     if (!v) return res.status(404).send('Real Estate Offices not found.');
+                    return res.status(200).send(v);
                 });
                 break;
 
             case SearchType.SEARCH_ON_SCREEN:
+
                 await prisma.realEstateOffice.findMany({
                     where: {
                         AND: [
                             {
                                 Address: {
                                     path: ['Altitude'],
-                                    gte: req.body.coordinates.minAltitude,
-                                    lte: req.body.coordinates.maxAltitude,
+                                    gte: req.query.coordinates.minAltitude,
+                                    lte: req.query.coordinates.maxAltitude,
                                 },
                             },
                             {
                                 Address: {
                                     path: ['Longitude'],
-                                    gte: req.body.coordinates.minLongitude,
-                                    lte: req.body.coordinates.maxLongitude,
+                                    gte: req.query.coordinates.minLongitude,
+                                    lte: req.query.coordinates.maxLongitude,
                                 },
                             },
                         ],
                     },
                 }).then((v) => {
-                    if (!v) res.status(404).send('Real Estate Offices not found.');
-                    res.status(200).send(v);
-                    return;
+                    if (!v) return res.status(404).send('Real Estate Offices not found.');
+                    return res.status(200).send(v);
                 })
                 break;
 
             case SearchType.SEARCH_DIRECTION:
+                console.log(req.query.Direction)
                 await prisma.realEstateOffice.findMany({
-                    where: { Address: { Direction: req.body.direction } }
+                    where: {
+                        Address: {
+                            path: ['Direction'],
+                            equals: req.query.Direction
+                        }
+                    }
                 }).then((v) => {
-                    if (!v) res.status(404).send('Real Estate Offices not found.');
-                    res.status(200).send(v);
-                    return;
+                    console.log(v)
+                    if (!v) return res.status(404).send('Real Estate Offices not found.');
+                    return res.status(200).send(v);
+
                 })
                 break;
 
             default:
-                res.status(400).send('Invalid search type.');
+                return res.status(400).send('Invalid search type.');
         }
 
     } catch (error) {
-        res.status(500).send(`Error occurred: ${error.message}`);
+        return res.status(500).send(`Error occurred: ${error.message}`);
     }
 }
 
@@ -141,12 +152,7 @@ const update_REO = (prisma) => async (req, res) => {
         if (req.body.Office_Phone) updateData.Office_Phone = req.body.Office_Phone;
         if (req.body.Office_Image) updateData.Office_Image = req.body.Office_Image;
         if (req.body.Address) updateData.Address = req.body.Address;
-        if (req.body.Fal_License) updateData.Fal_License = {
-            create: {
-                Fal_License_Number: req.body.Fal_License.Fal_License_Number,
-                Expiry_Date: req.body.Fal_License.Expiry_Date,
-            }
-        };
+         
 
         await prisma.realEstateOffice.update({
             where: { Office_ID: req.body.Office_ID },

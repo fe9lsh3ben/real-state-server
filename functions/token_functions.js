@@ -100,8 +100,10 @@ const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
             }
         }
         
-        var accessToken = generateTokenByPrivate_key(data,"4h");
-        var refreshToken = generateTokenByPrivate_key(data,"14d");
+        
+        const accessToken = await generateTokenByPrivate_key(data, '4h');
+        const refreshToken = await generateTokenByPrivate_key(data, "14d", TokenType.REFRESH_TOKEN);
+
         var decoded = jwt.decode(refreshToken);
         var expiryDate = new Date(decoded.exp * 1000);
        
@@ -182,13 +184,13 @@ function tokenVerifier(req) {
             }
         }
 
-        if(user.tokenType === TokenType.REFRESH_TOKEN){
+        if(user.tokenType === TokenType.ACCESS_TOKEN){
             req.body.User_ID = user.User_ID;
             return { 'verified': true, 'message': "Token is valid" };
         }
         else{
             req.body.User_ID = user.User_ID;
-            return { 'verified': false, 'message': "Refresh token is required!" };
+            return { 'verified': false, 'message': "Access token is required!" };
         }
         
     });
