@@ -158,6 +158,7 @@ const  generatTokenByRefreshToken = (prisma) => async (req, res)  => {
 }
 
 function tokenVerifier(req) {
+    
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
      
@@ -167,7 +168,6 @@ function tokenVerifier(req) {
     }
 
     var resutl = jwt.verify(token, PUBLIC_KEY, (err, user) => {
-        
         if (err) {
             if (err.name === 'TokenExpiredError') {
 
@@ -183,9 +183,11 @@ function tokenVerifier(req) {
         }
 
         if(user.tokenType === TokenType.REFRESH_TOKEN){
+            req.body.User_ID = user.User_ID;
             return { 'verified': true, 'message': "Token is valid" };
         }
         else{
+            req.body.User_ID = user.User_ID;
             return { 'verified': false, 'message': "Refresh token is required!" };
         }
         
@@ -217,4 +219,9 @@ async function tokenMiddlewere(req, res, next) {
 
 
 
-module.exports = { generateTokenByPrivate_key, generatTokenByRefreshToken, tokenVerifier, tokenMiddlewere }
+module.exports = { 
+    generateTokenByPrivate_key, 
+    generatTokenByRefreshToken, 
+    tokenVerifier, 
+    tokenMiddlewere,
+    TokenType}

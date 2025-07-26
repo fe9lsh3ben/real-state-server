@@ -165,7 +165,10 @@ const update_REU = (prisma) => async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).send(`error occured:- \n ${error.message}`)
+        if(error.code === 'P2002') {
+            res.status(400).send('This Real Estate Unit already exists.');
+        }else {
+        res.status(500).send(`error occured:- \n ${error.message}`)}
     }
 }
 

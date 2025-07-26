@@ -100,9 +100,15 @@ const delete_FalLicense = (prisma) => async (req, res) => {
         }
         
     } catch (error) {
-            
+              
         if (err.code === 'P2025') {
+
             res.status(404).send("License not found");
+
+        }else if (err.code === 'P2002'){
+           
+            res.status(400).send('This License already exists.');
+
         } else {
             res.status(500).send("Internal error");
         }

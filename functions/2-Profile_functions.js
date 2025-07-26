@@ -1,4 +1,5 @@
 const { jwt, argon2, PRIVATE_KEY, PUBLIC_KEY } = require('../libraries/authTools_lib');
+const { TokenType } = require('./token_functions');
 const { User_Type } = require("@prisma/client");
 const {
     generateTokenByPrivate_key,
@@ -28,7 +29,7 @@ const signup = (prisma) => async (req, res) => {
             }
         }).then(async (v) => {
             var accessToken = await generateTokenByPrivate_key(v, "4h");
-            var refreshToken = await generateTokenByPrivate_key(v, "14d");
+            var refreshToken = await generateTokenByPrivate_key(v, "14d", TokenType.REFRESH_TOKEN);
             var decoded = jwt.decode(refreshToken);
             var expiryDate = new Date(decoded.exp * 1000);
 
@@ -59,8 +60,12 @@ const signup = (prisma) => async (req, res) => {
 
 
     } catch (error) {
+         if (error.code === 'P2002') {
+            res.status(400).send('A this username already taken.');
+        } else {
         res.status(500).send(error);
-        throw Error(error.message)
+        }
+         
     }
 
 
@@ -90,10 +95,11 @@ const login = (prisma) => async (req, res) => {
             return res.status(403).json({ message: 'Invalid password' });
         }
 
-        const accessToken = generateTokenByPrivate_key(user, '4h');
-        const refreshToken = generateTokenByPrivate_key(user, '14d');
+        const accessToken = await generateTokenByPrivate_key(user, '4h');
+        const refreshToken = await generateTokenByPrivate_key(user, "14d", TokenType.REFRESH_TOKEN);
 
         var decoded = jwt.decode(accessToken);
+         
         var expiryDate = new Date(decoded.exp * 1000);
 
         await prisma.User.update({

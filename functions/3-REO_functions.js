@@ -7,13 +7,14 @@ const SearchType = Object.freeze({
     SEARCH_DIRECTION: 'search_direction',
 });
 
-const generate_REO = (prisma, Office_Or_User_Status) => async (req, res) => {
+const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, res) => {
     try {
-        if (!(req.body.Commercial_Register && req.body.Office_Phone && req.body.User_ID && req.body.Address && req.body.Office_Name)) {
+                    console.log((!req.body.Commercial_Register || !req.body.Office_Phone || !req.body.User_ID || !req.body.Address || !req.body.Office_Name))
+        console.log(req.body.User_ID)
+        if (!req.body.Commercial_Register || !req.body.Office_Phone || !req.body.User_ID || !req.body.Address || !req.body.Office_Name) {
             res.status(400).send("Commercial Register, Address, and Office Name are required!");
             return;
         }
-
         const dataEntry = {
             Commercial_Register: req.body.Commercial_Register,
             Owner: { connect: { User_ID: parseInt(req.body.User_ID) } },
@@ -29,10 +30,18 @@ const generate_REO = (prisma, Office_Or_User_Status) => async (req, res) => {
 
         const createdOffice = await prisma.realEstateOffice.create({
             data: dataEntry
+        }).then(async (_) => {
+            await prisma.user.update({
+                where: { User_ID: req.body.User_ID },
+                data: {
+                    Role: User_Type.REAL_ESTATE_OFFICE_OWNER,
+                }
+            })
         });
-
+        
         res.status(201).json({
             message: "Real Estate Office was successfully created!",
+            note: "Your role become Real Estate Office owner",
             "office content": createdOffice
         });
     } catch (error) {

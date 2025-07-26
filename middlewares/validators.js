@@ -19,13 +19,13 @@ const signupVerifier = (req, res, next) => {
    
     if (body == undefined) {
         
-        console.log(1)
+        // console.log(1)
         res.status(400).send('No details entered');
         return
 
     } else if (!(body.Username || body.Password || body.Email || body.Gov_ID || body.Address || body.Full_Name || body.User_Phone)) {
-        console.log('d')
-        console.log(2)
+        // console.log('d')
+        // console.log(2)
         res.status(400).send('Your details are not complete');
     } else {
         try {
