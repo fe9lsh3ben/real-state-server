@@ -1,5 +1,5 @@
 
-
+const { syncTokens } = require('./token_functions');
 const SearchType = Object.freeze({
     SEARCH_ONE: 'search_one',
     SEARCH_MANY: 'search_many',
@@ -23,26 +23,32 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Status: Office_Or_User_Status.ACTIVE, // Assuming a default status
         };
 
+        if (req.body.Fal_License_Number) dataEntry.Fal_License = { connect: { Fal_License_Number: req.body.Fal_License_Number } };
+
         if (req.body.Office_Image) {
             dataEntry.Office_Image = Buffer.from(req.body.Office_Image, 'base64'); // Convert to Bytes
         }
 
         const createdOffice = await prisma.realEstateOffice.create({
             data: dataEntry
-        }).then(async (_) => {
-            await prisma.user.update({
-                where: { User_ID: req.body.User_ID },
-                data: {
-                    Role: User_Type.REAL_ESTATE_OFFICE_OWNER,
-                }
-            })
         });
 
-        res.status(201).json({
-            message: "Real Estate Office was successfully created!",
-            note: "Your role become Real Estate Office owner",
-            "office content": createdOffice
+        const user = await prisma.user.update({
+            where: { User_ID: req.body.User_ID },
+            data: {
+                Role: User_Type.REAL_ESTATE_OFFICE_OWNER,
+            },
         });
+
+        syncTokens(
+            user,
+            {
+                message: "Real Estate Office was successfully created!",
+                office_content: createdOffice,
+                note: "Your role become Real Estate Office owner",
+            },
+            res);
+
     } catch (error) {
         if (error.code === 'P2002') {
             res.status(400).send('A Real Estate Office with this Owner already exists.');
@@ -53,8 +59,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 };
 
 const get_REO = (prisma) => async (req, res) => {
-
-    try {
+     try {
         // console.log(req.query)
         // console.log(typeof req.query.Search_Type)
         switch (req.query.Search_Type) {
@@ -70,7 +75,7 @@ const get_REO = (prisma) => async (req, res) => {
                 break;
 
             case SearchType.SEARCH_MANY:
-                 await prisma.realEstateOffice.findMany({
+                await prisma.realEstateOffice.findMany({
                     where: {
                         Address: {
                             path: ['City'],
@@ -78,7 +83,7 @@ const get_REO = (prisma) => async (req, res) => {
                         }
                     }
                 }).then((v) => {
-                     if (!v) return res.status(404).send('Real Estate Offices not found.');
+                    if (!v) return res.status(404).send('Real Estate Offices not found.');
                     return res.status(200).send(v);
                 });
                 break;
@@ -111,8 +116,7 @@ const get_REO = (prisma) => async (req, res) => {
                 break;
 
             case SearchType.SEARCH_DIRECTION:
-                console.log(req.query.Direction)
-                await prisma.realEstateOffice.findMany({
+                 await prisma.realEstateOffice.findMany({
                     where: {
                         Address: {
                             path: ['Direction'],
@@ -128,6 +132,7 @@ const get_REO = (prisma) => async (req, res) => {
                 break;
 
             default:
+                console.log('req.query')
                 return res.status(400).send('Invalid search type.');
         }
 
@@ -152,7 +157,7 @@ const update_REO = (prisma) => async (req, res) => {
         if (req.body.Office_Phone) updateData.Office_Phone = req.body.Office_Phone;
         if (req.body.Office_Image) updateData.Office_Image = req.body.Office_Image;
         if (req.body.Address) updateData.Address = req.body.Address;
-         
+
 
         await prisma.realEstateOffice.update({
             where: { Office_ID: req.body.Office_ID },

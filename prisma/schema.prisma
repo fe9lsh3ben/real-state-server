@@ -12,7 +12,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   // url      = env("DATABASE_URL")
-  url      = "postgresql://myuser:mypassword@localhost:5432/RE_DB?schema=public"
+  url      = "postgresql://postgres:0@localhost:5432/RE_DB?schema=public"
 }
 
 // run prisma generate
@@ -115,6 +115,16 @@ model Session {
   Expires_At DateTime
 }
 
+
+model RefreshToken {
+  RToken_ID     Int      @id @default(autoincrement())
+  Refresh_Token String   @unique
+  UserID        Int      @unique
+  User          User     @relation(fields: [UserID], references: [User_ID])
+  Created_At    DateTime @default(now())
+  Expires_At    DateTime
+}
+
 // Define the User table
 model User {
   User_ID           Int                @id @default(autoincrement())
@@ -123,17 +133,18 @@ model User {
   Updated_At        DateTime           @updatedAt
   TermsCondetion_ID String
   TermsCondetion    TermsAndCondetions @relation(fields: [TermsCondetion_ID], references: [TC_ID])
+  
+  Refresh_Tokens    RefreshToken?
+  Session           Session?
 
   //___
 
   Username       String        @unique
   Email          String        @unique
   Password       String
-  Refresh_Tokens RefreshToken?
-  Session        Session?
   Profile_Image  Bytes?
   Gov_ID         String        @unique
-  Address        Json? //{Region, City, Destrect, altitude, Longtude}
+  Address        Json? //{Region, City, Destrect, Direction, Altitude, Longitude}
   Full_Name      String[]
   User_Phone     String
   //___
@@ -149,14 +160,6 @@ model User {
   User_Status Office_Or_User_Status? @default(ACTIVE)
 }
 
-model RefreshToken {
-  RToken_ID     Int      @id @default(autoincrement())
-  Refresh_Token String   @unique
-  UserID        Int      @unique
-  User          User     @relation(fields: [UserID], references: [User_ID])
-  Created_At    DateTime @default(now())
-  Expires_At    DateTime
-}
 
 model RealEstateOffice {
   Office_ID           Int                   @id @default(autoincrement())

@@ -3,8 +3,9 @@ const { TokenType } = require('./token_functions');
 const { User_Type } = require("@prisma/client");
 const {
     generateTokenByPrivate_key,
+    generatTokenByRefreshToken
 } = require('./token_functions');
- 
+
 
 const signup = (prisma) => async (req, res) => {
 
@@ -60,12 +61,12 @@ const signup = (prisma) => async (req, res) => {
 
 
     } catch (error) {
-         if (error.code === 'P2002') {
+        if (error.code === 'P2002') {
             res.status(400).send('A this username already taken.');
         } else {
-        res.status(500).send(error);
+            res.status(500).send(error);
         }
-         
+
     }
 
 
@@ -99,7 +100,7 @@ const login = (prisma) => async (req, res) => {
         const refreshToken = await generateTokenByPrivate_key(user, "14d", TokenType.REFRESH_TOKEN);
 
         var decoded = jwt.decode(accessToken);
-         
+
         var expiryDate = new Date(decoded.exp * 1000);
 
         await prisma.User.update({
@@ -152,19 +153,32 @@ const login = (prisma) => async (req, res) => {
 const becomeOfficeStaff = (prisma, User_Type) => async (req, res) => {
 
     try {
-        let newRole;
-        let resultMessage = "your role is changed to ";
-        
-                await prisma.User.update({
-                    where: { User_ID: req.body.User_ID },
-                    data: {
-                        Role: User_Type.REAL_ESTATE_OFFICE_STAFF
-                    }
-                }).then((v) => newRole = v.Role)
-                    
-                
+        if (req.body.Role === User_Type.REAL_ESTATE_OFFICE_STAFF) {
 
-        res.status(200).send(`${resultMessage} ${v.Role}`);
+            return res.status(400).send('You are already an office staff!');
+
+        }
+
+
+
+        await prisma.user.findUnique({
+            where: { User_ID: req.body.User_ID },
+            select: {
+                Role: true,
+            }
+        }).then(async (v) => {
+            if (v.Role === User_Type.REAL_ESTATE_OFFICE_STAFF) return res.status(400).send('You are already an office staff!');
+
+            await prisma.User.update({
+
+                where: { User_ID: req.body.User_ID },
+                data: {
+                    Role: User_Type.REAL_ESTATE_OFFICE_STAFF
+                },
+            });
+        });
+
+        await generatTokenByRefreshToken(prisma)(req, res);
         
     } catch (error) {
         res.status(500).send(`error: ${error.message}`)
@@ -207,31 +221,44 @@ const edit_Profile = (prisma) => async (req, res) => {
 
     try {
 
-        if(!(req.body.Email ||
-            req.body.Profile_Image || 
-            req.body.Address || 
-            req.body.Fal_License || 
-            req.body.Other1)){
-                res.status(400).send('Nothing to change?!...')
-                return;
-            }
-        
+        if (!(req.body.Email ||
+            req.body.Profile_Image ||
+            req.body.Address ||
+            req.body.Other1)) {
+            res.status(400).send('Nothing to change?!...')
+            return;
+        }
+
         const updateData = {};
         if (req.body.Email) updateData.Email = req.body.Email;
         if (req.body.Profile_Image) updateData.Profile_Image = req.body.Profile_Image;
         if (req.body.Address) updateData.Address = req.body.Address;
         if (req.body.Other1) updateData.Other1 = req.body.Other1;
 
-        
+
         await prisma.user.update({
-            where: {User_ID: req.body.User_ID},
-            data: updateData
-        }).then((v)=>{
-             
+            where: { User_ID: req.body.User_ID },
+            data: updateData,
+            select: {
+                User_ID: true,
+                Role: true,
+                Email: true,
+                Profile_Image: true,
+                Gov_ID: true,
+                Address: true,
+                Full_Name: true,
+                User_Phone: true,
+                Other1: true,
+                Employer_REO_ID: true,
+                Username: true,
+                Balance: true,
+            }
+        }).then((v) => {
+
             res.status(202).json({
-            message: 'Data was updated',
-            data: v
-        });
+                message: 'Data was updated',
+                data: v
+            });
 
 
         });

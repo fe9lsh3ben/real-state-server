@@ -23,6 +23,13 @@ REO.route('/')
 
 //Request's body example: {"Office_ID": 5,"Office_Phone":"0126784123"}
 .put(tokenMiddlewere, update_REO(prisma));
+
+REO.route('/s')
+.get((req,res)=>{
+
+    res.send('heldddlo')
+    console.log('hello')
+})
                                 
                                 
                                 
