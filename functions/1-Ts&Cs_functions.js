@@ -70,9 +70,9 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
         }
         res.send(result);
 
-    } catch (err) {
+    } catch (error) {
 
-        throw err;
+       dbErrorHandler(res, error,'createNewTandC');
 
     }
 
@@ -116,7 +116,7 @@ const getLastTerms = (prisma) => async (req, res) => {
         })
          
     } catch (error) {
-        res.status(400).send(error.message);
+        dbErrorHandler(res, error, 'getLastTerms');
     }
 }
 

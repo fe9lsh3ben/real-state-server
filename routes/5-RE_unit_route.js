@@ -1,11 +1,13 @@
 const { express } = require('../libraries/utilities');
 const { prisma } = require('../libraries/prisma_utilities');
+const { officeAuthentication, falLicenseAuthentication } = require('../middlewares/authentications');
 const { 
     generate_REU,
     get_REU,
     update_REU,
     delete_REU,
-    tokenMiddlewere, updatePolygon } = require('../libraries/functions&middlewares_lib')
+    tokenMiddlewere } = require('../libraries/functions&middlewares_lib');
+const { FalLicense } = require('./4-FalLicense_rout');
 const REU = express.Router();
 
 
@@ -22,10 +24,10 @@ REU.route('/REU')
     **/
    
    
-    .post(tokenMiddlewere, generate_REU(prisma))
-    .get(tokenMiddlewere, get_REU(prisma))
-    .put(tokenMiddlewere, update_REU(prisma))
-    .delete(tokenMiddlewere, delete_REU(prisma));
+    .post(tokenMiddlewere,officeAuthentication,falLicenseAuthentication, generate_REU(prisma))
+    .get(tokenMiddlewere,officeAuthentication,falLicenseAuthentication, get_REU(prisma))
+    .put(tokenMiddlewere,officeAuthentication,falLicenseAuthentication, update_REU(prisma))
+    .delete(tokenMiddlewere,officeAuthentication,falLicenseAuthentication, delete_REU(prisma));
 
     /**Request's body example: {
      "REU_ID" : 234

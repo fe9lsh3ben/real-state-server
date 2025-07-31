@@ -1,5 +1,5 @@
 
-
+const { dbErrorHandler } = require('../libraries/utilities');
 
 const SearchType = Object.freeze({
     SEARCH_ONE: 'search_one',
@@ -51,11 +51,7 @@ const generate_REU = (prisma) => async (req, res) => {
         });
     } catch (error) {
 
-        if (error.code === 'P2002') {
-            res.status(400).send('A Real Estate Unit with this Deed number already exists.');
-        } else {
-            res.status(500).send(`Error occurred: ${error.message}`);
-        }
+        dbErrorHandler(res, error, 'generate real estate unit');
 
     }
 
@@ -130,7 +126,7 @@ const get_REU = (prisma) => async (req, res) => {
         }
 
     } catch (error) {
-        res.status(500).send(`Error occurred: ${error.message}`);
+        dbErrorHandler(res, error, 'get real estate unit');
     }
 }
 
@@ -165,10 +161,7 @@ const update_REU = (prisma) => async (req, res) => {
         });
 
     } catch (error) {
-        if(error.code === 'P2002') {
-            res.status(400).send('This Real Estate Unit already exists.');
-        }else {
-        res.status(500).send(`error occured:- \n ${error.message}`)}
+        dbErrorHandler(res, error, 'update real estate unit');
     }
 }
 
@@ -193,12 +186,7 @@ const delete_REU = (prisma) => async (req, res) => {
 
 
     } catch (error) {
-
-        if (err.code === 'P2025') {
-            res.status(404).send("Unit not found");
-        } else {
-            res.status(500).send("Internal error");
-        }
+        dbErrorHandler(res, error, 'delete real estate unit');
     }
 }
 

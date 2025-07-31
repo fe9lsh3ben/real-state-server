@@ -19,17 +19,13 @@ REO.route('/')
 // query parameters : 'http://127.0.0.1:3050/REO?City=Rabigh&Search_Type=search_many'
 // query parameters : 'http://127.0.0.1:3050/REO?coordinates[minAltitude]=1.0000&coordinates[maxAltitude]=2.0000&coordinates[minLongitude]=2.0000&coordinates[maxLongitude]=3.0000&Search_Type=search_on_screen'
 // query parameters : 'http://127.0.0.1:3050/REO?Direction=North&Search_Type=search_direction'
+
+ 
 .get(tokenMiddlewere, get_REO(prisma))
 
 //Request's body example: {"Office_ID": 5,"Office_Phone":"0126784123"}
 .put(tokenMiddlewere, update_REO(prisma));
-
-REO.route('/s')
-.get((req,res)=>{
-
-    res.send('heldddlo')
-    console.log('hello')
-})
+ 
                                 
                                 
                                 

@@ -1,6 +1,6 @@
 
 
-
+const { dbErrorHandler } = require('../libraries/utilities');
 
 const SearchType = Object.freeze({
     SEARCH_ONE: 'search_one',
@@ -42,11 +42,7 @@ const generate_READ = (prisma) => async (req, res, next) => {
 
     } catch (error) {
 
-        if (error.code === 'P2002') {
-            res.status(400).send('P2002 error!');
-        } else {
-            res.status(500).send(`Error occurred: ${error.message}`);
-        }
+        dbErrorHandler(res, error,'generate real estate ad');
     }
 }
 
@@ -126,7 +122,7 @@ const get_READ = (prisma) => async (req, res) => {
         }
 
     } catch (error) {
-        res.status(500).send(`Error occurred: ${error.message}`);
+        dbErrorHandler(res, error, 'get real estate ad');
     }
 }
 
@@ -161,7 +157,7 @@ const edit_READ = (prisma) => async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).send(`error occured:- \n ${error.message}`)
+        dbErrorHandler(res, error, 'edit real estate ad');
     }
 }
 
@@ -170,7 +166,7 @@ const delete_READ = (prisma) => async (req, res) => {
     try {
 
     } catch (error) {
-
+        dbErrorHandler(res, error, 'delete real estate ad');
     }
 }
 

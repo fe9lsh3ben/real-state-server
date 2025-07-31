@@ -1,6 +1,7 @@
 const { jwt, argon2, PRIVATE_KEY, PUBLIC_KEY } = require('../libraries/authTools_lib');
 const { TokenType } = require('./token_functions');
 const { User_Type } = require("@prisma/client");
+const { dbErrorHandler } = require('../libraries/utilities');
 const {
     generateTokenByPrivate_key,
     generatTokenByRefreshToken
@@ -54,18 +55,19 @@ const signup = (prisma) => async (req, res) => {
 
             res.status(201).send({
                 data: v,
-                Access_Token: accessToken,
-                Refresh_Token: refreshToken
+                Session: {
+                    Token: accessToken
+                },
+                Refresh_Tokens: {
+                    Refresh_Token: refreshToken
+                }
+
             });
         })
 
 
     } catch (error) {
-        if (error.code === 'P2002') {
-            res.status(400).send('A this username already taken.');
-        } else {
-            res.status(500).send(error);
-        }
+        dbErrorHandler(res, error, 'signup');
 
     }
 
@@ -135,14 +137,17 @@ const login = (prisma) => async (req, res) => {
             }
         });
 
-        res.status(200).json({
-            'Access Token': accessToken,
-            'Refresh Token': refreshToken
+        res.status(200).send({
+            Session: {
+                    Token: accessToken
+                },
+                Refresh_Tokens: {
+                    Refresh_Token: refreshToken
+                }
+
         })
-    } catch (err) {
-        console.log(err)
-        res.status(400).send(err.message)
-        throw new Error('Password verification failed, resoan:-\n', err.message);
+    } catch (error) {
+        dbErrorHandler(res, error, 'login');
     }
 
 
@@ -179,9 +184,9 @@ const becomeOfficeStaff = (prisma, User_Type) => async (req, res) => {
         });
 
         await generatTokenByRefreshToken(prisma)(req, res);
-        
+
     } catch (error) {
-        res.status(500).send(`error: ${error.message}`)
+        dbErrorHandler(res, error, 'become office staff');
     }
 
 }
@@ -211,7 +216,7 @@ const get_Profile = (prisma) => async (req, res) => {
             res.status(200).send(v);
         });
     } catch (error) {
-        res.status(500).send(error.message);
+        dbErrorHandler(res, error, 'get profile');
     }
 }
 
@@ -264,7 +269,7 @@ const edit_Profile = (prisma) => async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).send(`error occured:- \n ${error.message}`)
+        dbErrorHandler(res, error, 'edit profile');
     }
 }
 module.exports = {

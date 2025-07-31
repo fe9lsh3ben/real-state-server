@@ -1,5 +1,5 @@
 
-   
+const { dbErrorHandler } = require("../libraries/utilities");
 
 const generate_Contract = (prisma) => async (req, res) => {
 
@@ -32,11 +32,7 @@ const generate_Contract = (prisma) => async (req, res) => {
         });
     } catch (error) {
         
-        if (error.code === 'P2002') {
-            res.status(400).send('P2002 error!');
-        } else {
-            res.status(500).send(`Error occurred: ${error.message}`);
-        }
+        dbErrorHandler(res, error, 'generate contract');
     }
 
 
@@ -47,7 +43,7 @@ const get_Contract = (prisma) => async (req, res) => {
     try {
         
     } catch (error) {
-        
+        dbErrorHandler(res, error, 'get contract');
     }
 }
 
@@ -56,7 +52,7 @@ const update_Contract = (prisma) => async (req, res) => {
     try {
         
     } catch (error) {
-        
+        dbErrorHandler(res, error, 'update contract');
     }
 }
 
@@ -65,7 +61,7 @@ const delete_Contract = (prisma) => async (req, res) => {
     try {
         
     } catch (error) {
-        
+        dbErrorHandler(res, error, 'delete contract');
     }
 }
      

@@ -7,10 +7,12 @@ const SearchType = Object.freeze({
     SEARCH_DIRECTION: 'search_direction',
 });
 
+const { dbErrorHandler } = require('../libraries/utilities');
+
 const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, res) => {
     try {
 
-        if (!req.body.Commercial_Register || !req.body.Office_Phone || !req.body.User_ID || !req.body.Address || !req.body.Office_Name) {
+        if (!req.body.Commercial_Register && !req.body.Office_Phone && !req.body.User_ID && !req.body.Address && !req.body.Office_Name) {
             res.status(400).send("Commercial Register, Address, and Office Name are required!");
             return;
         }
@@ -50,18 +52,13 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             res);
 
     } catch (error) {
-        if (error.code === 'P2002') {
-            res.status(400).send('A Real Estate Office with this Owner already exists.');
-        } else {
-            res.status(500).send(`Error occurred: ${error.message}`);
-        }
+        dbErrorHandler(res, error, 'generate REO');
     }
 };
 
 const get_REO = (prisma) => async (req, res) => {
-     try {
-        // console.log(req.query)
-        // console.log(typeof req.query.Search_Type)
+    try {
+       
         switch (req.query.Search_Type) {
 
             case SearchType.SEARCH_ONE:
@@ -116,7 +113,7 @@ const get_REO = (prisma) => async (req, res) => {
                 break;
 
             case SearchType.SEARCH_DIRECTION:
-                 await prisma.realEstateOffice.findMany({
+                await prisma.realEstateOffice.findMany({
                     where: {
                         Address: {
                             path: ['Direction'],
@@ -124,7 +121,6 @@ const get_REO = (prisma) => async (req, res) => {
                         }
                     }
                 }).then((v) => {
-                    console.log(v)
                     if (!v) return res.status(404).send('Real Estate Offices not found.');
                     return res.status(200).send(v);
 
@@ -132,12 +128,12 @@ const get_REO = (prisma) => async (req, res) => {
                 break;
 
             default:
-                console.log('req.query')
+             
                 return res.status(400).send('Invalid search type.');
         }
 
     } catch (error) {
-        return res.status(500).send(`Error occurred: ${error.message}`);
+        return dbErrorHandler(res, error, 'get REO');
     }
 }
 
@@ -173,7 +169,7 @@ const update_REO = (prisma) => async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).send(`error occured:- \n ${error.message}`)
+        dbErrorHandler(res, error, 'update REO');
     }
 };
 

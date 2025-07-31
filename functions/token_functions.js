@@ -60,54 +60,60 @@ async function generateTokenByPrivate_key(body, period, tokenType = TokenType.AC
 
 async function syncTokens(data, message, res) {
 
-    const accessToken = await generateTokenByPrivate_key(data, '4h');
-    const refreshToken = await generateTokenByPrivate_key(data, "14d", TokenType.REFRESH_TOKEN);
-
-    var refreshDecoded = jwt.decode(refreshToken);
-    var refreshExpiry = new Date(refreshDecoded.exp * 1000);
-    var sessionDecoded = jwt.decode(accessToken)
-    var sessionExpiry = new Date(sessionDecoded.exp * 1000);
+    try {
 
 
-    await prisma.user.update({
-        where: { User_ID: data.User_ID },
-        data: {
-            Refresh_Tokens: {
-                update: {
-                    data: {
-                        Refresh_Token: refreshToken,
-                        Expires_At: refreshExpiry
+        const accessToken = await generateTokenByPrivate_key(data, '4h');
+        const refreshToken = await generateTokenByPrivate_key(data, "14d", TokenType.REFRESH_TOKEN);
+
+        var refreshDecoded = jwt.decode(refreshToken);
+        var refreshExpiry = new Date(refreshDecoded.exp * 1000);
+        var sessionDecoded = jwt.decode(accessToken)
+        var sessionExpiry = new Date(sessionDecoded.exp * 1000);
+
+
+        await prisma.user.update({
+            where: { User_ID: data.User_ID },
+            data: {
+                Refresh_Tokens: {
+                    update: {
+                        data: {
+                            Refresh_Token: refreshToken,
+                            Expires_At: refreshExpiry
+                        }
+                    }
+                },
+                Session: {
+                    update: {
+                        data: {
+                            Token: accessToken,
+                            Expires_At: sessionExpiry
+                        }
                     }
                 }
             },
-            Session: {
-                update: {
-                    data: {
-                        Token: accessToken,
-                        Expires_At: sessionExpiry
+            select: {
+                User_ID: true,
+                Role: true,
+                Employer_REO_ID: true,
+                Session: {
+                    select: {
+                        Token: true,
+                    }
+                },
+                Refresh_Tokens: {
+                    select: {
+                        Refresh_Token: true,
                     }
                 }
             }
-        },
-        select: {
-            User_ID: true,
-            Role: true,
-            Employer_REO_ID: true,
-            Session: {
-                select: {
-                    Token: true,
-                }
-            },
-            Refresh_Tokens: {
-                select: {
-                    Refresh_Token: true,
-                }
-            }
-        }
-    }).then(async (user_data) => {
+        }).then(async (user_data) => {
 
-        res.status(200).send({ user_data, message });
-    });
+            res.status(200).send({ user_data, message });
+        });
+    } catch (error) {
+        dbErrorHandler(res, error);
+    }
 }
 
 
@@ -220,7 +226,6 @@ async function tokenMiddlewere(req, res, next) {
         res.status(404).send(result.message);
         return;
     }
-
 
     next();
 

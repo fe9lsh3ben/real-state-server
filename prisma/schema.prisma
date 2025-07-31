@@ -188,7 +188,7 @@ model RealEstateOffice {
 
 model FalLicense {
   ID                 Int              @id @default(autoincrement())
-  Fal_License_Number String
+  Fal_License_Number String           @unique
   Expiry_Date        DateTime
   RealEstateOfficeID Int              @unique
   RealEstateOffice   RealEstateOffice @relation(name: "FalLicense", fields: [RealEstateOfficeID], references: [Office_ID])

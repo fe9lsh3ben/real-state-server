@@ -6,5 +6,18 @@ var http = require('http');
 var cors = require('cors');
 var fs = require('fs');
 
+async function dbErrorHandler(res, error, refrence = '') {
 
-module.exports = {express, bcrypt, https, http, cors, fs}
+    if (error.code === 'P2002') {
+        res.status(409).json({ message: 'Duplicate value for a unique field.' });
+    } else if (error.code === 'P2003') {
+        res.status(400).json({ message: 'Foreign key constraint failed.' });
+    } else if (error.code === 'P2025') {
+        res.status(404).json({ message: 'Record not found.' });
+    } else {
+        res.status(500).json({ message: `Internal server error ${refrence}.`});
+    }
+
+}
+
+module.exports = { express, bcrypt, https, http, cors, fs, dbErrorHandler}
