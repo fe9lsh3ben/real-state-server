@@ -11,7 +11,7 @@ const generate_FalLicense = (prisma) => async (req, res) => {
             data: {
                 Fal_License_Number: req.body.Fal_License_Number,
                 Expiry_Date: new Date(req.body.Expiry_Date),
-                RealEstateOffice: { connect: { Office_ID: parseInt(req.body.Office_ID) } }
+                Office: { connect: { Office_ID: parseInt(req.body.Office_ID) } }
             }
         }).then((v) => {
             res.status(201).json({
@@ -51,7 +51,7 @@ const get_FalLicense = (prisma) => async (req, res) => {
         if (req.body.Office_ID) {
             await prisma.falLicense.findUnique({
                 where: {
-                    RealEstateOfficeID: parseInt(req.body.Office_ID)
+                    Office_ID: parseInt(req.body.Office_ID)
                 }
             }).then((v) => {
                 if (!v) res.status(404).send('Fal License not found.');
@@ -91,7 +91,7 @@ const delete_FalLicense = (prisma) => async (req, res) => {
         if (req.body.Office_ID) {
             await prisma.falLicense.delete({
                 where: {
-                    RealEstateOfficeID: parseInt(req.body.Office_ID)
+                    Office_ID: parseInt(req.body.Office_ID)
                 }
             }).then((v) => {
                 if (!v) res.status(404).send('Fal License not found.');

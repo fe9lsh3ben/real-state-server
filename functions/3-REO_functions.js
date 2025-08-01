@@ -72,10 +72,11 @@ const get_REO = (prisma) => async (req, res) => {
                 break;
 
             case SearchType.SEARCH_MANY:
+
                 await prisma.realEstateOffice.findMany({
                     where: {
                         Address: {
-                            path: ['City'],
+                            path: [req.query.Geo_level],
                             equals: req.query.City
                         }
                     }

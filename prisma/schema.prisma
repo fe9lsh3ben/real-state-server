@@ -149,15 +149,15 @@ model User {
   User_Phone     String
   //___
 
-  Other1 Json[] // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
+  Other1         Json[] // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
 
-  RE_Offices RealEstateOffice[] @relation(name: "Owner")
+  RE_Offices     RealEstateOffice[] @relation(name: "Owner")
 
   Employer_REO_ID Int?
   Employer_REO    RealEstateOffice? @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [Office_ID])
 
-  Balance     Decimal                @default(0.0)
-  User_Status Office_Or_User_Status? @default(ACTIVE)
+  Balance         Decimal                @default(0.0)
+  User_Status     Office_Or_User_Status? @default(ACTIVE)
 }
 
 
@@ -187,15 +187,15 @@ model RealEstateOffice {
 }
 
 model FalLicense {
-  ID                 Int              @id @default(autoincrement())
+  License_ID                 Int              @id @default(autoincrement())
   Fal_License_Number String           @unique
   Expiry_Date        DateTime
-  RealEstateOfficeID Int              @unique
-  RealEstateOffice   RealEstateOffice @relation(name: "FalLicense", fields: [RealEstateOfficeID], references: [Office_ID])
+  Office_ID          Int              @unique
+  Office             RealEstateOffice @relation(name: "FalLicense", fields: [Office_ID], references: [Office_ID])
 }
 
 model RealEstateUnit {
-  REU_ID      Int                   @id @default(autoincrement())
+  Unit_ID      Int                   @id @default(autoincrement())
   Unit_Type   Real_Estate_Unit_Type
   RE_Name     String
   Deed_Number String                @unique
@@ -213,7 +213,7 @@ model RealEstateUnit {
   Updated_At          DateTime                @updatedAt
   Polygon             Unsupported("POLYGON")?
   Specifications      Json
-  Unit_AD             RealEStateAD[]
+  Unit_ADs            RealEStateAD[]
 }
 
 model RealEStateAD {
@@ -223,7 +223,7 @@ model RealEStateAD {
   Created_At    DateTime         @default(now())
   Updated_At    DateTime         @updatedAt
   RealEstate_ID Int              @unique
-  RealEstate    RealEstateUnit   @relation(fields: [RealEstate_ID], references: [REU_ID])
+  RealEstate    RealEstateUnit   @relation(fields: [RealEstate_ID], references: [Unit_ID])
   AD_Type       AD_Type
 
   AD_Unit_Type       Real_Estate_Unit_Type

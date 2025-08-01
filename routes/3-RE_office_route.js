@@ -16,7 +16,11 @@ REO.route('/')
 .post(tokenMiddlewere, generate_REO(prisma, Office_Or_User_Status, User_Type))
 
 // query parameters : 'http://127.0.0.1:3050/REO?Office_ID=1&Search_Type=search_one'
-// query parameters : 'http://127.0.0.1:3050/REO?City=Rabigh&Search_Type=search_many'
+
+// query parameters : 'http://127.0.0.1:3050/REO?Geo_level=Region&City=Rabigh&Search_Type=search_many'
+// query parameters : 'http://127.0.0.1:3050/REO?Geo_level=City&City=Rabigh&Search_Type=search_many'
+// query parameters : 'http://127.0.0.1:3050/REO?Geo_level=Destrect&City=Rabigh&Search_Type=search_many'
+
 // query parameters : 'http://127.0.0.1:3050/REO?coordinates[minAltitude]=1.0000&coordinates[maxAltitude]=2.0000&coordinates[minLongitude]=2.0000&coordinates[maxLongitude]=3.0000&Search_Type=search_on_screen'
 // query parameters : 'http://127.0.0.1:3050/REO?Direction=North&Search_Type=search_direction'
 

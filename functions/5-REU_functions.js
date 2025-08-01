@@ -1,4 +1,5 @@
 
+const { parse } = require('dotenv');
 const { dbErrorHandler } = require('../libraries/utilities');
 
 const SearchType = Object.freeze({
@@ -6,6 +7,7 @@ const SearchType = Object.freeze({
     SEARCH_MANY: 'search_many',
     SEARCH_ON_SCREEN: 'search_on_screen',
     SEARCH_DIRECTION: 'search_direction',
+    SEARCH_BY_Unit: 'search_by_Unit',
 });
 
 
@@ -13,33 +15,36 @@ const SearchType = Object.freeze({
 const generate_REU = (prisma) => async (req, res) => {
 
     try {
-        if (!(req.body.UnitType && req.body.DeedNumber && req.body.DeedDate && req.body.DeedOwners
-            && req.body.AffiliatedOffice && req.body.Initiator && req.body.Address && req.body.UnitImages
-            && req.body.Polygon && req.body.Specifications
+
+        if (!(req.body.Unit_Type && req.body.RE_Name && req.body.Deed_Number && req.body.Deed_Date && req.body.Deed_Owners
+            && req.body.Affiliated_Office && req.body.Initiator && req.body.Address && req.body.Outdoor_Unit_Images
+            && req.body.Specifications
         )) {
             res.status(400).send(`
-                UnitType,DeedNumber,DeedDate,DeedOwners,AffiliatedOffice, 
-                Initiator,Address,UnitImages,Polygon,Specifications 
+                Unit Type, Deed Number, Deed Date, Deed Owners, Affiliated Office, 
+                Initiator,Address,Unit Images, Polygon, Specifications 
                 are required!`);
             return;
         }
-        let polygon;
-        if (req.body.Polygon) {
-            polygon = await prisma.realEstateUnit.create_WKT_Polygon(req.body.Polygon)
-        }
+
+
+
         const dataEntry = {
-            UnitType: req.body.UnitType,
-            DeedNumber: req.body.DeedNumber,
-            DeedDate: req.body.DeedDate,
-            DeedOwners: req.body.DeedOwners,
-            AffiliatedOffice: { connect: { Office_ID: parseInt(req.body.Office_ID) } },
+            Unit_Type: req.body.Unit_Type,
+            RE_Name: req.body.RE_Name,
+            Deed_Number: req.body.Deed_Number,
+            Deed_Date: new Date(req.body.Deed_Date),
+            Deed_Owners: req.body.Deed_Owners,
+            Affiliated_Office: { connect: { Office_ID: parseInt(req.body.Office_ID) } },
             Initiator: req.body.Initiator,
             Address: req.body.Address,
-            Polygon: polygon,
             Specifications: req.body.Specifications,
-            UnitImages: Buffer.from(req.body.UnitImages, 'base64')
+            // Outdoor_Unit_Images: Buffer.from(req.body.Outdoor_Unit_Images, 'base64')
         };
 
+        if (req.body.Polygon) {
+            dataEntry.Polygon = await prisma.realEstateUnit.create_WKT_Polygon(req.body.Polygon)
+        }
 
         const createdREUnit = await prisma.realEstateUnit.create({
             data: dataEntry
@@ -52,81 +57,99 @@ const generate_REU = (prisma) => async (req, res) => {
     } catch (error) {
 
         dbErrorHandler(res, error, 'generate real estate unit');
-
+        console.log(error.message);
     }
 
 
 }
 
 const get_REU = (prisma) => async (req, res) => {
-
     try {
 
-        switch (req.body.searchType) {
+        switch (req.query.Search_Type) {
 
             case SearchType.SEARCH_ONE:
                 await prisma.realEstateUnit.findUnique({
-                    where: { REU_ID: parseInt(req.body.REU_ID) }
+                    where: { Unit_ID: parseInt(req.query.Unit_ID) }
                 }).then((v) => {
-                    if (!v) res.status(404).send('Real Estate unit not found.');
-                    res.status(200).send(v);
-                    return;
+                    if (!v) return res.status(404).send('Real Estate Unit not found.');
+                    return res.status(200).send(v);
+
                 });
                 break;
 
             case SearchType.SEARCH_MANY:
+
+                const geoLevel = req.query.Geo_level;
+                const geoValue = req.query.Geo_value;
+
+                if (!geoLevel && !geoValue) {
+                    return res.status(400).send("Missing Geo_level or City query parameters.");
+                }
+
                 await prisma.realEstateUnit.findMany({
-                    where: { Address: { city: req.body.city } }
+                    where: {
+                        Address: {
+                            path: [geoLevel],
+                            equals: geoValue
+                        }
+                    }
                 }).then((v) => {
-                    if (!v) res.status(404).send('Real Estate units not found.');
-                    res.status(200).send(v);
-                    return;
+                    if (!v) return res.status(404).send('Real Estate Units not found.');
+                    return res.status(200).send(v);
                 });
                 break;
 
             case SearchType.SEARCH_ON_SCREEN:
+
                 await prisma.realEstateUnit.findMany({
                     where: {
                         AND: [
                             {
                                 Address: {
                                     path: ['Altitude'],
-                                    gte: req.body.coordinates.minAltitude,
-                                    lte: req.body.coordinates.maxAltitude,
+                                    gte: req.query.coordinates.minAltitude,
+                                    lte: req.query.coordinates.maxAltitude,
                                 },
                             },
                             {
                                 Address: {
                                     path: ['Longitude'],
-                                    gte: req.body.coordinates.minLongitude,
-                                    lte: req.body.coordinates.maxLongitude,
+                                    gte: req.query.coordinates.minLongitude,
+                                    lte: req.query.coordinates.maxLongitude,
                                 },
                             },
                         ],
                     },
                 }).then((v) => {
-                    if (!v) res.status(404).send('Real Estate units not found.');
-                    res.status(200).send(v);
-                    return;
+                    if (!v) return res.status(404).send('Real Estate Units not found.');
+                    return res.status(200).send(v);
                 })
                 break;
 
             case SearchType.SEARCH_DIRECTION:
-                await prisma.realEstateunit.findMany({
-                    where: { Address: { Direction: req.body.direction } }
+                await prisma.realEstateUnit.findMany({
+                    where: {
+                        Address: {
+                            path: ['Direction'],
+                            equals: req.query.Direction
+                        }
+                    }
                 }).then((v) => {
-                    if (!v) res.status(404).send('Real Estate units not found.');
-                    res.status(200).send(v);
-                    return;
+                    if (!v) return res.status(404).send('Real Estate Units not found.');
+                    return res.status(200).send(v);
+
                 })
                 break;
 
             default:
-                res.status(400).send('Invalid search type.');
+
+                return res.status(400).send('Invalid search type.');
         }
 
     } catch (error) {
-        dbErrorHandler(res, error, 'get real estate unit');
+        dbErrorHandler(res, error, 'get REU');
+        console.log(error.message);
     }
 }
 
@@ -144,30 +167,51 @@ const update_REU = (prisma) => async (req, res) => {
             return;
         }
 
-        const updateData = {};
-        if (req.body.Deed_Owners) updateData.Deed_Owners = req.body.Deed_Owners;
-        if (req.body.Outdoor_Unit_Images) updateData.Outdoor_Unit_Images = req.body.Outdoor_Unit_Images;
-        if (req.body.Unit_Type) updateData.Unit_Type = req.body.Unit_Type;
-        if (req.body.Specifications) updateData.Specifications = req.body.Specifications;
+        await prisma.realEstateUnit.findUnique({
+            where: { Unit_ID: parseInt(req.body.Unit_ID) },
+            select: { Initiator: true }
+        }).then(async (v) => {
+            if (!v) return res.status(404).send('Real Estate Unit not found.');
+            v.Initiator.Edited_By.push(req.body.Edited_By);
+            const updateData = {};
+            if (req.body.Unit_Type) updateData.Unit_Type = req.body.Unit_Type;
+            if (req.body.RE_Name) updateData.RE_Name = req.body.RE_Name;
+            if (req.body.Deed_Owners) updateData.Deed_Owners = req.body.Deed_Owners;
+            if (req.body.Affiliated_Office) updateData.Affiliated_Office = { connect: { Office_ID: parseInt(req.body.Office_ID) } };
+            updateData.Initiator = {
+                "Created_By": v.Initiator.Created_By,
+                "Edited_By": v.Initiator.Edited_By //-> empty
+            }
+            if (req.body.Address) updateData.Address = req.body.Address;
+            if (req.body.Specifications) updateData.Specifications = req.body.Specifications;
+            if (req.body.Outdoor_Unit_Images) updateData.Outdoor_Unit_Images = req.body.Outdoor_Unit_Images;
 
-        await prisma.realEstateUnit.update({
-            where: { REU_ID: req.body.REU_ID },
-            data: updateData
-        }).then((v) => {
-            res.status(202).json({
-                message: 'Data was updated',
-                data: v
+            await prisma.realEstateUnit.update({
+                where: { Unit_ID: parseInt(req.body.Unit_ID) },
+                data: updateData
+            }).then((v) => {
+                res.status(202).json({
+                    message: 'Data was updated',
+                    data: v
+                });
             });
-        });
+
+
+
+        })
+        return;
+
 
     } catch (error) {
         dbErrorHandler(res, error, 'update real estate unit');
+        console.log(error.message);
     }
 }
 
 const delete_REU = (prisma) => async (req, res) => {
 
     try {
+        if (req.query) { Object.assign(req.body, req.query); }
         if (!(req.body.REU_ID)) {
             res.status(400).send("estate unit ID is required!");
             return;

@@ -7,7 +7,7 @@ async function officeAuthentication(req, res, next) {
 
 
     try {
-        Object.assign(req.body, req.query);
+        if (req.query) { Object.assign(req.body, req.query); }
         if (!req.body.Office_ID) return res.status(400).send('Office_ID is required.');
         prisma.realEstateOffice.findUnique({
             where: {
@@ -31,13 +31,14 @@ async function falLicenseAuthentication(req, res, next) {
         console.log('authenticating fal license...');
         prisma.falLicense.findUnique({
             where: {
-                RealEstateOffice: { connect: { Office_ID: parseInt(req.body.Office_ID) } },
+                Office_ID: parseInt(req.body.Office_ID),
             }
         }).then((v) => {
             if (!v) return res.status(404).send('Fal License not found.');
             if (Date.now() > v.Expiry_Date) return res.status(404).send('Fal License expired.');
-            if (v.RealEstateOfficeID !== req.body.Office_ID) return res.status(404).send('You are not the owner of this License.');
+            if (v.Office_ID !== req.body.Office_ID) return res.status(404).send('You are not the owner of this License.');
             req.Fal_License_Number = v.Fal_License_Number;
+            console.log('ffff')
             next();
         })
 
@@ -50,16 +51,16 @@ async function falLicenseAuthentication(req, res, next) {
 async function REUAuthentication(req, res, next) {
     console.log('authenticating REU...');
     try {
-        if (!req.body.REU_ID) return res.status(400).send('REU_ID is required.');
+        if (!req.body.Unit_ID) return res.status(400).send('Unit ID is required.');
 
         prisma.realEstateUnit.findUnique({
             where: {
-                REU_ID: parseInt(req.body.REU_ID)
+                Unit_ID: parseInt(req.body.Unit_ID)
             }
         }).then((v) => {
             if (!v) return res.status(404).send('Real Estate Unit not found.');
             if (v.Affiliated_Office_ID !== req.body.Office_ID) return res.status(404).send('Unit does not belong to your office.');
-            req.body.REU_ID = v.REU_ID;
+            req.body.Unit_ID = v.Unit_ID;
             next();
         })
     } catch (error) {
