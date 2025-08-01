@@ -205,7 +205,7 @@ model RealEstateUnit {
   Affiliated_Office_ID Int?
   Affiliated_Office    RealEstateOffice? @relation("OfficeAndREUnit", fields: [Affiliated_Office_ID], references: [Office_ID])
 
-  Initiator Json //{Type (office/owner), Id, Name, Contact_Number}
+  Initiator Json //{"Created_By":{ "User_ID", "Full_Name"}, "Edited_By":[{"User_ID", "Full_Name"}]}
 
   Address             Json //{Ragion, City, Destrect, Direction, Altitude, Longitude}
   Outdoor_Unit_Images Bytes[]
