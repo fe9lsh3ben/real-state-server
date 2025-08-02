@@ -73,15 +73,22 @@ const get_REO = (prisma) => async (req, res) => {
 
             case SearchType.SEARCH_MANY:
 
+                const geoLevel = req.query.Geo_level;
+                const geoValue = req.query.Geo_value;
+
+                if (!geoLevel && !geoValue) {
+                    return res.status(400).send("Missing Geo_level or City query parameters.");
+                }
+
                 await prisma.realEstateOffice.findMany({
                     where: {
                         Address: {
-                            path: [req.query.Geo_level],
-                            equals: req.query.City
+                            path: [geoLevel],
+                            equals: geoValue
                         }
                     }
                 }).then((v) => {
-                    if (!v) return res.status(404).send('Real Estate Offices not found.');
+                    if (!v) return res.status(404).send('Real Estate Office not found.');
                     return res.status(200).send(v);
                 });
                 break;

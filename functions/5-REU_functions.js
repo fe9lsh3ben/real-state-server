@@ -212,14 +212,14 @@ const delete_REU = (prisma) => async (req, res) => {
 
     try {
         if (req.query) { Object.assign(req.body, req.query); }
-        if (!(req.body.REU_ID)) {
+        if (!(req.body.Unit_ID)) {
             res.status(400).send("estate unit ID is required!");
             return;
         }
-        if (req.body.REU_ID) {
+        if (req.body.Unit_ID) {
             await prisma.realEstateUnit.delete({
                 where: {
-                    REU_ID: req.body.REU_ID,
+                    Unit_ID: parseInt(req.body.Unit_ID),
                 }
             }).then((v) => {
                 if (!v) res.status(404).send('unit not found.');
@@ -231,6 +231,7 @@ const delete_REU = (prisma) => async (req, res) => {
 
     } catch (error) {
         dbErrorHandler(res, error, 'delete real estate unit');
+        console.log(error.message);
     }
 }
 

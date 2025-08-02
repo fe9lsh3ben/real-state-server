@@ -38,8 +38,7 @@ async function falLicenseAuthentication(req, res, next) {
             if (Date.now() > v.Expiry_Date) return res.status(404).send('Fal License expired.');
             if (v.Office_ID !== req.body.Office_ID) return res.status(404).send('You are not the owner of this License.');
             req.Fal_License_Number = v.Fal_License_Number;
-            console.log('ffff')
-            next();
+             next();
         })
 
     } catch (error) {

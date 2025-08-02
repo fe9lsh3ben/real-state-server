@@ -29,8 +29,7 @@ const generate_FalLicense = (prisma) => async (req, res) => {
 }
 
 const get_FalLicense = (prisma) => async (req, res) => {
-    console.log(req.body);
-    try {
+     try {
         if (!(req.body.Fal_License_Number || req.body.Office_ID)) {
             res.status(400).send("Fal License Number, or Office ID is required!");
             return;

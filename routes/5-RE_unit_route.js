@@ -51,7 +51,9 @@ REU.route('/')
 */
 .put(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, update_REU(prisma))
 
-
+/*
+ Example: http://127.0.0.1:3050/REU?Unit_ID=1
+ */
 .delete(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, delete_REU(prisma));
 
 /**Request's body example: {

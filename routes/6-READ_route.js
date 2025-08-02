@@ -1,5 +1,5 @@
 const { express } = require('../libraries/utilities');
-const { prisma } = require('../libraries/prisma_utilities');
+const { prisma, Real_Estate_Unit_Type, AD_Type} = require('../libraries/prisma_utilities');
 const { officeAuthentication,
     falLicenseAuthentication,
     REUAuthentication
@@ -26,7 +26,7 @@ RE_AD.route('/real_estate_ad')
     } */
 
 
-    .post(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, REUAuthentication, generate_READ(prisma))
+    .post(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, REUAuthentication, generate_READ(prisma, Real_Estate_Unit_Type, AD_Type))
     .get(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, REUAuthentication, get_READ(prisma))
     .put(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, REUAuthentication, edit_READ(prisma))
     .delete(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, REUAuthentication, delete_READ(prisma));

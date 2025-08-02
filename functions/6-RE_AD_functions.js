@@ -8,6 +8,8 @@ const SearchType = Object.freeze({
     SEARCH_ON_SCREEN: 'search_on_screen',
     SEARCH_DIRECTION: 'search_direction',
 });
+ 
+
 
 
 const generate_READ = (prisma) => async (req, res, next) => {
@@ -23,12 +25,16 @@ const generate_READ = (prisma) => async (req, res, next) => {
         }
 
         const dataEntry = {
-            Initiator: req.body.Initiator,
-            AdLicense: req.body.AdLicense,
-            RealEstate: req.body.RealEstate,
-            AdContent: req.body.AdContent,
-            AdStartedAt: req.body.AdStartedAt,
-            AdExpiry: req.body.AdExpiry
+            Initiator: { connect: { Office_ID: parseInt(req.body.Office_ID) } },
+            RealEstate: { connect: { Unit_ID: parseInt(req.body.Unit_ID) } },
+            AD_Type: req.body.AD_Type,
+            AD_Unit_Type: req.body.AD_Unit_Type,
+            AD_Content: req.body.AD_Content,
+            AD_Started_At: new Date(Date.now),
+            AD_Expiry: new Date("2026-12-31"),
+            Hedden: false
+
+
         }
 
         const createdAD = await prisma.RealEStateAD.create({
@@ -42,7 +48,8 @@ const generate_READ = (prisma) => async (req, res, next) => {
 
     } catch (error) {
 
-        dbErrorHandler(res, error,'generate real estate ad');
+        dbErrorHandler(res, error, 'generate real estate ad');
+        console.log(error.message);
     }
 }
 
