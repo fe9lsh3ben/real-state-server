@@ -3,13 +3,29 @@ const { dbErrorHandler } = require("../libraries/utilities");
 const generate_FalLicense = (prisma) => async (req, res) => {
 
     try {
-        if (!(req.body.Fal_License_Number && req.body.Expiry_Date && req.body.Office_ID)) {
-            res.status(400).send("Fal License Number, and expiry date are required!");
+        if (!(req.body.License_Number && 
+            req.body.License_Type &&
+            req.body.Owner_ID &&
+            req.body.Issue_Date &&
+            req.body.Expiry_Date &&
+            req.body.Expiry_Date && 
+            req.body.Office_ID)) {
+            res.status(400).send(`
+            Fal License Number,
+            License Type,
+            Owner ID,
+            Issue Date,
+            Expiry Date,
+            Office ID are required!
+            `);
             return;
         }
         await prisma.falLicense.create({
             data: {
-                Fal_License_Number: req.body.Fal_License_Number,
+                License_Number: req.body.License_Number,
+                License_Type: req.body.License_Type,
+                Owner_ID: req.body.Owner_ID,
+                Issue_Date: new Date(req.body.Issue_Date),
                 Expiry_Date: new Date(req.body.Expiry_Date),
                 Office: { connect: { Office_ID: parseInt(req.body.Office_ID) } }
             }
@@ -30,14 +46,14 @@ const generate_FalLicense = (prisma) => async (req, res) => {
 
 const get_FalLicense = (prisma) => async (req, res) => {
      try {
-        if (!(req.body.Fal_License_Number || req.body.Office_ID)) {
+        if (!(req.body.License_Number || req.body.Office_ID)) {
             res.status(400).send("Fal License Number, or Office ID is required!");
             return;
         }
-        if (req.body.Fal_License_Number) {
+        if (req.body.License_Number) {
             await prisma.falLicense.findUnique({
                 where: {
-                    Fal_License_Number: req.body.Fal_License_Number,
+                    License_Number: req.body.License_Number,
                 }
             }).then((v) => {
                 if (!v) res.status(404).send('Fal License not found.');
@@ -70,14 +86,14 @@ const get_FalLicense = (prisma) => async (req, res) => {
 const delete_FalLicense = (prisma) => async (req, res) => {
 
     try {
-        if (!(req.body.Fal_License_Number || req.body.Office_ID)) {
+        if (!(req.body.License_Number || req.body.Office_ID)) {
             res.status(400).send("Fal License Number, or Office ID is required!");
             return;
         }
-        if (req.body.Fal_License_Number) {
+        if (req.body.License_Number) {
             await prisma.falLicense.delete({
                 where: {
-                    Fal_License_Number: req.body.Fal_License_Number,
+                    License_Number: req.body.License_Number,
                 }
             }).then((v) => {
                 if (!v) res.status(404).send('Fal License not found.');

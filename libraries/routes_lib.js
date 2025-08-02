@@ -5,7 +5,7 @@ const {REO} = require('../routes/3-RE_office_route');
 const {FalLicense} = require('../routes/4-FalLicense_rout');
 const {REU} = require('../routes/5-RE_unit_route');
 const {Contract} = require('../routes/7-contract_route');
-const {RE_AD} = require('../routes/6-READ_route');
+const {RE_AD} = require('../routes/6-RE_AD_route');
 
 module.exports = {
     

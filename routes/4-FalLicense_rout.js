@@ -14,8 +14,14 @@ const FalLicense = express.Router();
  
 
 FalLicense.route('/')
-
-//example: { "Fal_License_Number": "12345", "Expiry_Date": "2029-01-01", "Office_ID": "2" }
+ 
+/*example: { "License_Number": "12345", 
+"License_Type": "MARKETING", 
+"Owner_ID": "1", 
+"Issue_Date": "2020-01-01", 
+"Expiry_Date": "2029-01-01", 
+"Office_ID": "2" }
+*/
 .post(tokenMiddlewere,officeAuthentication, generate_FalLicense(prisma))
 
 //example: http://127.0.0.1:3050/FalLicense?Fal_License_Number=12345 || Office_ID=3

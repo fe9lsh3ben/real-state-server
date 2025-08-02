@@ -8,14 +8,21 @@ const SearchType = Object.freeze({
     SEARCH_ON_SCREEN: 'search_on_screen',
     SEARCH_DIRECTION: 'search_direction',
 });
- 
+
+const validAdTypes = ["RENT", "SELL", "INVESTMENT", "SERVICE"];
+const validUnitTypes = [
+    "LAND", "BAUILDING", "APARTMENT", "VILLA", "STORE", "FARM",
+    "CORRAL", "STORAGE", "OFFICE", "SHOWROOM", "OTHER"
+];
 
 
 
-const generate_READ = (prisma) => async (req, res, next) => {
+const generate_READ = (prisma, AD_Type) => async (req, res, next) => {
     try {
-        if (!(req.body.Initiator && req.body.AdLicense && req.body.RealEstate && req.body.AdContent
-            && req.body.AdStartedAt && req.body.AdExpiry
+         
+ 
+        if (!(req.body.Initiator && req.body.RealEstate && req.body.AD_Content
+            && req.body.AdStartedAt && req.body.AdExpiry && req.body.AD_Type && req.body.AD_Unit_Type
         )) {
             res.status(400).send(`
                 Initiator, AD License, Real Estate, AD Content, AD Started At, 
@@ -24,13 +31,21 @@ const generate_READ = (prisma) => async (req, res, next) => {
             return;
         }
 
-        const dataEntry = {
+
+        if (!validAdTypes.includes(req.body.AD_Type)) {
+            return res.status(400).send("Invalid AD_Type value.");
+        }
+
+        if (!validUnitTypes.includes(req.body.AD_Unit_Type)) {
+            return res.status(400).send("Invalid AD_Unit_Type value.");
+        }
+          const dataEntry = {
             Initiator: { connect: { Office_ID: parseInt(req.body.Office_ID) } },
             RealEstate: { connect: { Unit_ID: parseInt(req.body.Unit_ID) } },
             AD_Type: req.body.AD_Type,
             AD_Unit_Type: req.body.AD_Unit_Type,
             AD_Content: req.body.AD_Content,
-            AD_Started_At: new Date(Date.now),
+            AD_Started_At:   new Date(Date.now()),
             AD_Expiry: new Date("2026-12-31"),
             Hedden: false
 

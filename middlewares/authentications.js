@@ -26,18 +26,25 @@ async function officeAuthentication(req, res, next) {
     }
 }
 
-async function falLicenseAuthentication(req, res, next) {
+async function markitingFalLicenseAuthentication(req, res, next) {
     try {
         console.log('authenticating fal license...');
-        prisma.falLicense.findUnique({
+        prisma.falLicense.findMany({
             where: {
                 Office_ID: parseInt(req.body.Office_ID),
             }
-        }).then((v) => {
-            if (!v) return res.status(404).send('Fal License not found.');
-            if (Date.now() > v.Expiry_Date) return res.status(404).send('Fal License expired.');
-            if (v.Office_ID !== req.body.Office_ID) return res.status(404).send('You are not the owner of this License.');
-            req.Fal_License_Number = v.Fal_License_Number;
+        }).then((Licenses) => {
+            if (!Licenses) return res.status(404).send('Fal License not found.');
+            let marketingLicense;
+            for(var License in Licenses){
+                if(License.License_Type === "MARKETING") {
+                    marketingLicense = License;
+                    break;
+                } 
+            }
+            if (Date.now() > Licenses.Expiry_Date) return res.status(404).send('Fal License expired.');
+            if (Licenses.Office_ID !== req.body.Office_ID) return res.status(404).send('You are not the owner of this License.');
+            req.License_Number = Licenses.License_Number;
              next();
         })
 
@@ -70,6 +77,6 @@ async function REUAuthentication(req, res, next) {
 
 module.exports = {
     officeAuthentication,
-    falLicenseAuthentication,
+    markitingFalLicenseAuthentication,
     REUAuthentication
 }
