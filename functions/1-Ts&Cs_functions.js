@@ -1,123 +1,116 @@
 
 
 const createNewTandC = (prisma, Committed_By) => async (req, res) => {
-
-
-    var result
-    var TC_type
-    var TC_ID_type
     try {
-        
+        let TC_type;
+        let TC_ID_type;
+
         switch (req.body.Committed_By) {
-
-            case ("OFFICE_OWNER"):
-                TC_ID_type = 'OO'
-                TC_type = Committed_By.OFFICE_OWNER
+            case "OFFICE_OWNER":
+                TC_ID_type = 'OO';
+                TC_type = Committed_By.OFFICE_OWNER;
                 break;
-
-            case ("OFFICE_STAFF"):
-                TC_ID_type = 'OS'
-                TC_type = Committed_By.OFFICE_STAFF
+            case "OFFICE_STAFF":
+                TC_ID_type = 'OS';
+                TC_type = Committed_By.OFFICE_STAFF;
                 break;
-
-            case ("BENEFICIARY"):
-                TC_ID_type = 'B'
-                TC_type = Committed_By.BENEFICIARY
+            case "BENEFICIARY":
+                TC_ID_type = 'B';
+                TC_type = Committed_By.BENEFICIARY;
                 break;
-
-            case ("BUSINESS_BENEFICIARY"):
-                TC_ID_type = 'BB'
-                TC_type = Committed_By.BUSINESS_BENEFICIARY
+            case "BUSINESS_BENEFICIARY":
+                TC_ID_type = 'BB';
+                TC_type = Committed_By.BUSINESS_BENEFICIARY;
                 break;
-
-
-
+            default:
+                return res.status(400).send("Invalid Committed_By value");
         }
-        await prisma.termsAndCondetions.findMany({
-            where: { TC_ID: { contains: TC_ID_type } }, orderBy: { TC_ID: 'desc' }, take: 1,
-        }).then((v) => {
-            result = v[0];
-        })
 
+        const found = await prisma.termsAndCondetions.findMany({
+            where: { TC_ID: { contains: TC_ID_type } },
+            orderBy: { TC_ID: 'desc' },
+            take: 1,
+        });
 
-        if (result == undefined) {
+        let result;
+
+        if (found.length === 0) {
             result = await prisma.termsAndCondetions.create({
                 data: {
-                    TC_ID: TC_ID_type + "_000001",
+                    TC_ID: `${TC_ID_type}_000001`,
                     Content: [{ "1": req.body.Content }],
                     Committed_By: TC_type,
-                    Made_By: req.body.Made_By
-                }
-            })
+                    Made_By: req.body.Made_By,
+                },
+            });
         } else {
+            const latestTC = found[0];
+            const extractedStrings = latestTC.TC_ID.match(/^([A-Za-z_]+)(\d+)$/);
 
-            const extractedStrings = result.TC_ID.match(/^([A-Za-z_]+)(\d+)$/);
-           
-            const IDnumberedPart = extractedStrings[2]
-            const incremented = (parseInt(extractedStrings[2], 10) + 1).toString()
-            const paddedIncrement = incremented.padStart(IDnumberedPart.length, '0')
+            if (!extractedStrings) {
+                return res.status(500).send("Invalid TC_ID format");
+            }
+
+            const prefix = extractedStrings[1];
+            const numberPart = extractedStrings[2];
+            const incrementedNumber = (parseInt(numberPart, 10) + 1).toString();
+            const paddedIncrement = incrementedNumber.padStart(numberPart.length, '0');
 
             result = await prisma.termsAndCondetions.create({
                 data: {
-                    TC_ID: `${extractedStrings[1]}${paddedIncrement}`,
+                    TC_ID: `${prefix}${paddedIncrement}`,
                     Content: [{ "1": req.body.Content }],
                     Committed_By: TC_type,
-                    Made_By: req.body.Made_By
-                }
-            })
-
-
+                    Made_By: req.body.Made_By,
+                },
+            });
         }
-        res.send(result);
+
+        return res.send(result);
 
     } catch (error) {
-
-       dbErrorHandler(res, error,'createNewTandC');
-
+        dbErrorHandler(res, error, 'createNewTandC');
     }
+};
 
-
-}
 
 const getLastTerms = (prisma) => async (req, res) => {
-
     try {
-
-        var result
-        var TC_ID_type
+        let TC_ID_type;
 
         switch (req.body.Committed_By) {
-
-            case ("OFFICE_OWNER"):
-                TC_ID_type = 'OO'
+            case "OFFICE_OWNER":
+                TC_ID_type = 'OO';
                 break;
-
-            case ("OFFICE_STAFF"):
-                TC_ID_type = 'OS'
+            case "OFFICE_STAFF":
+                TC_ID_type = 'OS';
                 break;
-
-            case ("BENEFICIARY"):
-                TC_ID_type = 'B'
+            case "BENEFICIARY":
+                TC_ID_type = 'B';
                 break;
-
-            case ("BUSINESS_BENEFICIARY"):
-                TC_ID_type = 'BB'
+            case "BUSINESS_BENEFICIARY":
+                TC_ID_type = 'BB';
                 break;
-
-
-
+            default:
+                return res.status(400).send('Invalid Committed_By value');
         }
 
-        await prisma.termsAndCondetions.findMany({
-            where: { TC_ID: { contains: TC_ID_type } }, orderBy: { TC_ID: 'desc' }, take: 1,
-        }).then((v) => {
-            if (!v) res.status(404).send('Terms and Condetions not found.');
-            res.status(200).send(v);
-        })
-         
+        const terms = await prisma.termsAndCondetions.findMany({
+            where: { TC_ID: { contains: TC_ID_type } },
+            orderBy: { TC_ID: 'desc' },
+            take: 1,
+        });
+
+        if (!terms || terms.length === 0) {
+            return res.status(404).send('Terms and Conditions not found.');
+        }
+
+        return res.status(200).send(terms);
+
     } catch (error) {
         dbErrorHandler(res, error, 'getLastTerms');
     }
-}
+};
+
 
 module.exports = {createNewTandC, getLastTerms}

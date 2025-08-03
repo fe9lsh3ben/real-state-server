@@ -1,7 +1,7 @@
 const { express } = require('../libraries/utilities');
-const { prisma, } = require('../libraries/prisma_utilities');
+const { prisma, AD_Type } = require('../libraries/prisma_utilities');
 const { officeAuthentication,
-    falLicenseAuthentication,
+    markitingFalLicenseAuthentication,
     REUAuthentication
 } = require('../middlewares/authentications');
 
@@ -26,16 +26,16 @@ RE_AD.route('/')
     "AdStartedAt": "2025-01-12"  ,"AdExpiry":  "2026-12-31",
     "Office_ID": "3"
     } */
-.post(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, REUAuthentication, generate_READ(prisma, ))
+.post(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, REUAuthentication, generate_READ(prisma))
     
     
-.get(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, REUAuthentication, get_READ(prisma))
+.get(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, REUAuthentication, get_READ(prisma, AD_Type))
     
     
-.put(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, REUAuthentication, edit_READ(prisma))
+.put(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, REUAuthentication, edit_READ(prisma))
     
     
-.delete(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, REUAuthentication, delete_READ(prisma));
+.delete(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, REUAuthentication, delete_READ(prisma));
 
 
 module.exports = { RE_AD }

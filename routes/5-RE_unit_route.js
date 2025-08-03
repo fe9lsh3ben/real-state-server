@@ -1,6 +1,6 @@
 const { express } = require('../libraries/utilities');
 const { prisma } = require('../libraries/prisma_utilities');
-const { officeAuthentication, falLicenseAuthentication } = require('../middlewares/authentications');
+const { officeAuthentication, markitingFalLicenseAuthentication } = require('../middlewares/authentications');
 const {
     generate_REU,
     get_REU,
@@ -24,7 +24,7 @@ REU.route('/')
     }
 **/
 
-.post(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, generate_REU(prisma))
+.post(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, generate_REU(prisma))
 
 // query parameters : 'http://127.0.0.1:3050/REU?Unit_ID=1&Search_Type=search_one'
 
@@ -49,12 +49,12 @@ REU.route('/')
 	"Office_ID":"3"
     }
 */
-.put(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, update_REU(prisma))
+.put(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, update_REU(prisma))
 
 /*
  Example: http://127.0.0.1:3050/REU?Unit_ID=1
  */
-.delete(tokenMiddlewere, officeAuthentication, falLicenseAuthentication, delete_REU(prisma));
+.delete(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, delete_REU(prisma));
 
 /**Request's body example: {
  "REU_ID" : 234

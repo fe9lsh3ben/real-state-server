@@ -72,15 +72,14 @@ enum Committed_By {
 }
 
 enum Fal_Type {
-  BROKERING                
-  MARKETING                
-  PROPERTY_MANAGEMENT      
-  FACILITY_MANAGEMENT 
-  AUCTION_MANAGEMENT      
-  CONSULTING                 
-  REAL_ESTATE_ADVERTISING 
+  BROKERING
+  MARKETING
+  PROPERTY_MANAGEMENT
+  FACILITY_MANAGEMENT
+  AUCTION_MANAGEMENT
+  CONSULTING
+  REAL_ESTATE_ADVERTISING
 }
-
 
 enum AD_Type {
   RENT
@@ -126,7 +125,6 @@ model Session {
   Expires_At DateTime
 }
 
-
 model RefreshToken {
   RToken_ID     Int      @id @default(autoincrement())
   Refresh_Token String   @unique
@@ -142,40 +140,39 @@ model User {
   Role              User_Type          @default(BENEFICIARY)
   Created_At        DateTime           @default(now())
   Updated_At        DateTime           @updatedAt
-  TermsCondetion_ID String             
+  TermsCondetion_ID String
   TermsCondetion    TermsAndCondetions @relation(fields: [TermsCondetion_ID], references: [TC_ID])
-  
-  Refresh_Tokens    RefreshToken?
-  Session           Session?
+
+  Refresh_Tokens RefreshToken?
+  Session        Session?
 
   //___
 
-  Username       String        @unique
-  Email          String        @unique
-  Password       String
-  Profile_Image  Bytes?
-  Gov_ID         String        @unique
-  Address        Json? //{Region, City, Destrect, Direction, Altitude, Longitude}
-  Full_Name      String[]
-  User_Phone     String
+  Username      String   @unique
+  Email         String   @unique
+  Password      String
+  Profile_Image Bytes?
+  Gov_ID        String   @unique
+  Address       Json? //{Region, City, Destrect, Direction, Altitude, Longitude}
+  Full_Name     String[]
+  User_Phone    String
   //___
 
-  Other1         Json[] // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
+  Other1 Json[] // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
 
-  RE_Offices     RealEstateOffice[] @relation(name: "Owner")
+  RE_Offices RealEstateOffice[] @relation(name: "Owner")
 
   Employer_REO_ID Int?
   Employer_REO    RealEstateOffice? @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [Office_ID])
 
-  Balance         Decimal                @default(0.0)
-  User_Status     Office_Or_User_Status? @default(ACTIVE)
+  Balance     Decimal                @default(0.0)
+  User_Status Office_Or_User_Status? @default(ACTIVE)
 }
-
 
 model RealEstateOffice {
   Office_ID           Int                   @id @default(autoincrement())
   Commercial_Register String
-  Owner_ID            Int                   
+  Owner_ID            Int
   Owner               User                  @relation(name: "Owner", fields: [Owner_ID], references: [User_ID])
   Office_Name         String
   Office_Phone        String
@@ -185,7 +182,7 @@ model RealEstateOffice {
 
   Fal_License FalLicense[] @relation("FalLicense")
 
-  Staff       User[]       @relation("OfficeStaff")
+  Staff User[] @relation("OfficeStaff")
 
   RealEstate_Units RealEstateUnit[] @relation("OfficeAndREUnit")
   Contracts        Contract[]
@@ -198,22 +195,25 @@ model RealEstateOffice {
 }
 
 model FalLicense {
-  License_ID        Int              @id @default(autoincrement())
-  License_Number    String           @unique
-  License_Type      Fal_Type
-  Owner_ID          String
-  Issue_Date        DateTime
-  Expiry_Date       DateTime
-  Office_ID         Int
-  Office            RealEstateOffice @relation(name: "FalLicense",fields: [Office_ID], references: [Office_ID])
+  License_ID     Int              @id @default(autoincrement())
+  License_Number String           @unique
+  License_Type   Fal_Type
+  Owner_ID       String
+  Issue_Date     DateTime
+  Expiry_Date    DateTime
+  Office_ID      Int
+  Office         RealEstateOffice @relation(name: "FalLicense", fields: [Office_ID], references: [Office_ID])
+
+  @@index([Office_ID])
+  @@index([Owner_ID])
+  @@index([License_Type])
 }
 
-
 model RealEstateUnit {
-  Unit_ID      Int                   @id @default(autoincrement())
+  Unit_ID     Int                   @id @default(autoincrement())
   Unit_Type   Real_Estate_Unit_Type
   RE_Name     String
-  Deed_Number String                 @unique
+  Deed_Number String                @unique
   Deed_Date   DateTime
   Deed_Owners Json[] //{Owner_Phone_Number, Owner_GovID, Owner_Name}
 
@@ -232,14 +232,15 @@ model RealEstateUnit {
 }
 
 model RealEStateAD {
-  AD_ID         Int              @id @default(autoincrement())
-  AD_Initiator  Int              
-  Initiator     RealEstateOffice @relation(fields: [AD_Initiator], references: [Office_ID])
-  Created_At    DateTime         @default(now())
-  Updated_At    DateTime         @updatedAt
-  RealEstate_ID Int              
-  RealEstate    RealEstateUnit   @relation(fields: [RealEstate_ID], references: [Unit_ID])
-  AD_Type       AD_Type
+  AD_ID            Int              @id @default(autoincrement())
+  Office_ID        Int
+  Initiator_Office RealEstateOffice @relation(fields: [Office_ID], references: [Office_ID])
+  Initiator        Json //{"Created_By":{ "User_ID", "Full_Name"}, "Edited_By":[{"User_ID", "Full_Name"}]}
+  Created_At       DateTime         @default(now())
+  Updated_At       DateTime         @updatedAt
+  Unit_ID          Int
+  Unit             RealEstateUnit   @relation(fields: [Unit_ID], references: [Unit_ID])
+  AD_Type          AD_Type
 
   AD_Unit_Type       Real_Estate_Unit_Type
   Indoor_Unit_Images Bytes[]

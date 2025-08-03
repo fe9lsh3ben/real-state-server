@@ -5,7 +5,9 @@ const {
     User_Type,
     Office_Or_User_Status,
     Real_Estate_Unit_Type,
-    Committed_By } = require('@prisma/client');
+    Committed_By,
+    AD_Type,
+    Fal_Type } = require('@prisma/client');
 
 
 
@@ -120,5 +122,7 @@ module.exports = {
     User_Type,
     Office_Or_User_Status,
     Real_Estate_Unit_Type,
-    Committed_By
+    Committed_By,
+    AD_Type,
+    Fal_Type
 }
