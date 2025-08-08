@@ -1,117 +1,112 @@
 const { dbErrorHandler } = require("../libraries/utilities");
 
 const generate_FalLicense = (prisma) => async (req, res) => {
-  try {
-    const {
-      License_Number,
-      License_Type,
-      Owner_ID,
-      Issue_Date,
-      Expiry_Date,
-      Office_ID
-    } = req.body;
+    try {
+        const {
+            Fal_License_Number,
+            License_Type,
+            User_ID,
+            Issue_Date,
+            Expiry_Date,
+            Office_ID
+        } = req.body;
 
-    // Validate required fields
-    if (!License_Number || !License_Type || !Owner_ID || !Issue_Date || !Expiry_Date || !Office_ID) {
-      return res.status(400).send(
-        "License_Number, License_Type, Owner_ID, Issue_Date, Expiry_Date, and Office_ID are required."
-      );
-    }
-
-    const createdLicense = await prisma.falLicense.create({
-      data: {
-        License_Number,
-        License_Type,
-        Owner_ID,
-        Issue_Date: new Date(Issue_Date),
-        Expiry_Date: new Date(Expiry_Date),
-        Office: {
-          connect: { Office_ID: parseInt(Office_ID) }
+        // Validate required fields
+        if (!Fal_License_Number || !License_Type || !Issue_Date || !Expiry_Date) {
+            return res.status(400).send(
+                "License Number, License Type, Issue Date, Expiry Date  are required."
+            );
         }
-      }
-    });
 
-    return res.status(201).json({
-      message: "Fal License was successfully created.",
-      license: createdLicense
-    });
+        const createdLicense = await prisma.falLicense.create({
+            data: {
+                Fal_License_Number,
+                License_Type,
+                Owner_ID: User_ID,
+                Issue_Date: new Date(Issue_Date),
+                Expiry_Date: new Date(Expiry_Date),
+                Offices: {
+                    connect: { Office_ID: parseInt(Office_ID) }
+                }
+            }
+        });
 
-  } catch (error) {
-    dbErrorHandler(res, error, "generate fal license");
-    console.error(error.code, error.message);
-  }
+        return res.status(201).send({
+            message: "Fal License was successfully created.",
+            license: createdLicense
+        });
+
+    } catch (error) {
+        dbErrorHandler(res, error, "generate fal license");
+        console.error(error.code, error.message);
+    }
 };
 
 const get_FalLicense = (prisma) => async (req, res) => {
-  try {
-    const { License_Number, Office_ID } = req.body;
+    try {
+        const { Fal_License_Number, Office_ID } = req.body;
 
-    if (!License_Number && !Office_ID) {
-      return res.status(400).send("License_Number or Office_ID is required.");
+        if (!Fal_License_Number && !Office_ID) {
+            return res.status(400).send("License_Number or Office_ID is required.");
+        }
+
+        let license;
+
+        if (Fal_License_Number) {
+            license = await prisma.falLicense.findUnique({
+                where: { Fal_License_Number }
+            });
+        } else if (Office_ID) {
+             let licenses = await prisma.realEstateOffice.findMany({
+                where: { Office_ID: parseInt(Office_ID) },
+                select: { FalLicense: true }
+            });
+             
+            if(licenses.length === 0) {
+                return res.status(404).send('No Fal License found for this office.');
+            }
+            license = licenses;
+        }
+
+        if (!license) {
+            return res.status(404).send('Fal License not found.');
+        }
+
+        return res.status(200).send(license);
+
+    } catch (error) {
+        dbErrorHandler(res, error, 'get fal license');
+        console.error(error.message);
     }
-
-    let license;
-
-    if (License_Number) {
-      license = await prisma.falLicense.findUnique({
-        where: { License_Number }
-      });
-    } else if (Office_ID) {
-      license = await prisma.falLicense.findFirst({
-        where: { Office_ID: parseInt(Office_ID) }
-      });
-    }
-
-    if (!license) {
-      return res.status(404).send('Fal License not found.');
-    }
-
-    return res.status(200).json({ data: license });
-
-  } catch (error) {
-    dbErrorHandler(res, error, 'get fal license');
-    console.error(error.message);
-  }
 };
 
 
 const delete_FalLicense = (prisma) => async (req, res) => {
-  try {
-    const { License_Number, Office_ID } = req.body;
+    try {
+        const { Fal_License_Number } = req.body;
 
-    if (!License_Number && !Office_ID) {
-      return res.status(400).send("License_Number or Office_ID is required!");
-    }
-
-    let deleted;
-
-    // Prefer License_Number if both are provided
-    if (License_Number) {
-      deleted = await prisma.falLicense.delete({
-        where: { License_Number },
-      }).catch((err) => {
-        if (err.code === 'P2025') {
-          return null; // Not found
+        if (!Fal_License_Number) {
+            return res.status(400).send("License_Number or Office_ID is required!");
         }
-        throw err; // Other error
-      });
-    } else {
-      // Office_ID must not be used with delete directly unless it's unique
-      deleted = await prisma.falLicense.deleteMany({
-        where: { Office_ID: parseInt(Office_ID) }
-      });
-      if (deleted.count === 0) deleted = null;
+
+        let deleted;
+
+         if (Fal_License_Number) {
+            deleted = await prisma.falLicense.delete({
+                where: { Fal_License_Number },
+            });
+        }
+
+        if (!deleted) {
+            return res.status(404).send("Fal License not found.");
+        }
+
+        return res.status(200).json({ message: "Fal License was successfully deleted!" });
+
+    } catch (error) {
+        dbErrorHandler(res, error, "delete fal license");
+        console.error(error.message);
     }
-
-    if (!deleted) {
-      return res.status(404).send("Fal License not found.");
-    }
-
-    return res.status(200).json({ message: "Fal License was successfully deleted!" });
-
-  } catch (error) {
-    dbErrorHandler(res, error, "delete fal license");
-  }
 };
 
 

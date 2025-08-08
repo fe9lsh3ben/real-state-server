@@ -1,4 +1,4 @@
-
+const {dbErrorHandler} = require("../libraries/utilities");
 
 const createNewTandC = (prisma, Committed_By) => async (req, res) => {
     try {
@@ -26,7 +26,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
                 return res.status(400).send("Invalid Committed_By value");
         }
 
-        const found = await prisma.termsAndCondetions.findMany({
+        const found = await prisma.TermsAndCondition.findMany({
             where: { TC_ID: { contains: TC_ID_type } },
             orderBy: { TC_ID: 'desc' },
             take: 1,
@@ -35,7 +35,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
         let result;
 
         if (found.length === 0) {
-            result = await prisma.termsAndCondetions.create({
+            result = await prisma.TermsAndCondition.create({
                 data: {
                     TC_ID: `${TC_ID_type}_000001`,
                     Content: [{ "1": req.body.Content }],
@@ -56,7 +56,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
             const incrementedNumber = (parseInt(numberPart, 10) + 1).toString();
             const paddedIncrement = incrementedNumber.padStart(numberPart.length, '0');
 
-            result = await prisma.termsAndCondetions.create({
+            result = await prisma.TermsAndCondition.create({
                 data: {
                     TC_ID: `${prefix}${paddedIncrement}`,
                     Content: [{ "1": req.body.Content }],
@@ -70,6 +70,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
 
     } catch (error) {
         dbErrorHandler(res, error, 'createNewTandC');
+        console.error(error.message);
     }
 };
 
@@ -95,7 +96,7 @@ const getLastTerms = (prisma) => async (req, res) => {
                 return res.status(400).send('Invalid Committed_By value');
         }
 
-        const terms = await prisma.termsAndCondetions.findMany({
+        const terms = await prisma.TermsAndCondition.findMany({
             where: { TC_ID: { contains: TC_ID_type } },
             orderBy: { TC_ID: 'desc' },
             take: 1,

@@ -23,10 +23,16 @@ const signupVerifier = (req, res, next) => {
         res.status(400).send('No details entered');
         return
 
-    } else if (!(body.Username || body.Password || body.Email || body.Gov_ID || body.Address || body.Full_Name || body.User_Phone)) {
-        // console.log('d')
-        // console.log(2)
+    } else if (!(body.Username && body.Password && body.Email && body.Gov_ID && body.Address && body.Full_Name && body.User_Phone)) {
+        
         res.status(400).send('Your details are not complete');
+        return;
+
+    } else if (!body.TC_ID) {
+        
+        res.status(400).send('You must accept the terms and conditions');
+        return
+    
     } else {
         try {
 
@@ -43,8 +49,7 @@ const signupVerifier = (req, res, next) => {
             
             if(!validatedPassword.isValidLength){
                 res.status(400).send('Password should be at least 8 characters long!');
-                re
-                turn
+                return
             }
             
             if(!validatedPassword.hasUpperCaseAndLowerCase){

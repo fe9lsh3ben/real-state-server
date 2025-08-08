@@ -5,7 +5,7 @@
 const {createNewTandC, getLastTerms} = require('../functions/1-Ts&Cs_functions');
 
 //token functions
-const {tokenMiddlewere, generatTokenByRefreshToken} = require('../functions/token_functions');
+const {tokenMiddlewere, generateTokenByRefreshToken} = require('../functions/token_functions');
 
 //profile functions
 const {signup , login , becomeOfficeStaff,
@@ -96,5 +96,5 @@ module.exports = {
     //middlewares
     signupVerifier,
     signupValidator,
-    tokenMiddlewere, generatTokenByRefreshToken,
+    tokenMiddlewere, generateTokenByRefreshToken,
 }

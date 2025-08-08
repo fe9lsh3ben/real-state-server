@@ -1,7 +1,10 @@
 // 1-JWT example  *Take care of expiry token
 
+const { type } = require('os');
 const { jwt, PRIVATE_KEY, PUBLIC_KEY } = require('../libraries/authTools_lib');
 const { prisma, User_Type } = require('../libraries/prisma_utilities');
+const util = require('util');
+const jwtVerifyAsync = util.promisify(jwt.verify);
 require('dotenv').config();
 
 
@@ -59,65 +62,104 @@ async function generateTokenByPrivate_key(body, period, tokenType = TokenType.AC
 }
 
 async function syncTokens(data, message, res) {
-
     try {
-
-
         const accessToken = await generateTokenByPrivate_key(data, '4h');
-        const refreshToken = await generateTokenByPrivate_key(data, "14d", TokenType.REFRESH_TOKEN);
+        const refreshToken = await generateTokenByPrivate_key(data, '14d', TokenType.REFRESH_TOKEN);
 
-        var refreshDecoded = jwt.decode(refreshToken);
-        var refreshExpiry = new Date(refreshDecoded.exp * 1000);
-        var sessionDecoded = jwt.decode(accessToken)
-        var sessionExpiry = new Date(sessionDecoded.exp * 1000);
+        const accessDecoded = jwt.decode(accessToken);
+        const refreshDecoded = jwt.decode(refreshToken);
 
+        const accessExpiry = new Date(accessDecoded.exp * 1000);
+        const refreshExpiry = new Date(refreshDecoded.exp * 1000);
 
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
             where: { User_ID: data.User_ID },
             data: {
-                Refresh_Tokens: {
+                Refresh_Token: {
                     update: {
                         data: {
                             Refresh_Token: refreshToken,
-                            Expires_At: refreshExpiry
-                        }
-                    }
+                            Expires_At: refreshExpiry,
+                        },
+                    },
                 },
                 Session: {
                     update: {
                         data: {
                             Token: accessToken,
-                            Expires_At: sessionExpiry
-                        }
-                    }
-                }
+                            Expires_At: accessExpiry,
+                        },
+                    },
+                },
             },
             select: {
                 User_ID: true,
                 Role: true,
                 Employer_REO_ID: true,
                 Session: {
-                    select: {
-                        Token: true,
-                    }
+                    select: { Token: true },
                 },
-                Refresh_Tokens: {
-                    select: {
-                        Refresh_Token: true,
-                    }
-                }
-            }
-        }).then(async (user_data) => {
-
-            res.status(200).send({ user_data, message });
+                Refresh_Token: {
+                    select: { Refresh_Token: true },
+                },
+            },
         });
+
+        return res.status(200).json({ user_data: updatedUser, message });
     } catch (error) {
-        dbErrorHandler(res, error);
+        throw error;
     }
 }
 
 
-const generatTokenByRefreshToken = (prisma) => async (req, res) => {
+
+const generateTokenByRefreshToken = (prisma) => async (req, res) => {
+    try {
+
+        const token = req.headers['refresh_token'];
+
+        if (!token) {
+            throw new Error('Token is required!');
+        }
+        console.log('token', token);
+        return
+        let data;
+        try {
+            data = await jwtVerifyAsync(token, PUBLIC_KEY);
+        } catch (err) {
+            if (err.name === 'TokenExpiredError') {
+                throw new Error('Refresh token expired!');;
+            } else {
+                throw err;
+            }
+        }
+
+        if (data.tokenType !== TokenType.REFRESH_TOKEN) {
+            throw new Error('Refresh token is required!');
+        }
+
+        const resourceToken = await prisma.user.findUnique({
+            where: { User_ID: data.User_ID },
+            select: {
+                Refresh_Tokens: { select: { Refresh_Token: true } },
+            },
+        });
+
+        if (resourceToken.Refresh_Tokens?.Refresh_Token !== token) {
+            throw new Error('Refresh token mismatch!');
+
+        }
+
+        syncTokens(data, 'Token was refreshed', res);
+
+    } catch (error) {
+        
+        throw error;
+    }
+};
+
+
+async function tokenVerifier(req) {
 
     try {
 
@@ -126,108 +168,81 @@ const generatTokenByRefreshToken = (prisma) => async (req, res) => {
 
         if (!token) {
 
-            res.status(404).send('token is required!');
-            return
-
+            throw { 'verified': false, 'message': 'token is required!' };
         }
 
-        jwt.verify(token, PUBLIC_KEY, async (err, data) => {
+        var resutl = jwt.verify(token, PUBLIC_KEY, async (err, data) => {
 
-            if (err) {
-                if (err.name === 'TokenExpiredError') {
+            try {
+                if (err) {
+                    if (err.name === 'TokenExpiredError') {
 
-                    res.status(404).send(err.message); //message: jwt expired
-                    return;
+                        return new Error('Token expired!');
 
-                    // Take action for expired token, like refreshing or prompting re-authentication
-                } else {
-                    res.status(404).send(`Refresh Token verification failed: ${err.message}`);
-                    return;
+                        // Take action for expired token, like refreshing or prompting re-authentication
+                    } else {
 
-                    // Handle other types of errors, like invalid token
+                        return new Error('Toekn verification failed: ', err.message);
+
+                        // Handle other types of errors, like invalid token
+                    }
                 }
+
+                if (data.tokenType !== TokenType.ACCESS_TOKEN) {
+                    return new Error('Access token is required!');
+                }
+
+                var resourceToken = await prisma.user.findUnique({ where: { User_ID: data.User_ID }, select: { Session: { select: { Token: true } } } });
+
+                if (!resourceToken) {
+                    return new Error('User not found!');
+                }
+
+                if (resourceToken.Session.Token !== token) {
+                    return new Error('Token is disposed!');
+                }
+
+                req.body.User_ID = data.User_ID;
+                req.body.Role = data.Role;
+                return { 'verified': true, 'message': "Token is valid" };
+            } catch (error) {
+                return error;
             }
 
-            if (data.tokenType !== TokenType.REFRESH_TOKEN) {
-                res.status(404).send("Refresh token is required!");
-                return;
-            }
-            var resourceToken = await prisma.user.findUnique({ where: { User_ID: data.User_ID }, select: { Refresh_Tokens: { select: { Refresh_Token: true } } } });
+        });
 
-            if (resourceToken.Refresh_Tokens.Refresh_Token !== token) {
-                res.status(404).send("Refresh token is disposed!");
-                return;
-            }
-
-            syncTokens(data, 'Token was refreshed', res);
-
-        })
+        return resutl;
 
     } catch (error) {
-
-        res.status(500).send(`Error occurred: ${error.message}`);
+        throw error;
     }
-
-
-}
-
-async function tokenVerifier(req) {
-
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return { 'verified': false, 'message': 'token is required!' };
-
-    }
-
-    var resutl = jwt.verify(token, PUBLIC_KEY, async (err, data) => {
-        if (err) {
-            if (err.name === 'TokenExpiredError') {
-
-                return { 'verified': false, 'message': "jwt expired" };
-
-
-                // Take action for expired token, like refreshing or prompting re-authentication
-            } else {
-                return { 'verified': false, 'message': `Token verification failed: ${err.message}` };
-
-                // Handle other types of errors, like invalid token
-            }
-        }
-
-
-
-        if (data.tokenType !== TokenType.ACCESS_TOKEN) {
-            return { 'verified': false, 'message': "Access token is required!" };
-        }
-
-        var resourceToken = await prisma.user.findUnique({ where: { User_ID: data.User_ID }, select: { Session: { select: { Token: true } } } });
-
-        if (resourceToken.Session.Token !== token) {
-            return { 'verified': false, 'message': "Token is disposed!" };
-        }
-
-        req.body.User_ID = data.User_ID;
-        req.body.Role = data.Role;
-        return { 'verified': true, 'message': "Token is valid" };
-
-
-
-    });
-    return resutl;
-
 }
 
 
 async function tokenMiddlewere(req, res, next) {
-    const result = await tokenVerifier(req);
-    if (!result.verified) {
-        res.status(404).send(result.message);
-        return;
-    }
 
-    next();
+    try {
+
+        const result = await tokenVerifier(req);
+        if (result instanceof Error) {
+            res.status(401).send(result.message);
+            console.log(result.message);
+            return;
+        }
+        if (!result || !result.verified) {
+            res.status(404).send(result.message);
+            return;
+        }
+        if (req.query) {
+            Object.assign(req.body, req.query);
+        }
+        next();
+
+    } catch (error) {
+
+
+        throw error;
+    }
 
 }
 
@@ -243,7 +258,7 @@ async function tokenMiddlewere(req, res, next) {
 
 module.exports = {
     generateTokenByPrivate_key,
-    generatTokenByRefreshToken,
+    generateTokenByRefreshToken,
     tokenVerifier,
     tokenMiddlewere,
     syncTokens,

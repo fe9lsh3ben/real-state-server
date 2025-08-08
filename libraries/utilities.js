@@ -20,4 +20,25 @@ async function dbErrorHandler(res, error, refrence = '') {
 
 }
 
-module.exports = { express, bcrypt, https, http, cors, fs, dbErrorHandler}
+function mapAddressToScalars(address) {
+  if (!address) return {};
+  return {
+    Region: address.Region,
+    City: address.City,
+    District: address.District,
+    Direction: address.Direction,
+    Latitude: address.Latitude,
+    Longitude: address.Longitude,
+  };
+}
+
+module.exports = { 
+    express, 
+    bcrypt, 
+    https, 
+    http, 
+    cors, 
+    fs, 
+    dbErrorHandler, 
+    mapAddressToScalars
+}
