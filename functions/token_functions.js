@@ -153,7 +153,7 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
         syncTokens(data, 'Token was refreshed', res);
 
     } catch (error) {
-        
+
         throw error;
     }
 };
@@ -168,7 +168,7 @@ async function tokenVerifier(req) {
 
         if (!token) {
 
-            throw { 'verified': false, 'message': 'token is required!' };
+            return { 'verified': false, 'message': 'token is required!' };
         }
 
         var resutl = jwt.verify(token, PUBLIC_KEY, async (err, data) => {
@@ -214,7 +214,7 @@ async function tokenVerifier(req) {
         return resutl;
 
     } catch (error) {
-        throw error;
+        return error;
     }
 }
 
@@ -239,8 +239,8 @@ async function tokenMiddlewere(req, res, next) {
         next();
 
     } catch (error) {
-
-
+        res.status(404).send('token middleware error!');
+        console.log(error.message);
         throw error;
     }
 

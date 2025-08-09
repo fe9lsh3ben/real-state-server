@@ -23,7 +23,7 @@ const validUnitTypes = [
 const generate_READ = (prisma) => async (req, res) => {
     try {
         const {
-            AD_Content,
+            AD_Specifications,
             AD_Type,
             AD_Unit_Type,
             Office_ID,
@@ -61,7 +61,7 @@ const generate_READ = (prisma) => async (req, res) => {
         }
         // Check required fields
         const missingFields = [];
-        if (!AD_Content) missingFields.push("AD Content");
+        if (!AD_Specifications) missingFields.push("AD Content");
         if (!AD_Type) missingFields.push("AD Type");
         if (!AD_Unit_Type) missingFields.push("AD Unit Type");
         if (!Office_ID) missingFields.push("Office ID");
@@ -85,7 +85,7 @@ const generate_READ = (prisma) => async (req, res) => {
             Unit_ID: Unit_ID,
             AD_Type,
             AD_Unit_Type,
-            AD_Content,
+            AD_Specifications,
             AD_Started_At: new Date(),
             AD_Expiry: Expiry_Date ? new Date(Expiry_Date) : new Date("2026-12-31"),
             Hedden: false,
@@ -177,7 +177,7 @@ const get_READ = (prisma) => async (req, res) => {
                         AD_Type: true,
                         AD_Unit_Type: true,
                         Indoor_Unit_Images: true,
-                        AD_Content: true,
+                        AD_Specifications: true,
                         AD_Started_At: true,
                         Hedden: true,
                         Unit: {
@@ -192,7 +192,6 @@ const get_READ = (prisma) => async (req, res) => {
                                 Latitude: true,
                                 Longitude: true,
                                 Outdoor_Unit_Images: true,
-                                Specifications: true
                             }
                         }
                     }
@@ -223,23 +222,19 @@ const get_READ = (prisma) => async (req, res) => {
                     return res.status(400).send("bounds are invalid.");
                 }
 
-                const units = await prisma.realEstateUnit.findMany({
+                const units = await prisma.realEstateAD.findMany({
                     where: {
                         AND: [
                             { AD_Type: AD_Type },
                             { AD_Unit_Type: AD_Unit_Type },
                             {
-                                Latitude: {
-                                    gte: parseFloat(minLatitude),
-                                    lte: parseFloat(maxLatitude),
+                                Unit: {
+                                    is: {
+                                        Latitude: { gte: minLatitude, lte: maxLatitude },
+                                        Longitude: { gte: minLongitude, lte: maxLongitude }
+                                    }
                                 },
                             },
-                            {
-                                Longitude: {
-                                    gte: parseFloat(minLongitude),
-                                    lte: parseFloat(maxLongitude),
-                                },
-                            }
                         ]
 
                     },
@@ -265,13 +260,12 @@ const get_READ = (prisma) => async (req, res) => {
 
                 if (!Direction) return res.status(400).send("Direction is required.");
 
-                const units = await prisma.realEstateUnit.findMany({
+                const units = await prisma.realEstateAD.findMany({
                     where: {
                         AND: [
                             { AD_Type: AD_Type },
                             { AD_Unit_Type: AD_Unit_Type },
-                            { Direction: Direction },
-                            { City: City },
+                            { Unit: { is: { Direction: Direction, City: City } } },
                         ]
 
                     }
@@ -282,7 +276,7 @@ const get_READ = (prisma) => async (req, res) => {
             }
 
             case SearchType.CUSTOM_SEARCH: {
-                const { City, Unit_Type, Direction, Specifications, AD_Type, AD_Unit_Type } = req.body;
+                const { City, Unit_Type, Direction, AD_Specifications, AD_Type, AD_Unit_Type } = req.body;
 
                 if (!AD_Type || !AD_Unit_Type) return res.status(400).send("Missing AD type and AD unit type are required.");
 
@@ -303,23 +297,23 @@ const get_READ = (prisma) => async (req, res) => {
                 if (Unit_Type) filters.Unit_Type = Unit_Type;
                 if (Direction) filters.Direction = Direction;
 
-                if (Specifications) {
+                if (AD_Specifications) {
                     try {
-                        const parsedSpecs = JSON.parse(Specifications);
+                        const parsedSpecs = JSON.parse(AD_Specifications);
 
-                        // Create AND conditions for each key inside Specifications
-                        filters.AND = Object.entries(parsedSpecs).map(([key, value]) => ({
-                            Specifications: {
+                        // Create AND conditions for each key inside AD_Specifications
+                        filters = Object.entries(parsedSpecs).map(([key, value]) => ({
+                            AD_Specifications: {
                                 path: [key],
                                 equals: value,
                             }
                         }));
                     } catch (err) {
-                        return res.status(400).send("Invalid Specifications JSON format.");
+                        return res.status(400).send("Invalid AD Content JSON format.");
                     }
                 }
 
-                const units = await prisma.realEstateUnit.findMany({
+                const units = await prisma.realEstateAD.findMany({
                     where: {
                         AND: [
                             { AD_Type: AD_Type },

@@ -53,6 +53,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Status: Office_Or_User_Status.ACTIVE,
             Owner_ID:  User_ID 
         };
+                console.log('am here');
 
         if (Fal_License_Number) {
             let licnese = await prisma.falLicense.findUnique({
@@ -72,7 +73,6 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
         if (Office_Image) {
             dataEntry.Office_Image = Buffer.from(Office_Image, 'base64');
         }
-
         createdOffice = await prisma.realEstateOffice.create({ data: dataEntry });
 
         const user = await prisma.user.update({
