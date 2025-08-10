@@ -138,7 +138,6 @@ const login = (prisma) => async (req, res) => {
         });
     } catch (error) {
         dbErrorHandler(res, error, 'login');
-        res.status(500).send("Error logging in.");
         console.error(error.message);
     }
 };

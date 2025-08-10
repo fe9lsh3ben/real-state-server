@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "RealEstateAD" ADD COLUMN     "Price" DECIMAL(11,2) NOT NULL DEFAULT 0.0;

@@ -30,16 +30,16 @@ RE_AD.route('/')
 .post(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, REUAuthentication, generate_READ(prisma))
 
 
-// query parameters : 'http://127.0.0.1:3050/RE_AD?Unit_ID=1&Search_Type=search_one'
+// query parameters : 'http://127.0.0.1:3050/RE_AD?AD_ID=1&Search_Type=search_one'
 
-// query parameters : 'http://127.0.0.1:3050/RE_AD?AD_Type=RENT&AD_Unit_Type=APARTMENT&Geo_level=Region&Geo_value=Mekkah&Search_Type=search_many'
-// query parameters : 'http://127.0.0.1:3050/RE_AD?AD_Type=RENT&AD_Unit_Type=APARTMENT&Geo_level=City&Geo_value=Rabigh&Search_Type=search_many'
-// query parameters : 'http://127.0.0.1:3050/RE_AD?AD_Type=RENT&AD_Unit_Type=APARTMENT&Geo_level=District&Geo_value=Al-Jude&Search_Type=search_many'
+// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=search_many&AD_Type=RENT&AD_Unit_Type=APARTMENT&Geo_level=Region&Geo_value=Mekkah'
+// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=search_many&AD_Type=RENT&AD_Unit_Type=APARTMENT&Geo_level=City&Geo_value=Rabigh'
+// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=search_many&AD_Type=RENT&AD_Unit_Type=APARTMENT&Geo_level=District&Geo_value=Al-Jude'
 
 
-// query parameters : 'http://127.0.0.1:3050/RE_AD?AD_Type=RENT&AD_Unit_Type=APARTMENT&minLatitude=1.0000&maxLatitude=2.0000&minLongitude=2.0000&maxLongitude=3.0000&Search_Type=search_on_screen'
-// query parameters : 'http://127.0.0.1:3050/RE_AD?AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh&Direction=NORTH&Search_Type=search_direction'
-// query parameters : 'http://127.0.0.1:3050/RE_AD?AD_Type=RENT&AD_Unit_Type=APARTMENT&Search_Type=custom_search&City=Rabigh&Unit_Type=LAND&Specifications=%7B%22Area%22%3A%22300%22%2C%22Ready%22%3A%22yes%22%7D'
+// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=search_on_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&minLatitude=1.0000&maxLatitude=2.0000&minLongitude=2.0000&maxLongitude=3.0000'
+// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=search_direction&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh&Direction=NORTH'
+// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=custom_search&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh&Unit_Type=LAND&Lower_Price=1&Upper_Price=10000&Specifications=%7B%22Area%22%3A%22300%22%2C%22Ready%22%3A%22yes%22%7D'
  
     
 .get(tokenMiddlewere, get_READ(prisma, AD_Type))
