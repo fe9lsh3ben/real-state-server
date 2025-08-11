@@ -84,7 +84,6 @@ const generate_READ = (prisma) => async (req, res) => {
             AD_Unit_Type,
             AD_Specifications,
             AD_Started_At: new Date(),
-            AD_Expiry: Expiry_Date ? new Date(Expiry_Date) : new Date("2026-12-31"),
             Hedden: false,
         };
 
@@ -196,7 +195,9 @@ const get_READ = (prisma) => async (req, res) => {
                     return res.status(400).send("Invalid AD_Unit_Type value.");
                 }
 
-                let where = {};
+                const where = {
+                    Hedden: false,
+                };
 
                 if (Office_ID) {
                     if (isNaN(Office_ID)) return res.status(400).send("Invalid or missing Office ID.");
@@ -207,13 +208,20 @@ const get_READ = (prisma) => async (req, res) => {
                     try {
                         const parsedSpecs = JSON.parse(AD_Specifications);
 
-                        // Create AND conditions for each key inside AD_Specifications
-                        where = Object.entries(parsedSpecs).map(([key, value]) => ({
+                        const specFilters = Object.entries(parsedSpecs).map(([key, value]) => ({
                             AD_Specifications: {
                                 path: [key],
-                                equals: value,
+                                equals: value
                             }
                         }));
+
+                        // Add to existing AND clause if present
+                        if (where.AND) {
+                            where.AND.push(...specFilters);
+                        } else {
+                            where.AND = specFilters;
+                        }
+
                     } catch (err) {
                         return res.status(400).send("Invalid AD Content JSON format.");
                     }
@@ -234,19 +242,27 @@ const get_READ = (prisma) => async (req, res) => {
                 }
 
                 if (Region) {
-                    where.Unit.is.Region = Region
+                    where.Unit = {
+
+                    }
                 }
 
                 if (City) {
-                    where.Unit.is.City = City
+                    where.Unit = {
+                        is: { City: City }
+                    }
                 }
 
                 if (District) {
-                    where.Unit.is.District = District
+                    where.Unit = {
+                        is: { District: District }
+                    }
                 }
 
                 if (Direction) {
-                    where.Unit.is.Direction = Direction
+                    where.Unit = {
+                        is: { Direction: Direction }
+                    }
                 }
 
                 if (minLatitude || maxLatitude || minLongitude || maxLongitude) {
@@ -267,18 +283,18 @@ const get_READ = (prisma) => async (req, res) => {
                         return res.status(400).send("Missing maxLongitude.");
                     }
 
-                    where.Unit.is.Latitude = {
-                        gte: minLatitude,
-                        lte: maxLatitude
-                    };
-                    where.Unit.is.Longitude = {
-                        gte: minLongitude,
-                        lte: maxLongitude
+
+                    where.Unit = {
+                        is: {
+                            Latitude: { gte: minLatitude, lte: maxLatitude },
+                            Longitude: { gte: minLongitude, lte: maxLongitude }
+                        }
                     }
                 }
 
                 forMapSelections = {
                     Unit_Price: true,
+                    Visable_Zoom: true,
                     Unit: {
                         select: {
                             Latitude: true,
@@ -286,6 +302,7 @@ const get_READ = (prisma) => async (req, res) => {
                         }
                     }
                 }
+
                 const ads = await prisma.realEstateAD.findMany({
                     where,
                     select: forMapSelections
@@ -294,68 +311,17 @@ const get_READ = (prisma) => async (req, res) => {
                 return res.status(200).send(ads);
 
             }
-                // const { Geo_level, Geo_value, AD_Type, AD_Unit_Type } = req.body;
-
-                // if (!AD_Type || !AD_Unit_Type) return res.status(400).send("Missing AD type and AD unit type are required.");
-                // if (!Geo_level || !Geo_value) {
-                //     return res.status(400).send("Missing Geo level or Geo value.");
-                // }
-
-                // if (!validAdTypes.includes(AD_Type)) {
-                //     return res.status(400).send("Invalid AD_Type value.");
-                // }
-
-                // if (!validUnitTypes.includes(AD_Unit_Type)) {
-                //     return res.status(400).send("Invalid AD_Unit_Type value.");
-                // }
-
-
-
-
-                // // Validate that Geo_level is one of the allowed fields
-                // const allowedFields = ['Region', 'City', 'District'];
-                // if (!allowedFields.includes(Geo_level)) {
-                //     return res.status(400).send("Invalid Geo_level.");
-                // }
-
-                // // Build dynamic where clause
-                // const whereClause = {
-                //     [Geo_level]: Geo_value
-                // };
-
-                // const ads = await prisma.realEstateAD.findMany({
-                //     where: {
-                //         AND: [
-                //             { AD_Type: AD_Type },
-                //             { AD_Unit_Type: AD_Unit_Type },
-                //             { Hedden: false },
-                //             { Unit: { is: whereClause }, },
-                //         ]
-                //     },
-                //     select: {
-                //         Unit_Price: true,
-                //         Visable_Zoom: true,
-                //         Hedden: true,
-                //     }
-                // });
-
-                // if (!ads.length) return res.status(404).send('No Real Estate units found.');
-                // const unitsWithFirstImage = ads.map(ad => ({
-                //     ...ad,
-                //     Outdoor_Unit_Images: ad.Outdoor_Unit_Images?.[0] || null
-                // }));
-
-                // return res.status(200).send(unitsWithFirstImage);
-
 
 
             case SearchType.FOR_LIST: {
+
                 const {
                     Office_ID,
-                    Unit_ID,
                     AD_Type,
                     AD_Unit_Type,
-                    Unit_Price,
+                    AD_Specifications,
+                    Lower_Price,
+                    Upper_Price,
 
                     Region,
                     City,
@@ -367,152 +333,138 @@ const get_READ = (prisma) => async (req, res) => {
                     maxLongitude
                 } = req.body;
 
-                
-                // const { minLatitude, maxLatitude, minLongitude, maxLongitude, AD_Type, AD_Unit_Type } = req.body;
+                if (!AD_Type || !AD_Unit_Type) return res.status(400).send("Missing AD type and AD unit type are required.");
 
-                // if (!AD_Type || !AD_Unit_Type) return res.status(400).send("Missing AD type and AD unit type are required.");
+                if (!validAdTypes.includes(AD_Type)) {
+                    return res.status(400).send("Invalid AD_Type value.");
+                }
 
-                // if (!validAdTypes.includes(AD_Type)) {
-                //     return res.status(400).send("Invalid AD_Type value.");
-                // }
+                if (!validUnitTypes.includes(AD_Unit_Type)) {
+                    return res.status(400).send("Invalid AD_Unit_Type value.");
+                }
 
-                // if (!validUnitTypes.includes(AD_Unit_Type)) {
-                //     return res.status(400).send("Invalid AD_Unit_Type value.");
-                // }
+                const where = {
+                    Hedden: false,
+                };
 
-                // if (
-                //     isNaN(minLatitude) || isNaN(maxLatitude) ||
-                //     isNaN(minLongitude) || isNaN(maxLongitude)
-                // ) {
-                //     return res.status(400).send("bounds are invalid.");
-                // }
+                if (Office_ID) {
+                    if (isNaN(Office_ID)) return res.status(400).send("Invalid or missing Office ID.");
+                    where.Office_ID = Office_ID;
+                }
 
-                // const ads = await prisma.realEstateAD.findMany({
-                //     where: {
-                //         AND: [
-                //             { AD_Type: AD_Type },
-                //             { Hedden: false },
-                //             { AD_Unit_Type: AD_Unit_Type },
-                //             {
-                //                 Unit: {
-                //                     is: {
-                //                         Latitude: { gte: minLatitude, lte: maxLatitude },
-                //                         Longitude: { gte: minLongitude, lte: maxLongitude }
-                //                     }
-                //                 },
-                //             },
-                //         ]
-                //     },
-                //     select: {
-                //         Unit_Price: true,
-                //         Visable_Zoom: true,
-                //     }
-                // });
+                if (AD_Specifications) {
+                    try {
+                        const parsedSpecs = JSON.parse(AD_Specifications);
 
-                // if (!ads.length) return res.status(404).send('No Real Estate units found in screen bounds.');
-                // return res.status(200).send(ads);
+                        const specFilters = Object.entries(parsedSpecs).map(([key, value]) => ({
+                            AD_Specifications: {
+                                path: [key],
+                                equals: value
+                            }
+                        }));
+
+                        // Add to existing AND clause if present
+                        if (where.AND) {
+                            where.AND.push(...specFilters);
+                        } else {
+                            where.AND = specFilters;
+                        }
+
+                    } catch (err) {
+                        return res.status(400).send("Invalid AD Content JSON format.");
+                    }
+                }
+
+                if (Lower_Price) {
+                    if (isNaN(Lower_Price) || Lower_Price < 0) return res.status(400).send("Invalid or missing Lower Price.");
+                    where.Unit_Price = {
+                        gte: Lower_Price
+                    }
+                }
+
+                if (Upper_Price) {
+                    if (isNaN(Upper_Price) || Upper_Price < 0) return res.status(400).send("Invalid or missing Upper Price.");
+                    where.Unit_Price = {
+                        lte: Upper_Price
+                    }
+                }
+
+                if (Region) {
+                    where.Unit = {
+
+                    }
+                }
+
+                if (City) {
+                    where.Unit = {
+                        is: { City: City }
+                    }
+                }
+
+                if (District) {
+                    where.Unit = {
+                        is: { District: District }
+                    }
+                }
+
+                if (Direction) {
+                    where.Unit = {
+                        is: { Direction: Direction }
+                    }
+                }
+
+                if (minLatitude || maxLatitude || minLongitude || maxLongitude) {
+
+                    if (!minLatitude) {
+                        return res.status(400).send("Missing minLatitude.");
+                    }
+
+                    if (!maxLatitude) {
+                        return res.status(400).send("Missing maxLatitude.");
+                    }
+
+                    if (!minLongitude) {
+                        return res.status(400).send("Missing minLongitude.");
+                    }
+
+                    if (!maxLongitude) {
+                        return res.status(400).send("Missing maxLongitude.");
+                    }
+
+
+                    where.Unit = {
+                        is: {
+                            Latitude: { gte: minLatitude, lte: maxLatitude },
+                            Longitude: { gte: minLongitude, lte: maxLongitude }
+                        }
+                    }
+                }
+
+                forListSelections = {
+                    AD_ID: true,
+                    AD_Type: true,
+                    AD_Unit_Type: true,
+                    Unit_Price: true,
+                    AD_Started_At: true,
+                    Indoor_Unit_Images: true,
+                }
+
+                const ads = await prisma.realEstateAD.findMany({
+                    where,
+                    select: forListSelections
+                });
+
+
+                // Replace Indoor_Unit_Images array with the first image only
+                const adsWithFirstImage = ads.map(ad => ({
+                    ...ad,
+                    Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
+                }));
+
+                return res.status(200).send(adsWithFirstImage);
+
+ 
             }
-
-
-            // case SearchType.SEARCH_DIRECTION: {
-            //     const { Direction, City, AD_Type, AD_Unit_Type } = req.body;
-
-            //     if (!AD_Type || !AD_Unit_Type) return res.status(400).send("Missing AD type and AD unit type are required.");
-
-            //     if (!validAdTypes.includes(AD_Type)) {
-            //         return res.status(400).send("Invalid AD_Type value.");
-            //     }
-
-            //     if (!validUnitTypes.includes(AD_Unit_Type)) {
-            //         return res.status(400).send("Invalid AD_Unit_Type value.");
-            //     }
-
-            //     if (!Direction) return res.status(400).send("Direction is required.");
-
-            //     const ads = await prisma.realEstateAD.findMany({
-            //         where: {
-            //             AND: [
-            //                 { AD_Type: AD_Type },
-            //                 { AD_Unit_Type: AD_Unit_Type },
-            //                 { Hedden: false },
-            //                 { Unit: { is: { Direction: Direction, City: City } } },
-            //             ]
-
-            //         }
-            //     });
-
-            //     if (!ads.length) return res.status(404).send('No Real Estate units found for that direction.');
-            //     return res.status(200).send(ads);
-            // }
-
-            // case SearchType.CUSTOM_SEARCH: {
-            //     const { City, Direction, AD_Specifications, AD_Type, AD_Unit_Type, Lower_Price, Upper_Price } = req.body;
-
-            //     if (!AD_Type || !AD_Unit_Type) return res.status(400).send("Missing AD type and AD unit type are required.");
-
-            //     if (!validAdTypes.includes(AD_Type)) {
-            //         return res.status(400).send("Invalid AD_Type value.");
-            //     }
-
-            //     if (!validUnitTypes.includes(AD_Unit_Type)) {
-            //         return res.status(400).send("Invalid AD_Unit_Type value.");
-            //     }
-            //     const filters = {};
-
-            //     if (Lower_Price && Upper_Price) {
-            //         if (isNaN(Lower_Price) || isNaN(Upper_Price)) {
-            //             return res.status(400).send("Price range is invalid.");
-            //         }
-
-            //         if (Lower_Price < 0 || Upper_Price < 0) {
-            //             return res.status(400).send("Price range is invalid.");
-            //         }
-
-            //         if (Lower_Price > Upper_Price) {
-            //             return res.status(400).send("Invalid price range.");
-            //         }
-
-            //         filters.Unit_Price = { gte: Lower_Price, lte: Upper_Price };
-
-            //     }
-
-
-            //     if (!City) return res.status(400).send("City is required.");
-
-            //     filters.Unit = { is: { City: City, Direction: Direction } };
-
-            //     if (AD_Specifications) {
-            //         try {
-            //             const parsedSpecs = JSON.parse(AD_Specifications);
-
-            //             // Create AND conditions for each key inside AD_Specifications
-            //             filters = Object.entries(parsedSpecs).map(([key, value]) => ({
-            //                 AD_Specifications: {
-            //                     path: [key],
-            //                     equals: value,
-            //                 }
-            //             }));
-            //         } catch (err) {
-            //             return res.status(400).send("Invalid AD Content JSON format.");
-            //         }
-            //     }
-
-            //     const units = await prisma.realEstateAD.findMany({
-            //         where: {
-            //             AND: [
-            //                 { AD_Type: AD_Type },
-            //                 { AD_Unit_Type: AD_Unit_Type },
-            //                 { Hedden: false },
-            //                 filters,
-            //             ]
-            //         },
-            //     });
-
-            //     if (!units.length)
-            //         return res.status(404).send('No Real Estate units found for that criteria.');
-
-            //     return res.status(200).send(units);
-            // }
 
 
             default:
