@@ -2,7 +2,8 @@ const { express } = require('../libraries/utilities');
 const { prisma, AD_Type } = require('../libraries/prisma_utilities');
 const { officeAuthentication,
     markitingFalLicenseAuthentication,
-    REUAuthentication
+    REUAuthentication,
+    READAuthentication
 } = require('../middlewares/authentications');
 
 const {
@@ -33,9 +34,9 @@ RE_AD.route('/')
 
 // query parameters : 'http://127.0.0.1:3050/RE_AD?AD_ID=1&Search_Type=search_one'
 
-// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&Geo_level=Region&Geo_value=Mekkah'
-// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&Geo_level=City&Geo_value=Rabigh'
-// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&Geo_level=District&Geo_value=Al-Jude'
+// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&Region=Mekkah'
+// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh'
+// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&District=Al-Jude'
 
 
 // query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&minLatitude=1.0000&maxLatitude=2.0000&minLongitude=2.0000&maxLongitude=3.0000'
@@ -43,13 +44,13 @@ RE_AD.route('/')
 // query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh&Unit_Type=LAND&Lower_Price=1&Upper_Price=10000&AD_Specifications=%7B%22Area%22%3A%22300%22%2C%22Ready%22%3A%22yes%22%7D'
  
     
-.get(bodyCleaner,tokenMiddlewere, get_READ(prisma, AD_Type))
+.get(bodyCleaner,tokenMiddlewere, get_READ(prisma))
     
     
-.put(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, REUAuthentication, edit_READ(prisma))
+.put(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, edit_READ(prisma))
     
     
-.delete(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, REUAuthentication, delete_READ(prisma));
+.delete(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, delete_READ(prisma));
 
 
 module.exports = { RE_AD }

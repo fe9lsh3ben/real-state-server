@@ -13,15 +13,20 @@ async function officeAuthentication(req, res, next) {
         const office = await prisma.realEstateOffice.findUnique({
             where: {
                 Office_ID: parseInt(req.body.Office_ID),
+            },
+            select: {
+                Office_ID: true,
+                Owner_ID: true,
+                Staff: true
             }
         });
 
         if (!office)
             return res.status(404).send('Real Estate Office not found.');
-
-        if (office.Owner_ID !== req.body.User_ID)
-            return res.status(403).send('You are not the owner of this office.');
-
+        console.log(office.Staff.find(staff => staff.User_ID === req.body.User_ID) )
+        if (office.Owner_ID !== req.body.User_ID && !office.Staff.find(staff => staff.User_ID === req.body.User_ID)) {
+            return res.status(403).send('You are not authorized to access this office, no relationship found.');
+        }
         req.body.Office_ID = office.Office_ID;
 
         next();
@@ -98,9 +103,42 @@ async function REUAuthentication(req, res, next) {
     }
 }
 
+const READAuthentication = async (req, res, next) => {
+
+    try {
+        if (!req.body.AD_ID) {
+            return res.status(400).send('Ad ID is required.');
+        }
+
+        const ad = await prisma.realEstateAD.findUnique({
+            where: {
+                AD_ID: parseInt(req.body.AD_ID)
+            },
+            select: {
+                AD_ID: true,
+                Office_ID: true
+            }
+        });
+
+        if (!ad) {
+            return res.status(404).send('Real Estate Ad not found.');
+        }
+         if (ad.Office_ID !== req.body.Office_ID ) {
+            return res.status(403).send('Ad does not belong to your office.');
+        }
+
+        req.body.AD_ID = ad.AD_ID;
+        next();
+
+    } catch (error) {
+        console.error('READ auth error:', error);
+        dbErrorHandler(res, error, 'REU authentication');
+    }
+}
 
 module.exports = {
     officeAuthentication,
     markitingFalLicenseAuthentication,
-    REUAuthentication
+    REUAuthentication,
+    READAuthentication
 }

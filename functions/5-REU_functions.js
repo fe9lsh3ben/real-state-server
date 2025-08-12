@@ -10,7 +10,10 @@ const SearchType = Object.freeze({
     CUSTOM_SEARCH: 'custom_search',
 });
 
-
+const validUnitTypes = [
+    "LAND", "BAUILDING", "APARTMENT", "VILLA", "STORE", "FARM",
+    "CORRAL", "STORAGE", "OFFICE", "SHOWROOM", "OTHER"
+];
 
 const generate_REU = (prisma) => async (req, res) => {
 
@@ -22,15 +25,26 @@ const generate_REU = (prisma) => async (req, res) => {
             Deed_Number,
             Deed_Date,
             Deed_Owners,
-            Initiator,
             Address,
             Outdoor_Unit_Images,
         } = req.body;
-        if (!(
-            Unit_Type && RE_Name && Deed_Number && Deed_Date && Deed_Owners && Initiator && Address
-            //&& Outdoor_Unit_Images
-        )) {
-            res.status(400).send('All fields are required.');
+
+
+        const missingFields = [];
+        if (!Unit_Type) missingFields.push("Unit Type");
+        if (!RE_Name) missingFields.push("RE Name");
+        if (!Deed_Number) missingFields.push("Deed Number");
+        if (!Deed_Date) missingFields.push("Deed Date");
+        if (!Deed_Owners) missingFields.push("Deed Owners");
+        if (!Address) missingFields.push("Address");
+        if (!Outdoor_Unit_Images) missingFields.push("Outdoor Unit Images");
+
+        if (missingFields.length > 0) {
+            return res.status(400).send(`Missing required fields: ${missingFields.join(", ")}`);
+        }
+
+        if (!validUnitTypes.includes(Unit_Type)) {
+            res.status(400).send('Invalid Unit Type.');
             return;
         }
 
@@ -38,7 +52,7 @@ const generate_REU = (prisma) => async (req, res) => {
             where: {
                 Deed_Number: Deed_Number
             }
-        })
+        });
 
         if (reu) {
             res.status(400).send('Real Estate Unit already exists with this Deed Number.');
@@ -46,6 +60,17 @@ const generate_REU = (prisma) => async (req, res) => {
         }
         const { Region, City, District, Direction, Latitude, Longitude } = Address;
 
+        const user = await prisma.user.findUnique({
+            where: {
+                User_ID: req.body.User_ID
+            },
+            select: {
+                Full_Name: true
+            }
+        })
+ 
+        const Initiator = { Created_By: { User_ID: req.body.User_ID, Full_Name: user.Full_Name }, Edited_By: [] };
+        
         const dataEntry = {
             Unit_Type,
             RE_Name,
@@ -212,9 +237,9 @@ const update_REU = (prisma) => async (req, res) => {
             Unit_Type,
             Deed_Owners,
             Outdoor_Unit_Images,
-            Edited_By
+            Full_Name,
         } = req.body;
-
+        
         if (!Unit_ID) {
             return res.status(400).send('Unit_ID is required.');
         }
@@ -233,19 +258,26 @@ const update_REU = (prisma) => async (req, res) => {
             return res.status(404).send('Real Estate Unit not found.');
         }
 
-        // Safely update Edited_By history
-        const editedByList = Array.isArray(existingUnit.Initiator?.Edited_By)
-            ? [...existingUnit.Initiator.Edited_By, Edited_By]
-            : [Edited_By];
+        if(Array.isArray(existingUnit.Initiator.Edited_By)){
+            existingUnit.Initiator.Edited_By.push({
+                User_ID: req.body.User_ID,
+                Full_Name,
+                Edited_At: new Date().toISOString()
+            });
+        }else{
+            existingUnit.Initiator.Edited_By = [{
+                User_ID: req.body.User_ID,
+                Full_Name,
+                Edited_At: new Date().toISOString()
+            }];
+        }
+         
 
         const updateData = {
             ...(Unit_Type && { Unit_Type }),
             ...(Deed_Owners && { Deed_Owners }),
             ...(Outdoor_Unit_Images && { Outdoor_Unit_Images }),
-            Initiator: {
-                Created_By: existingUnit.Initiator?.Created_By || null,
-                Edited_By: editedByList
-            }
+            Initiator: existingUnit.Initiator 
         };
 
         const updatedUnit = await prisma.realEstateUnit.update({

@@ -15,7 +15,6 @@ REU.route('/')
 
 /**Request's body example: {"Unit_Type":"LAND", "RE_Name": "Al-asiri", "Deed_Number": "4342308432", "Deed_Date": "1990/12/12",
     "Deed_Owners":[{"Owner_Phone_Number": "0546737456", "Owner_GovID":"1089089089", "Owner_Name":"Sultan shabin"}],
-    "Initiator":{"Created_By":{"User_ID":"3", "Full_Name": ["sultan", "shabin"]}, "Edited_By":[]},
     "Address":{"Region":"Mekkah", "City":"Rabigh", "Direction": "NORTH", "District":"Al-Jude", "Latitude":"1.2524", "Longitude":"2.5652"},
     "Office_ID": "46"
     }
@@ -40,7 +39,7 @@ REU.route('/')
 /*{"Unit_Type":"LAND", "RE_Name": "Al-asiri",
     "Deed_Owners":[{"Owner_Phone_Number": "0546737456", "Owner_GovID":"1089089089", "Owner_Name":"Sultan shabin"}],
     "Affiliated_Office": "3",
-    "Edited_By": {"User_ID":"6", "Full_Name": ["fff", "shabin"], "Date":"2022/12/12"},
+     "Date":"2022/12/12"},
     "Address":{"Region":"Mekkah", "City":"Rabigh", "Direction": "North", "Destrect":"Al-Jude", "Latitude":"1.2524", "Longitude":"2.5652"},
     "Unit_ID":"5",
 	"Office_ID":"46"

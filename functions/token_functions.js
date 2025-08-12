@@ -189,23 +189,34 @@ async function tokenVerifier(req) {
                 }
 
                 if (data.tokenType !== TokenType.ACCESS_TOKEN) {
-                    return new Error('Access token is required!');
+                    return { 'verified': false, 'message': 'Access token is required!' };
                 }
 
-                var resourceToken = await prisma.user.findUnique({ where: { User_ID: data.User_ID }, select: { Session: { select: { Token: true } } } });
+                var user = await prisma.user.findUnique({
+                    where: { User_ID: data.User_ID },
+                    select: {
+                        Full_Name: true,
+                        Employer_REO_ID: true,
+                        Session: { select: { Token: true } }
+                    }
+                });
 
-                if (!resourceToken) {
-                    return new Error('User not found!');
+                if (!user) {
+                    return { 'verified': false, 'message': 'User not found!' };
                 }
 
-                if (resourceToken.Session.Token !== token) {
-                    return new Error('Token is disposed!');
+                if (user.Session.Token !== token) {
+                    return { 'verified': false, 'message': 'Token is disposed!' };
                 }
 
-                req.body.User_ID = data.User_ID;
                 req.body.Role = data.Role;
+                req.body.User_ID = data.User_ID;
+                req.body.Full_Name = user.Full_Name;
+                (user.Employer_REO_ID && (req.body.Employer_REO_ID = user.Employer_REO_ID));
+
                 return { 'verified': true, 'message': "Token is valid" };
             } catch (error) {
+                console.log('tooken verifier');
                 return error;
             }
 
@@ -214,6 +225,7 @@ async function tokenVerifier(req) {
         return resutl;
 
     } catch (error) {
+        console.log('tooken verifier')
         return error;
     }
 }

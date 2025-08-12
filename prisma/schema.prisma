@@ -262,7 +262,7 @@ model RealEstateAD {
   AD_ID            Int              @id @default(autoincrement())
   Office_ID        Int
   Initiator_Office RealEstateOffice @relation(fields: [Office_ID], references: [Office_ID])
-  Initiator        Json //{"Created_By":{ "User_ID", "Full_Name"}, "Edited_By":[{"User_ID", "Full_Name"}]}
+  Initiator        Json //{"Created_By":{ "User_ID", "Full_Name"}, "Edited_By":[{"User_ID", "Full_Name", "Edited_At"}]}
   Created_At       DateTime         @default(now())
   Updated_At       DateTime         @updatedAt
   Unit_ID          Int
