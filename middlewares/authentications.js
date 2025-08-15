@@ -1,7 +1,10 @@
 const { prisma } = require("../libraries/prisma_utilities");
 const { dbErrorHandler } = require("../libraries/utilities");
 
-
+const Query_Type = Object.freeze({
+    LIST: 'list',
+    DETAILED: 'detailed',
+});
 
 async function officeAuthentication(req, res, next) {
     try {
@@ -23,7 +26,7 @@ async function officeAuthentication(req, res, next) {
 
         if (!office)
             return res.status(404).send('Real Estate Office not found.');
-        console.log(office.Staff.find(staff => staff.User_ID === req.body.User_ID) )
+        // console.log(office.Staff.find(staff => staff.User_ID === req.body.User_ID) )
         if (office.Owner_ID !== req.body.User_ID && !office.Staff.find(staff => staff.User_ID === req.body.User_ID)) {
             return res.status(403).send('You are not authorized to access this office, no relationship found.');
         }
@@ -136,9 +139,48 @@ const READAuthentication = async (req, res, next) => {
     }
 }
 
+const contractAuthentication = async (req, res, next) => {
+
+    try {
+
+        if(req.body.Query_Type === Query_Type.LIST) return officeAuthentication(req, res, next);
+
+        if (!req.body.Contract_ID) {
+            return res.status(400).send('Contract ID is required.');
+        }
+
+        const contract = await prisma.Contract.findUnique({
+            where: {
+                Contract_ID: parseInt(req.body.Contract_ID)
+            },
+            select: {
+                Contract_ID: true,
+                Office_ID: true,
+                Parties_Consent: true
+            }
+        });
+
+        if (!contract) {
+            return res.status(404).send('Contract not found.');
+        }
+         if (contract.Office_ID !== req.body.Office_ID && !contract.Parties_Consent.find(party => party.GOV_ID === req.body.GOV_ID)) {
+            return res.status(403).send('You are not authorized to access this contract, no relationship found.');
+        }
+
+        req.body.Contract_ID = contract.Contract_ID;
+        next();
+
+    } catch (error) {
+        console.error('contract auth error:', error);
+        dbErrorHandler(res, error, 'contract authentication');
+    }
+}
+
+
 module.exports = {
     officeAuthentication,
     markitingFalLicenseAuthentication,
     REUAuthentication,
-    READAuthentication
+    READAuthentication,
+    contractAuthentication
 }

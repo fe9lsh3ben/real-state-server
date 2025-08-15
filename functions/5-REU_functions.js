@@ -1,6 +1,6 @@
 
 const { parse } = require('dotenv');
-const { dbErrorHandler } = require('../libraries/utilities');
+const { dbErrorHandler, deleteAd } = require('../libraries/utilities');
 
 const SearchType = Object.freeze({
     SEARCH_ONE: 'search_one',
@@ -312,6 +312,8 @@ const delete_REU = (prisma) => async (req, res) => {
         if (!deletedUnit) {
             return res.status(404).send("Real estate unit not found!");
         }
+
+        deleteAd(deletedUnit.Unit_ID, 'realEstateUnit', req.body.User_ID);
 
         return res.status(200).json({
             message: "Real estate unit was deleted successfully!",

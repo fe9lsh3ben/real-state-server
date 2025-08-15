@@ -1,6 +1,6 @@
 
 
-const { dbErrorHandler } = require('../libraries/utilities');
+const { dbErrorHandler, deleteAd } = require('../libraries/utilities');
 
 const SearchType = Object.freeze({
     FOR_MAP: 'for_map',
@@ -436,7 +436,7 @@ const edit_READ = (prisma) => async (req, res) => {
                     ...(AD_Type && { AD_Type }),
                     ...(AD_Unit_Type && { AD_Unit_Type }),
                     ...(AD_Specifications && { AD_Specifications }),
-                    ...(Indoor_Unit_Images && 'Indoor_Unit_Images'),
+                    ...(Indoor_Unit_Images && { Indoor_Unit_Images: true }),
                     ...(Unit_Price && { Unit_Price }),
                     ...(Hedden !== undefined && { Hedden }),
                 }
@@ -450,7 +450,7 @@ const edit_READ = (prisma) => async (req, res) => {
                     ...(AD_Type && { AD_Type }),
                     ...(AD_Unit_Type && { AD_Unit_Type }),
                     ...(AD_Specifications && { AD_Specifications }),
-                    ...(Indoor_Unit_Images && 'Indoor_Unit_Images'),
+                    ...(Indoor_Unit_Images && { Indoor_Unit_Images: true }),
                     ...(Unit_Price && { Unit_Price }),
                     ...(Hedden !== undefined && { Hedden }),
                 }
@@ -495,9 +495,11 @@ const delete_READ = (prisma) => async (req, res) => {
             return res.status(400).send("AD_ID is required to delete the Real Estate AD.");
         }
 
-        const deletedAD = await prisma.realEStateAD.delete({
+        const deletedAD = await prisma.realEstateAD.delete({
             where: { AD_ID: parseInt(AD_ID) },
         });
+
+        deleteAd(deletedAD.AD_ID, 'realEstateAD', req.body.User_ID);
 
         return res.status(200).json({
             message: "Real Estate AD was successfully deleted.",

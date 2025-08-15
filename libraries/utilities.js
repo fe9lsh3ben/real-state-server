@@ -1,3 +1,4 @@
+import { PrismaClient } from '@prisma/client';
 
 var express = require('express');
 const bcrypt = require('bcrypt');
@@ -15,30 +16,46 @@ async function dbErrorHandler(res, error, refrence = '') {
     } else if (error.code === 'P2025') {
         res.status(404).json({ message: 'Record not found.' });
     } else {
-        res.status(500).json({ message: `Internal server error ${refrence}.`});
+        res.status(500).json({ message: `Internal server error ${refrence}.` });
     }
 
 }
 
 function mapAddressToScalars(address) {
-  if (!address) return {};
-  return {
-    Region: address.Region,
-    City: address.City,
-    District: address.District,
-    Direction: address.Direction,
-    Latitude: address.Latitude,
-    Longitude: address.Longitude,
-  };
+    if (!address) return {};
+    return {
+        Region: address.Region,
+        City: address.City,
+        District: address.District,
+        Direction: address.Direction,
+        Latitude: address.Latitude,
+        Longitude: address.Longitude,
+    };
 }
 
-module.exports = { 
-    express, 
-    bcrypt, 
-    https, 
-    http, 
-    cors, 
-    fs, 
-    dbErrorHandler, 
+// deleteAd.js
+
+const prisma = new PrismaClient();
+
+export async function deleteAd(recordID, tableName, deletedBy) {
+
+     await prisma.deletionLog.create({
+        data: {
+            recordID: recordID,
+            tableName: tableName,
+            deletedBy: deletedBy
+        }
+    });
+}
+
+
+module.exports = {
+    express,
+    bcrypt,
+    https,
+    http,
+    cors,
+    fs,
+    dbErrorHandler,
     mapAddressToScalars
 }

@@ -51,15 +51,19 @@ app.use('/profile', profile);
 
 app.use('/REO', REO);
 
+
 app.use('/FalLicense', FalLicense);
 
+
 app.use('/REU', REU);
+
+
+app.use('/RE_AD', RE_AD)
 
 
 app.use('/contract', Contract);
 
 
-app.use('/RE_AD', RE_AD)
 
 app.get('/', (req, res) => {
 

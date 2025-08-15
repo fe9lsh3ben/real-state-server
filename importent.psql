@@ -1,0 +1,13 @@
+CREATE OR REPLACE FUNCTION prevent_update_delete()
+RETURNS TRIGGER AS $$
+BEGIN
+  RAISE EXCEPTION 'Updates and deletions are not allowed on this table';
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS block_changes ON "TermsAndCondition";
+
+CREATE TRIGGER block_changes
+BEFORE UPDATE OR DELETE ON "TermsAndCondition"
+FOR EACH ROW
+EXECUTE FUNCTION prevent_update_delete();

@@ -1,4 +1,4 @@
-const { dbErrorHandler } = require("../libraries/utilities");
+const { dbErrorHandler, deleteAd } = require("../libraries/utilities");
 
 const generate_FalLicense = (prisma) => async (req, res) => {
     try {
@@ -57,12 +57,12 @@ const get_FalLicense = (prisma) => async (req, res) => {
                 where: { Fal_License_Number }
             });
         } else if (Office_ID) {
-             let licenses = await prisma.realEstateOffice.findMany({
+            let licenses = await prisma.realEstateOffice.findMany({
                 where: { Office_ID: parseInt(Office_ID) },
                 select: { FalLicense: true }
             });
-             
-            if(licenses.length === 0) {
+
+            if (licenses.length === 0) {
                 return res.status(404).send('No Fal License found for this office.');
             }
             license = licenses;
@@ -89,17 +89,16 @@ const delete_FalLicense = (prisma) => async (req, res) => {
             return res.status(400).send("License_Number or Office_ID is required!");
         }
 
-        let deleted;
 
-         if (Fal_License_Number) {
-            deleted = await prisma.falLicense.delete({
-                where: { Fal_License_Number },
-            });
-        }
+        const deleted = await prisma.falLicense.delete({
+            where: { Fal_License_Number },
+        });
 
         if (!deleted) {
             return res.status(404).send("Fal License not found.");
         }
+
+        deleteAd(deleted.License_ID, 'FalLicense', req.body.User_ID);
 
         return res.status(200).json({ message: "Fal License was successfully deleted!" });
 
