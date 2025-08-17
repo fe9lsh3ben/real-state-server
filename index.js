@@ -52,7 +52,7 @@ app.use('/profile', profile);
 app.use('/REO', REO);
 
 
-app.use('/FalLicense', FalLicense);
+app.use('/falLicense', FalLicense);
 
 
 app.use('/REU', REU);

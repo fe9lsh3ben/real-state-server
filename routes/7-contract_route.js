@@ -13,11 +13,15 @@ const { officeAuthentication, contractAuthentication } = require('../middlewares
 const Contract = express.Router();
 
 
-Contract.route('/contract')
+Contract.route('/')
     /** Request's body example: {"Office_ID":234 ,"PartiesConsent"://{GOV ID,Name, SignatureOTP, Phone Number},
     "Contant":{content, contract terms} }
     **/
     .post(tokenMiddlewere, officeAuthentication, generate_Contract(prisma))
-    .get(tokenMiddlewere, contractAuthentication, get_Contract(prisma, Query_Type))
+    .get(tokenMiddlewere, contractAuthentication, get_Contract(prisma))
 
+
+Contract.route('/get-contract')
+
+    .get(get_Contract_Unregitered(prisma))
 module.exports = {Contract}

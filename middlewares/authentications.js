@@ -2,8 +2,10 @@ const { prisma } = require("../libraries/prisma_utilities");
 const { dbErrorHandler } = require("../libraries/utilities");
 
 const Query_Type = Object.freeze({
-    LIST: 'list',
-    DETAILED: 'detailed',
+    LIST_FOR_OFFICE: 'list_for_office',
+    DETAILED_FOR_OFFICE: 'detailed_for_office',
+    LIST_FOR_USER: 'list_for_user',
+    DETAILED_FOR_USER: 'detailed_for_user',
 });
 
 async function officeAuthentication(req, res, next) {
@@ -56,12 +58,12 @@ async function markitingFalLicenseAuthentication(req, res, next) {
             include: {
                 FalLicense: true
             }
-             
+
         });
-         
+
         let License = office.FalLicense[0];
         if (!License) return res.status(404).send('No Marketing Fal License found.');
- 
+
         if (Date.now() > new Date(License.Expiry_Date).getTime())
             return res.status(404).send('Marketing Fal License expired.');
 
@@ -126,7 +128,7 @@ const READAuthentication = async (req, res, next) => {
         if (!ad) {
             return res.status(404).send('Real Estate Ad not found.');
         }
-         if (ad.Office_ID !== req.body.Office_ID ) {
+        if (ad.Office_ID !== req.body.Office_ID) {
             return res.status(403).send('Ad does not belong to your office.');
         }
 
@@ -143,32 +145,76 @@ const contractAuthentication = async (req, res, next) => {
 
     try {
 
-        if(req.body.Query_Type === Query_Type.LIST) return officeAuthentication(req, res, next);
 
-        if (!req.body.Contract_ID) {
-            return res.status(400).send('Contract ID is required.');
+        switch (req.body.Query_Type) {
+            case Query_Type.LIST_FOR_OFFICE:
+                return officeAuthentication(req, res, next);
+
+            case Query_Type.DETAILED_FOR_OFFICE:
+                return officeAuthentication(req, res, next);
+
+            case Query_Type.LIST_FOR_USER:
+
+                if (!req.body.Contract_ID) {
+                    return res.status(400).send('Contract ID is required.');
+                }
+
+                const contract = await prisma.contract.findUnique({
+                    where: {
+                        Contract_ID: parseInt(req.body.Contract_ID)
+                    },
+                    select: {
+                        Contract_ID: true,
+                        Office_ID: true,
+                        Parties_Consent: true
+                    }
+                });
+
+                if (!contract) {
+                    return res.status(404).send('Contract not found.');
+                }
+
+                if (contract.Office_ID !== req.body.Office_ID && !contract.Parties_Consent.find(party => party.GOV_ID === req.body.GOV_ID)) {
+                    return res.status(403).send('You are not authorized to access this contract, no relationship found.');
+                }
+
+                req.body.Contract_ID = contract.Contract_ID;
+                next();
+
+            case Query_Type.DETAILED_FOR_USER:
+
+                if (!req.body.Contract_ID) {
+                    return res.status(400).send('Contract ID is required.');
+                }
+
+                const contract = await prisma.contract.findUnique({
+                    where: {
+                        Contract_ID: parseInt(req.body.Contract_ID)
+                    },
+                    select: {
+                        Contract_ID: true,
+                        Office_ID: true,
+                        Parties_Consent: true
+                    }
+                });
+
+                if (!contract) {
+                    return res.status(404).send('Contract not found.');
+                }
+
+                if (contract.Office_ID !== req.body.Office_ID && !contract.Parties_Consent.find(party => party.GOV_ID === req.body.GOV_ID)) {
+                    return res.status(403).send('You are not authorized to access this contract, no relationship found.');
+                }
+
+                req.body.Contract_ID = contract.Contract_ID;
+                next();
+
+            default:
+                return res.status(400).send('Invalid query type.');
+
         }
 
-        const contract = await prisma.Contract.findUnique({
-            where: {
-                Contract_ID: parseInt(req.body.Contract_ID)
-            },
-            select: {
-                Contract_ID: true,
-                Office_ID: true,
-                Parties_Consent: true
-            }
-        });
 
-        if (!contract) {
-            return res.status(404).send('Contract not found.');
-        }
-         if (contract.Office_ID !== req.body.Office_ID && !contract.Parties_Consent.find(party => party.GOV_ID === req.body.GOV_ID)) {
-            return res.status(403).send('You are not authorized to access this contract, no relationship found.');
-        }
-
-        req.body.Contract_ID = contract.Contract_ID;
-        next();
 
     } catch (error) {
         console.error('contract auth error:', error);

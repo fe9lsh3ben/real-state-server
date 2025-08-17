@@ -53,7 +53,6 @@ const get_Contract = (prisma) => async (req, res) => {
 
     try {
 
-
         switch (req.body.Query_Type) {
 
             case Query_Type.LIST:
@@ -66,6 +65,7 @@ const get_Contract = (prisma) => async (req, res) => {
                 if (contracts.length === 0) {
                     return res.status(404).send('No contracts found.');
                 }
+
                 return res.status(200).json(contracts);
 
             case Query_Type.DETAILED:
@@ -81,7 +81,10 @@ const get_Contract = (prisma) => async (req, res) => {
                     return res.status(404).send('Contract not found.');
                 }
 
-                return res.status(200).json(contract);
+                return res.status(200).send({
+                    contract,
+                    message: 'Contract was successfully retrieved.'
+                });
         }
        
     } catch (error) {
