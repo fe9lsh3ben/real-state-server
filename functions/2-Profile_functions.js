@@ -1,7 +1,7 @@
 const { dbErrorHandler, mapAddressToScalars } = require("../libraries/utilities");
 const { jwt, argon2 } = require("../libraries/authTools_lib");
 const { generateTokenByPrivate_key, TokenType, generateTokenByRefreshToken } = require("../functions/token_functions");
-
+const crypto = require('crypto');
 const signup = (prisma) => async (req, res) => {
     let user;
     try {
@@ -60,22 +60,52 @@ const signup = (prisma) => async (req, res) => {
             },
         });
 
-        // Send response
-        res.status(201).send({
-            data: user,
-            Session: {
-                Token: storedSession.Token,
-            },
-            Refresh_Token: {
-                Refresh_Token: storedRefresh.Refresh_Token,
-            },
+        res.cookie("session", storedSession.Token, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false, // set true if using HTTPS
+            maxAge: 1000 * 60 * 60 * 4, // 4 hour
         });
+
+
+        res.cookie("refreshToken", storedRefresh.Refresh_Token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            path: "/profile/renew_token" // limit usage only to refresh endpoint
+        });
+        // Generate CSRF token (random string)
+        const csrfToken = crypto.randomBytes(32).toString("hex");
+
+        // Send CSRF token to client (readable by JS)
+        res.cookie("csrfToken", csrfToken, {
+            httpOnly: false, // JS can read it
+            sameSite: "lax",
+            secure: false, // set true if using HTTPS
+            maxAge: 1000 * 60 * 60 * 4,
+        });
+
+        delete user.Password;
+
+        if (req.headers['x-mobile-app']) {
+            return res.status(201).send({
+                data: user,
+                token: storedSession.Token,
+                refreshToken: storedRefresh.Refresh_Token
+            });
+        }
+        // Send response
+        return res.status(201).send({
+            data: user,
+        });
+
     } catch (error) {
-        dbErrorHandler(res, error, "signup");
         if (typeof user !== "undefined" && user?.User_ID) {
             await prisma.user.delete({ where: { User_ID: user.User_ID } });
             console.log('Error occurred and user was deleted');
         }
+
+        dbErrorHandler(res, error, "signup");
         console.error(error.message);
 
     }
@@ -113,7 +143,7 @@ const login = (prisma) => async (req, res) => {
         const refreshExpiry = new Date(decoded.exp * 1000);
 
         // Update session
-        await prisma.user.update({
+        const updatedUser = await prisma.user.update({
             where: { User_ID: user.User_ID },
             data: {
                 Session: {
@@ -129,13 +159,61 @@ const login = (prisma) => async (req, res) => {
                     },
                 },
             },
+            select: {
+                Session: {
+                    select: {
+                        Token: true,
+                        Expires_At: true,
+                    },
+                },
+                Refresh_Token: {
+                    select: {
+                        Refresh_Token: true,
+                        Expires_At: true,
+                    },
+                },
+            }
         });
 
-        // Send tokens back
-        return res.status(200).send({
-            Session: { Token: accessToken },
-            Refresh_Token: { Refresh_Token: refreshToken },
+        res.cookie("session", updatedUser.Session.Token, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false, // set true if using HTTPS
+            maxAge: 1000 * 60 * 60 * 4, // 4 hour
         });
+
+
+        res.cookie("refreshToken", updatedUser.Refresh_Token.Refresh_Token, {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: false,
+            path: "/profile/renew_token" // limit usage only to refresh endpoint
+        });
+
+        // Generate CSRF token (random string)
+        const csrfToken = crypto.randomBytes(32).toString("hex");
+        // Send CSRF token to client (readable by JS)
+        res.cookie("csrfToken", csrfToken, {
+            httpOnly: false, // JS can read it
+            sameSite: "lax",
+            secure: false, // set true if using HTTPS
+            maxAge: 1000 * 60 * 60 * 4,
+        });
+
+        if (req.headers['x-mobile-app']) {
+            return res.status(201).send({
+                token: updatedUser.Session.Token,
+                refreshToken: updatedUser.Refresh_Token.Refresh_Token,
+                message: 'Login successful',
+            });
+        }
+
+        // Send response
+        return res.status(201).send({
+            message: 'Login successful',
+        });
+
+
     } catch (error) {
         dbErrorHandler(res, error, 'login');
         console.error(error.message);
@@ -146,8 +224,8 @@ const login = (prisma) => async (req, res) => {
 
 
 const becomeOfficeStaff = (prisma, User_Type) => async (req, res) => {
-     
-    
+
+
     try {
 
         if (req.body.Role === User_Type.REAL_ESTATE_OFFICE_STAFF) {
@@ -176,7 +254,7 @@ const becomeOfficeStaff = (prisma, User_Type) => async (req, res) => {
         await generateTokenByRefreshToken(prisma)(req, res);
 
     } catch (error) {
-        
+
         dbErrorHandler(res, error, 'become office staff');
 
         if (typeof user !== "undefined") {
@@ -239,9 +317,8 @@ const edit_Profile = (prisma) => async (req, res) => {
         const updateData = {};
         if (req.body.Email) updateData.Email = req.body.Email;
         if (req.body.Profile_Image) updateData.Profile_Image = req.body.Profile_Image;
-        if (req.body.Region) updateData.Region = req.body.Region;
-        if (req.body.City) updateData.City = req.body.City;
-        if (req.body.District) updateData.District = req.body.District;
+        if (address.Region) updateData.Region = address.Region;
+        if (address.City) updateData.City = address.City;
         if (req.body.Other1) updateData.Other1 = req.body.Other1;
 
         const updatedProfile = await prisma.user.update({
@@ -250,6 +327,7 @@ const edit_Profile = (prisma) => async (req, res) => {
             select: {
                 User_ID: true,
                 Role: true,
+                Username: true,
                 Email: true,
                 Profile_Image: true,
                 Gov_ID: true,
@@ -259,8 +337,8 @@ const edit_Profile = (prisma) => async (req, res) => {
                 User_Phone: true,
                 Other1: true,
                 Employer_REO_ID: true,
-                Username: true,
                 Balance: true,
+                Fal_Licenses: { select: { License_ID: true, Fal_License_Number: true } },
             },
         });
 

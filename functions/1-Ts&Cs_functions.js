@@ -1,6 +1,8 @@
 const {dbErrorHandler} = require("../libraries/utilities");
 
 const createNewTandC = (prisma, Committed_By) => async (req, res) => {
+    
+    let result;
     try {
         let TC_type;
         let TC_ID_type;
@@ -32,7 +34,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
             take: 1,
         });
 
-        let result;
+        
 
         if (found.length === 0) {
             result = await prisma.TermsAndCondition.create({
@@ -56,7 +58,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
             const incrementedNumber = (parseInt(numberPart, 10) + 1).toString();
             const paddedIncrement = incrementedNumber.padStart(numberPart.length, '0');
 
-            result = await prisma.TermsAndCondition.create({
+            result = await prisma.termsAndCondition.create({
                 data: {
                     TC_ID: `${prefix}${paddedIncrement}`,
                     Content: [{ "1": req.body.Content }],
@@ -69,6 +71,11 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
         return res.send(result);
 
     } catch (error) {
+        if (typeof result !== "undefined" && result?.TC_ID) {
+            await prisma.termsAndCondition.delete({ where: { TC_ID: result.TC_ID } });
+            console.log('Error occurred and terms were deleted');
+        }
+
         dbErrorHandler(res, error, 'createNewTandC');
         console.error(error.message);
     }

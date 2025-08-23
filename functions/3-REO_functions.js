@@ -53,8 +53,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Status: Office_Or_User_Status.ACTIVE,
             Owner_ID:  User_ID 
         };
-                console.log('am here');
-
+ 
         if (Fal_License_Number) {
             let licnese = await prisma.falLicense.findUnique({
                 where: {
@@ -91,7 +90,6 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
         );
 
     } catch (error) {
-        console.error('Error:', error.message);
 
         // Rollback if partial entity was created
         if (typeof createdOffice !== 'undefined' && createdOffice?.Office_ID) {
@@ -100,12 +98,14 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
                 await prisma.realEstateOffice.delete({
                     where: { Office_ID: createdOffice.Office_ID },
                 });
+                console.log('Rollback successful.');
             } catch (rollbackError) {
                 console.error('Rollback failed:', rollbackError.message);
             }
         }
 
         dbErrorHandler(res, error, 'generate REO');
+        console.error('Error:', error.message);
     }
 
 };

@@ -18,39 +18,39 @@ const {
 const RE_AD = express.Router();
 
 
-RE_AD.route('/') 
+RE_AD.route('/')
 
     /**Request's body example:{
+      "Unit_ID": "6",
+    "Office_ID": "46",
     "RealEstate" :"3" ,"AD_Type" : "RENT" ,
     "AD_Unit_Type": "APARTMENT" ,
     "AD_Specifications":{
-    "Area" : "300" , "Ready" : "yes"},
-    "AdStartedAt": "2025-01-12"  ,"AdExpiry":  "2026-12-31",
-    "Unit_ID": "6",
-    "Office_ID": "46"
+    "Area" : "300" , "Ready" : "yes"}
     }*/
-.post(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, REUAuthentication, generate_READ(prisma))
+
+    .post(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, REUAuthentication, generate_READ(prisma))
 
 
-// query parameters : 'http://127.0.0.1:3050/RE_AD?AD_ID=1&Search_Type=search_one'
+    // query parameters : 'http://127.0.0.1:3050/RE_AD?AD_ID=1&Search_Type=complete'
 
-// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&Region=Mekkah'
-// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh'
-// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&District=Al-Jude'
+    // query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&Region=Mekkah'
+    // query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh'
+    // query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&District=Al-Jude'
 
 
-// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&minLatitude=1.0000&maxLatitude=2.0000&minLongitude=2.0000&maxLongitude=3.0000'
-// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh&Direction=NORTH'
-// query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh&Unit_Type=LAND&Lower_Price=1&Upper_Price=10000&AD_Specifications=%7B%22Area%22%3A%22300%22%2C%22Ready%22%3A%22yes%22%7D'
- 
-    
-.get(bodyCleaner,tokenMiddlewere, get_READ(prisma))
-    
-    
-.put(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, edit_READ(prisma))
-    
-    
-.delete(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, delete_READ(prisma));
+    // query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&minLatitude=1.0000&maxLatitude=2.0000&minLongitude=2.0000&maxLongitude=3.0000'
+    // query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh&Direction=NORTH'
+    // query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh&Unit_Type=LAND&Lower_Price=0&Upper_Price=10000&AD_Specifications=%7B%22Area%22%3A%22300%22%2C%22Ready%22%3A%22yes%22%7D'
+
+
+    .get(bodyCleaner, tokenMiddlewere, get_READ(prisma))
+
+
+    .put(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, edit_READ(prisma))
+
+
+    .delete(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, delete_READ(prisma));
 
 
 module.exports = { RE_AD }

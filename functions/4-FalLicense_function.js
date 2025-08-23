@@ -1,6 +1,7 @@
 const { dbErrorHandler, deleteAd } = require("../libraries/utilities");
 
 const generate_FalLicense = (prisma) => async (req, res) => {
+    let createdLicense;
     try {
         const {
             Fal_License_Number,
@@ -18,7 +19,7 @@ const generate_FalLicense = (prisma) => async (req, res) => {
             );
         }
 
-        const createdLicense = await prisma.falLicense.create({
+        createdLicense = await prisma.falLicense.create({
             data: {
                 Fal_License_Number,
                 License_Type,
@@ -37,6 +38,11 @@ const generate_FalLicense = (prisma) => async (req, res) => {
         });
 
     } catch (error) {
+        if (typeof createdLicense !== "undefined" && createdLicense?.License_ID) {
+            await prisma.falLicense.delete({ where: { License_ID: createdLicense.License_ID } });
+            console.log('Error occurred and license was deleted!');
+        }
+
         dbErrorHandler(res, error, "generate fal license");
         console.error(error.code, error.message);
     }

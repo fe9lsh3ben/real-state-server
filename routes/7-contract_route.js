@@ -3,7 +3,7 @@ const { prisma} = require('../libraries/prisma_utilities');
 const {
     generate_Contract,
     get_Contract,
-    delete_Contract,
+    get_Contract_Unregistered,
     tokenMiddlewere} = require('../libraries/functions&middlewares_lib');
 
 const { officeAuthentication, contractAuthentication } = require('../middlewares/authentications');
@@ -21,7 +21,10 @@ Contract.route('/')
     .get(tokenMiddlewere, contractAuthentication, get_Contract(prisma))
 
 
-Contract.route('/get-contract')
+Contract.route('/get-contract-unregitered')
 
-    .get(get_Contract_Unregitered(prisma))
+    .get(get_Contract_Unregistered(prisma));
+
+
+    
 module.exports = {Contract}

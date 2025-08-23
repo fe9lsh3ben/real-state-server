@@ -178,6 +178,7 @@ model User {
 
     Fal_Licenses FalLicense[] @relation(name: "License Owner")
 
+    Contracts   Int[]
     Balance     Decimal                @default(0.0)
     User_Status Office_Or_User_Status? @default(ACTIVE)
 }
@@ -283,8 +284,9 @@ model Contract {
     Office_ID        Int
     Initiator_Office RealEstateOffice @relation(fields: [Office_ID], references: [Office_ID])
     Parties_Consent  Json[] //{GOV_ID, Name, Signature_OTP, Phone_Number}
-    Content          Json //{content, contract terms}   
-    Other            Json
+    Subject          String
+    Content          Json //{ Content, contract terms}   
+    Other            Json?
     Created_At       DateTime         @default(now())
     Updated_At       DateTime         @updatedAt
 }

@@ -5,6 +5,7 @@ const bodyCleaner = (req, res, next) => {
     next();
 }
 
+//this function check the request origin to prevent cross-site request forgery CSRF.
 
 module.exports = {
     bodyCleaner

@@ -44,8 +44,7 @@ const {
 const {
     generate_Contract,
     get_Contract,
-    update_Contract,
-    delete_Contract,
+    get_Contract_Unregistered,
 } = require('../functions/7-contract_functions')
 
 
@@ -93,8 +92,7 @@ module.exports = {
     //Contract functions
     generate_Contract,
     get_Contract,
-    update_Contract,
-    delete_Contract,
+    get_Contract_Unregistered,
 
 
     //middlewares

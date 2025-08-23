@@ -1,7 +1,7 @@
 const { prisma } = require("../libraries/prisma_utilities");
 const { dbErrorHandler } = require("../libraries/utilities");
 
-const Query_Type = Object.freeze({
+const Contract_Query_Type = Object.freeze({
     LIST_FOR_OFFICE: 'list_for_office',
     DETAILED_FOR_OFFICE: 'detailed_for_office',
     LIST_FOR_USER: 'list_for_user',
@@ -26,12 +26,12 @@ async function officeAuthentication(req, res, next) {
             }
         });
 
-        if (!office)
-            return res.status(404).send('Real Estate Office not found.');
+        if (!office) return res.status(404).send('Real Estate Office not found.');
         // console.log(office.Staff.find(staff => staff.User_ID === req.body.User_ID) )
         if (office.Owner_ID !== req.body.User_ID && !office.Staff.find(staff => staff.User_ID === req.body.User_ID)) {
             return res.status(403).send('You are not authorized to access this office, no relationship found.');
         }
+        
         req.body.Office_ID = office.Office_ID;
 
         next();
@@ -145,76 +145,27 @@ const contractAuthentication = async (req, res, next) => {
 
     try {
 
+        if (!req.body.Query_Type) return res.status(400).send('Query type is required.');
 
-        switch (req.body.Query_Type) {
-            case Query_Type.LIST_FOR_OFFICE:
-                return officeAuthentication(req, res, next);
+        if (!Object.values(Contract_Query_Type).includes(req.body.Query_Type)) return res.status(400).send('Invalid query type.');
 
-            case Query_Type.DETAILED_FOR_OFFICE:
-                return officeAuthentication(req, res, next);
-
-            case Query_Type.LIST_FOR_USER:
-
-                if (!req.body.Contract_ID) {
-                    return res.status(400).send('Contract ID is required.');
-                }
-
-                const contract = await prisma.contract.findUnique({
-                    where: {
-                        Contract_ID: parseInt(req.body.Contract_ID)
-                    },
-                    select: {
-                        Contract_ID: true,
-                        Office_ID: true,
-                        Parties_Consent: true
-                    }
-                });
-
-                if (!contract) {
-                    return res.status(404).send('Contract not found.');
-                }
-
-                if (contract.Office_ID !== req.body.Office_ID && !contract.Parties_Consent.find(party => party.GOV_ID === req.body.GOV_ID)) {
-                    return res.status(403).send('You are not authorized to access this contract, no relationship found.');
-                }
-
-                req.body.Contract_ID = contract.Contract_ID;
-                next();
-
-            case Query_Type.DETAILED_FOR_USER:
-
-                if (!req.body.Contract_ID) {
-                    return res.status(400).send('Contract ID is required.');
-                }
-
-                const contract = await prisma.contract.findUnique({
-                    where: {
-                        Contract_ID: parseInt(req.body.Contract_ID)
-                    },
-                    select: {
-                        Contract_ID: true,
-                        Office_ID: true,
-                        Parties_Consent: true
-                    }
-                });
-
-                if (!contract) {
-                    return res.status(404).send('Contract not found.');
-                }
-
-                if (contract.Office_ID !== req.body.Office_ID && !contract.Parties_Consent.find(party => party.GOV_ID === req.body.GOV_ID)) {
-                    return res.status(403).send('You are not authorized to access this contract, no relationship found.');
-                }
-
-                req.body.Contract_ID = contract.Contract_ID;
-                next();
-
-            default:
-                return res.status(400).send('Invalid query type.');
-
+        if (req.body.Query_Type === Contract_Query_Type.LIST_FOR_OFFICE || req.body.Query_Type === Contract_Query_Type.DETAILED_FOR_OFFICE) {
+            return officeAuthentication(req, res, next);
+        } else {
+            contractUnregisteredAuthentication(req, res, next);
         }
 
+    } catch (error) {
+        console.error('contract auth error:', error);
+        dbErrorHandler(res, error, 'contract authentication');
+    }
+}
 
+const contractUnregisteredAuthentication = async (req, res, next) => {
+
+    try {
+
+        res.status(403).send('The function is not yet implemented.');
 
     } catch (error) {
         console.error('contract auth error:', error);

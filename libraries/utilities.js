@@ -1,4 +1,3 @@
-import { PrismaClient } from '@prisma/client';
 
 var express = require('express');
 const bcrypt = require('bcrypt');
@@ -6,6 +5,8 @@ var https = require('https');
 var http = require('http');
 var cors = require('cors');
 var fs = require('fs');
+const cookieParser = require("cookie-parser");
+
 
 async function dbErrorHandler(res, error, refrence = '') {
 
@@ -32,24 +33,10 @@ function mapAddressToScalars(address) {
         Longitude: address.Longitude,
     };
 }
-
-// deleteAd.js
-
-const prisma = new PrismaClient();
-
-export async function deleteAd(recordID, tableName, deletedBy) {
-
-     await prisma.deletionLog.create({
-        data: {
-            recordID: recordID,
-            tableName: tableName,
-            deletedBy: deletedBy
-        }
-    });
-}
-
+ 
 
 module.exports = {
+    cookieParser,
     express,
     bcrypt,
     https,

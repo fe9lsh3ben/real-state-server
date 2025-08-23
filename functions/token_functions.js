@@ -3,6 +3,7 @@
 const { type } = require('os');
 const { jwt, PRIVATE_KEY, PUBLIC_KEY } = require('../libraries/authTools_lib');
 const { prisma, User_Type } = require('../libraries/prisma_utilities');
+const crypto = require('crypto');
 const util = require('util');
 const jwtVerifyAsync = util.promisify(jwt.verify);
 require('dotenv').config();
@@ -104,8 +105,41 @@ async function syncTokens(data, message, res) {
                 },
             },
         });
+        res.cookie("session", updatedUser.Session.Token, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: false, // set true if using HTTPS
+            maxAge: 1000 * 60 * 60 * 4, // 1 hour
+        });
+
+
+        res.cookie("refreshToken", updatedUser.Refresh_Token.Refresh_Token, {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: false,
+            path: "/profile/renew_token" // limit usage only to refresh endpoint
+        });
+
+        // Generate CSRF token (random string)
+        const csrfToken = crypto.randomBytes(32).toString("hex");
+
+        // Send CSRF token to client (readable by JS)
+        res.cookie("csrfToken", csrfToken, {
+            httpOnly: false, // JS can read it
+            sameSite: "lax",
+            secure: false, // set true if using HTTPS
+            maxAge: 1000 * 60 * 60 * 4,
+        });
+
+        if (req.headers['x-mobile-app']) {
+            return res.status(201).send({
+                data: updatedUser,
+                message
+            });
+        }
 
         return res.status(200).json({ user_data: updatedUser, message });
+
     } catch (error) {
         throw error;
     }
@@ -116,8 +150,14 @@ async function syncTokens(data, message, res) {
 const generateTokenByRefreshToken = (prisma) => async (req, res) => {
     try {
 
-        const token = req.headers['refresh_token'];
+        let token;
 
+        if (req.cookies.refreshToken) {
+            token = req.cookies.refreshToken;
+        } else {
+            const authHeader = req.headers['refresh_token'];
+            token = authHeader && authHeader.split(' ')[1];
+        }
         if (!token) {
             throw new Error('Token is required!');
         }
@@ -162,12 +202,15 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
 async function tokenVerifier(req) {
 
     try {
-
-        const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
+        let token;
+        if (req.cookies.session) {
+            token = req.cookies.session;
+        } else {
+            const authHeader = req.headers['authorization'];
+            token = authHeader && authHeader.split(' ')[1];
+        }
 
         if (!token) {
-
             return { 'verified': false, 'message': 'token is required!' };
         }
 
@@ -234,6 +277,15 @@ async function tokenVerifier(req) {
 async function tokenMiddlewere(req, res, next) {
 
     try {
+
+        if (!req.headers['x-mobile-app']) {
+            const csrfCookie = req.cookies.csrfToken;
+            const csrfHeader = req.headers["x-csrf-token"];
+
+            if (!csrfHeader || csrfHeader !== csrfCookie) {
+                return res.status(403).send("Invalid CSRF token");
+            }
+        }
 
         const result = await tokenVerifier(req);
         if (result instanceof Error) {

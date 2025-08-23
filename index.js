@@ -1,5 +1,7 @@
 //___________Utilities______________
-const  {express, https, http, cors, fs} = require('./libraries/utilities')
+const {
+    cookieParser,
+    express, https, http, cors, fs } = require('./libraries/utilities')
 
 
 
@@ -8,6 +10,7 @@ const  {express, https, http, cors, fs} = require('./libraries/utilities')
 
 var app = express()
 
+app.use(cookieParser());
 app.use(express.json(), cors({
     origin: "*",
     credentials: true,
@@ -41,7 +44,7 @@ const {
     RE_AD
 
 } = require('./libraries/routes_lib');
- 
+
 
 app.use('/terms-and-conditions', T_AND_C);
 
@@ -72,15 +75,6 @@ app.get('/', (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
 //___________SERVER______________
 
 
@@ -92,3 +86,29 @@ server.listen(port, host, () => {
 
     console.log(`server listining at ${host}:${port}`)
 });
+
+
+/**
+ * in native flutter app send request with header as follows:
+ * 
+ * await http.post(
+  Uri.parse("https://example.com/login"),
+  headers: {
+  "X-Mobile-App": "true", // Set the X-Mobile-App header
+  "refresh_token": "Bearer refresh_token", // the form of refresh token in native app
+  "authorization": "Bearer access_token", // the form of access token in native app
+  },
+  body: {...},
+);
+
+ * in web app send requests with x-csrf-token header:
+
+ *await http.post(
+  Uri.parse("https://example.com/login"),
+  headers: {
+  "x-csrf-token": "Bearer csrf-token"
+  },
+  body: {...},  
+ 
+
+ */

@@ -17,24 +17,30 @@ const validUnitTypes = [
 
 
 const generate_READ = (prisma) => async (req, res) => {
+
+    let ad;
     try {
         const {
-            AD_Specifications,
+            Unit_ID,
             AD_Type,
             AD_Unit_Type,
+            Indoor_Unit_Images,
+            AD_Specifications,
+            Unit_Price,
             Office_ID,
-            Unit_ID,
             Fal_License_Number,
         } = req.body;
 
 
         // Check required fields
         const missingFields = [];
-        if (!AD_Specifications) missingFields.push("AD Content");
+        if (!Unit_ID) missingFields.push("Unit ID");
         if (!AD_Type) missingFields.push("AD Type");
         if (!AD_Unit_Type) missingFields.push("AD Unit Type");
+        // if (!Indoor_Unit_Images) missingFields.push("Indoor Unit Images");
+        if (!AD_Specifications) missingFields.push("AD Content");
+        if (!Unit_Price) missingFields.push("Unit Price");
         if (!Office_ID) missingFields.push("Office ID");
-        if (!Unit_ID) missingFields.push("Unit ID");
         if (!Fal_License_Number) missingFields.push("Fal License Number");
 
         if (missingFields.length > 0) {
@@ -56,6 +62,7 @@ const generate_READ = (prisma) => async (req, res) => {
             Unit_ID: Unit_ID,
             AD_Type,
             AD_Unit_Type,
+            // Indoor_Unit_Images,
             AD_Specifications,
             AD_Started_At: new Date(),
             Hedden: false,
@@ -66,7 +73,7 @@ const generate_READ = (prisma) => async (req, res) => {
 
 
 
-        const ad = await prisma.realEstateAD.create({
+        ad = await prisma.realEstateAD.create({
             data: dataEntry
         });
 
@@ -76,6 +83,11 @@ const generate_READ = (prisma) => async (req, res) => {
         });
 
     } catch (error) {
+
+        if (typeof ad !== "undefined" && ad?.AD_ID) {
+            await prisma.realEstateAD.delete({ where: { AD_ID: ad.AD_ID } });
+            console.log('Error occurred and ad was deleted!');
+        }
         dbErrorHandler(res, error, "generate real estate ad");
         console.error(error.message);
     }
@@ -90,21 +102,13 @@ const get_READ = (prisma) => async (req, res) => {
 
         switch (Search_Type) {
             case SearchType.COMPLETE: {
+                Object.assign(req.body, req.query);
                 const AD_ID = parseInt(req.body.AD_ID);
                 if (isNaN(AD_ID)) return res.status(400).send("Invalid or missing Ad ID.");
 
                 const ad = await prisma.realEstateAD.findUnique({
                     where: { AD_ID },
-                    select: {
-                        AD_ID: true,
-                        AD_Type: true,
-                        AD_Unit_Type: true,
-                        Indoor_Unit_Images: true,
-                        AD_Specifications: true,
-                        AD_Started_At: true,
-                        Unit_Price: true,
-                        Hedden: true,
-
+                    include: {
                         Initiator_Office: {
                             select: {
                                 Office_ID: true,
@@ -113,7 +117,6 @@ const get_READ = (prisma) => async (req, res) => {
                                 Rating: true
                             }
                         },
-
                         Unit: {
                             select: {
                                 Unit_ID: true,
@@ -128,10 +131,18 @@ const get_READ = (prisma) => async (req, res) => {
                                 Outdoor_Unit_Images: true,
                             }
                         }
+
                     }
                 });
-                if (!ad) return res.status(404).send('Real Estate ad not found.');
 
+                if (!ad) return res.status(404).send('Real Estate ad not found.');
+             
+                if(!req.body.Office_ID || ad.Office_ID !== parseInt(req.body.Office_ID)) {
+                    delete ad.Initiator;
+                    delete ad.AD_Started_At;
+                    delete ad.Visable_Zoom;
+                    delete ad.Hedden;
+                };
                 return res.status(200).send(ad);
             }
 

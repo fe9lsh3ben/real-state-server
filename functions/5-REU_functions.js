@@ -16,7 +16,7 @@ const validUnitTypes = [
 ];
 
 const generate_REU = (prisma) => async (req, res) => {
-
+    let createdREUnit;
     try {
 
         const {
@@ -92,7 +92,7 @@ const generate_REU = (prisma) => async (req, res) => {
             dataEntry.Polygon = await prisma.realEstateUnit.create_WKT_Polygon(req.body.Polygon)
         }
 
-        const createdREUnit = await prisma.realEstateUnit.create({
+        createdREUnit = await prisma.realEstateUnit.create({
             data: dataEntry
         });
 
@@ -101,7 +101,10 @@ const generate_REU = (prisma) => async (req, res) => {
             "Unit content": createdREUnit
         });
     } catch (error) {
-
+        if (typeof createdREUnit !== "undefined" && createdREUnit?.Unit_ID) {
+            await prisma.realEstateUnit.delete({ where: { Unit_ID: createdREUnit.Unit_ID } });
+            console.log('Error occurred and unit was deleted!');
+        }
         dbErrorHandler(res, error, 'generate real estate unit');
         console.log(error.message);
     }
