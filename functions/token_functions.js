@@ -159,23 +159,25 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
             token = authHeader && authHeader.split(' ')[1];
         }
         if (!token) {
-            throw new Error('Token is required!');
+            return res.status(401).send('Refresh token is required!');
         }
-        console.log('token', token);
-        return
+
         let data;
         try {
             data = await jwtVerifyAsync(token, PUBLIC_KEY);
         } catch (err) {
             if (err.name === 'TokenExpiredError') {
-                throw new Error('Refresh token expired!');;
+                if (req.headers['x-mobile-app']) {
+                    return res.status(401).send('Token expired!');
+                }
+                return res.redirect("/login");
             } else {
-                throw err;
+                return res.status(401).send('error occured!');
             }
         }
 
         if (data.tokenType !== TokenType.REFRESH_TOKEN) {
-            throw new Error('Refresh token is required!');
+            return res.status(401).send('Invalid token type!');
         }
 
         const resourceToken = await prisma.user.findUnique({
@@ -186,15 +188,14 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
         });
 
         if (resourceToken.Refresh_Tokens?.Refresh_Token !== token) {
-            throw new Error('Refresh token mismatch!');
+            return res.status(401).send('Invalid refresh token!');
 
         }
 
         syncTokens(data, 'Token was refreshed', res);
 
     } catch (error) {
-
-        throw error;
+        return res.status(500).send('error occured!');
     }
 };
 
