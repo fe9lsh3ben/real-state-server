@@ -63,5 +63,11 @@ profile.route('/renew_token')
 //**if return value is jwt expired take an action.
 .put(generateTokenByRefreshToken(prisma));
 
+profile.route('/check_token')
+.get((req, res) => {
+
+  if(!req.cookies.session) return res.status(401).send('no session token');
+  res.status(200).send();
+});
 
 module.exports = {profile};

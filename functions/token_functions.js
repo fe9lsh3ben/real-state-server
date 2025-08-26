@@ -284,7 +284,7 @@ async function tokenMiddlewere(req, res, next) {
             const csrfHeader = req.headers["x-csrf-token"];
 
             if (!csrfHeader || csrfHeader !== csrfCookie) {
-                return res.status(403).send("Invalid CSRF token");
+                return res.status(403).send({message: "Invalid CSRF token"});
             }
         }
 
@@ -304,7 +304,7 @@ async function tokenMiddlewere(req, res, next) {
         next();
 
     } catch (error) {
-        res.status(404).send('token middleware error!');
+        res.status(404).send({message: 'token middleware error!'});
         console.log(error.message);
         throw error;
     }
