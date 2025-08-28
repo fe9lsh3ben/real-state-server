@@ -9,13 +9,23 @@ const {
 //___________SERVER SETTINGS______________
 
 var app = express()
-
-app.use(cookieParser());
-app.use(express.json(), cors({
-    origin: 'http://localhost:51727',
-    credentials: true,
-    allowedHeaders: "Origin,Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,locale"
+app.use(cors({
+  origin: 'http://localhost:51727',
+  credentials: true,
+  allowedHeaders: [
+    "Origin",
+    "Content-Type",
+    "X-Amz-Date",
+    "Authorization",
+    "X-Api-Key",
+    "X-Amz-Security-Token",
+    "locale"
+  ]
 }));
+
+app.use(express.json());
+app.use(cookieParser());
+
 
 
 //___________TLS CRADENTIALS______________

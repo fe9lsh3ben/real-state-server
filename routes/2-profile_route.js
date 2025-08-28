@@ -17,7 +17,6 @@ const profile = express.Router();
 
 
 profile.route('/signup')
-
 /*Request's body example: {
   "Username": "fe9lsh3ben",
   "Password": "10890Fsh",
@@ -38,8 +37,7 @@ profile.route('/signup')
 
 profile.route('/login')
 //Request's body example: {"Username": "fe9lsh3ben", "Password":"10890Fsh"} 
-.put(login(prisma))
-
+.put(login(prisma));
 
 
 
@@ -59,14 +57,17 @@ profile.route('/edit_profile')
 .put(tokenMiddlewere,edit_Profile(prisma));
 
 
+
 profile.route('/renew_token')
 //**if return value is jwt expired take an action.
 .put(generateTokenByRefreshToken(prisma));
 
+
+
 profile.route('/check_token')
 .get((req, res) => {
-
   if(!req.cookies.session) return res.status(401).send('no session token');
+  console.log(req.cookies.session);
   res.status(200).send();
 });
 

@@ -113,6 +113,7 @@ const signup = (prisma) => async (req, res) => {
 
 
 const login = (prisma) => async (req, res) => {
+    console.log(req.body);
     try {
         const { Username, Password } = req.body;
 
@@ -176,9 +177,9 @@ const login = (prisma) => async (req, res) => {
         });
 
         res.cookie("session", updatedUser.Session.Token, {
-            httpOnly: true,
-            sameSite: "lax",
-            secure: false, // set true if using HTTPS
+            // httpOnly: true,
+            // sameSite: "lax",
+            // secure: false, // set true if using HTTPS
             maxAge: 1000 * 60 * 60 * 4, // 4 hour
         });
 
