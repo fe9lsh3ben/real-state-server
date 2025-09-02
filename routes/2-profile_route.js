@@ -7,7 +7,7 @@ const {
     get_Profile,
     edit_Profile,
     becomeOfficeStaff,
-
+    checkToken,
     tokenMiddlewere, generateTokenByRefreshToken
 } = require('../libraries/functions&middlewares_lib');
 
@@ -65,10 +65,6 @@ profile.route('/renew_token')
 
 
 profile.route('/check_token')
-.get((req, res) => {
-  if(!req.cookies.session) return res.status(401).send('no session token');
-  console.log(req.cookies.session);
-  res.status(200).send();
-});
+.put(checkToken());
 
 module.exports = {profile};

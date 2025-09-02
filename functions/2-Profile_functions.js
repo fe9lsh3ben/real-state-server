@@ -89,9 +89,12 @@ const signup = (prisma) => async (req, res) => {
 
         if (req.headers['x-mobile-app']) {
             return res.status(201).send({
-                data: user,
-                token: storedSession.Token,
-                refreshToken: storedRefresh.Refresh_Token
+                data: {
+                    user,
+                    token: storedSession.Token,
+                    refresh_token: storedRefresh.Refresh_Token
+                },
+                message: "User created successfully"
             });
         }
         // Send response
@@ -161,6 +164,11 @@ const login = (prisma) => async (req, res) => {
                 },
             },
             select: {
+                User_ID: true,
+                Role: true,
+                Full_Name: true,
+                Profile_Image: true,
+                User_Phone: true,
                 Session: {
                     select: {
                         Token: true,
@@ -176,42 +184,43 @@ const login = (prisma) => async (req, res) => {
             }
         });
 
-        res.cookie("session", updatedUser.Session.Token, {
-            // httpOnly: true,
-            // sameSite: "lax",
-            // secure: false, // set true if using HTTPS
-            maxAge: 1000 * 60 * 60 * 4, // 4 hour
-        });
-
-
-        res.cookie("refreshToken", updatedUser.Refresh_Token.Refresh_Token, {
-            httpOnly: true,
-            sameSite: "strict",
-            secure: false,
-            path: "/profile/renew_token" // limit usage only to refresh endpoint
-        });
-
-        // Generate CSRF token (random string)
-        const csrfToken = crypto.randomBytes(32).toString("hex");
-        // Send CSRF token to client (readable by JS)
-        res.cookie("csrfToken", csrfToken, {
-            httpOnly: false, // JS can read it
-            sameSite: "lax",
-            secure: false, // set true if using HTTPS
-            maxAge: 1000 * 60 * 60 * 4,
-        });
-
         if (req.headers['x-mobile-app']) {
             return res.status(201).send({
-                token: updatedUser.Session.Token,
-                refreshToken: updatedUser.Refresh_Token.Refresh_Token,
+                data: {
+                    ...updatedUser,
+                    token: updatedUser.Session.Token,
+                    refresh_token: updatedUser.Refresh_Token.Refresh_Token,
+                },
                 message: 'Login successful',
             });
         }
 
+
+        res.cookie("session", updatedUser.Session.Token, {
+            httpOnly: false,
+            sameSite: "none",
+            secure: true,     // set to true in prod with https
+            maxAge: 1000 * 60 * 60 * 4,
+        });
+
+        res.cookie("refreshToken", updatedUser.Refresh_Token.Refresh_Token, {
+            httpOnly: true,
+            sameSite: "none",
+            secure: true,
+            path: "/profile/renew_token"
+        });
+
+        const csrfToken = crypto.randomBytes(32).toString("hex");
+        res.cookie("csrfToken", csrfToken, {
+            httpOnly: false,
+            sameSite: "none",
+            secure: true,
+            maxAge: 1000 * 60 * 60 * 4,
+        });
         // Send response
         return res.status(201).send({
             message: 'Login successful',
+            data: updatedUser
         });
 
 

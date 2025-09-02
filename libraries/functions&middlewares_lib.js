@@ -6,7 +6,7 @@
 const { bodyCleaner } = require('../middlewares/miscellaneous');
 
 //token functions
-const { tokenMiddlewere, generateTokenByRefreshToken } = require('../functions/token_functions');
+const { tokenMiddlewere, generateTokenByRefreshToken, checkToken } = require('../functions/token_functions');
 
 //Ts&Cs functions
 const { createNewTandC, getLastTerms } = require('../functions/1-Ts&Cs_functions');
@@ -47,11 +47,21 @@ const {
     get_Contract_Unregistered,
 } = require('../functions/7-contract_functions')
 
-
+const {
+    createNotification,
+    getNotifications,
+    markNotificationRead,
+    countUnread,
+} = require('../functions/8-notification_function');
 //________________Middlewares___________________
 const { signupValidator, signupVerifier } = require('../middlewares/validators');
 
-
+const { 
+    officeAuthentication,
+    markitingFalLicenseAuthentication,
+    REUAuthentication,
+    READAuthentication
+} = require('../middlewares/authentications');
 module.exports = {
 
     //Ts&Cs functions
@@ -94,10 +104,21 @@ module.exports = {
     get_Contract,
     get_Contract_Unregistered,
 
+    //Notifications functions
+    createNotification,
+    getNotifications,
+    markNotificationRead,
+    countUnread,
+
 
     //middlewares
     signupVerifier,
     signupValidator,
-    tokenMiddlewere, generateTokenByRefreshToken,
-    bodyCleaner
+    tokenMiddlewere, generateTokenByRefreshToken, checkToken,
+    bodyCleaner,
+
+    officeAuthentication,
+    markitingFalLicenseAuthentication,
+    REUAuthentication,
+    READAuthentication
 }

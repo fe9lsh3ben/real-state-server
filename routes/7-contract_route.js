@@ -18,6 +18,8 @@ Contract.route('/')
     "Contant":{content, contract terms} }
     **/
     .post(tokenMiddlewere, officeAuthentication, generate_Contract(prisma))
+    
+    // query parameters : 'http://127.0.0.1:3050/
     .get(tokenMiddlewere, contractAuthentication, get_Contract(prisma))
 
 

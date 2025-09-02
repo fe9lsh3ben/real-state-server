@@ -95,6 +95,11 @@ enum AD_Type {
     SERVICE
 }
 
+enum Note_Type {
+    REQUEST
+    QUERY
+}
+
 //________ Models Module__________//
 
 // Define the Setting table
@@ -210,10 +215,11 @@ model RealEstateOffice {
     ADs              RealEstateAD[]
     Visitors         Json? //{date : number of visitors}
 
-    Rating     Decimal  @default(0.0)
-    Balance    Decimal  @default(0.0)
-    Created_At DateTime @default(now())
-    Updated_At DateTime @updatedAt
+    Notifications Notification[]
+    Rating        Decimal        @default(0.0)
+    Balance       Decimal        @default(0.0)
+    Created_At    DateTime       @default(now())
+    Updated_At    DateTime       @updatedAt
 }
 
 model FalLicense {
@@ -289,6 +295,18 @@ model Contract {
     Other            Json?
     Created_At       DateTime         @default(now())
     Updated_At       DateTime         @updatedAt
+}
+
+model Notification {
+    Note_ID     Int       @id @default(autoincrement())
+    Sender_ID   Int
+    Note_Type   Note_Type // "REQUEST" | "QUERY" | etc
+    Content     String
+    Read        Boolean   @default(false)
+    Created_At  DateTime  @default(now())
+
+    Office_ID   Int
+    Office      RealEstateOffice @relation(fields: [Office_ID], references: [Office_ID])
 }
 
 model DeletionLog {

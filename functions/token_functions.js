@@ -105,6 +105,20 @@ async function syncTokens(data, message, res) {
                 },
             },
         });
+
+        if (req.headers['x-mobile-app']) {
+            return res.status(201).send({
+                data: {
+                    user_id: updatedUser.User_ID,
+                    role: updatedUser.Role,
+                    employer_reo_id: updatedUser.Employer_REO_ID,
+                    token: updatedUser.Session.Token,
+                    refresh_token: updatedUser.Refresh_Token.Refresh_Token
+                },
+                message
+            });
+        }
+
         res.cookie("session", updatedUser.Session.Token, {
             httpOnly: true,
             sameSite: "lax",
@@ -131,12 +145,7 @@ async function syncTokens(data, message, res) {
             maxAge: 1000 * 60 * 60 * 4,
         });
 
-        if (req.headers['x-mobile-app']) {
-            return res.status(201).send({
-                data: updatedUser,
-                message
-            });
-        }
+
 
         return res.status(200).json({ user_data: updatedUser, message });
 
@@ -212,7 +221,7 @@ async function tokenVerifier(req) {
         }
 
         if (!token) {
-            return { 'verified': false, 'message': 'token is required!' };
+            return { 'verified': false, 'message': 'no token' };
         }
 
         var resutl = jwt.verify(token, PUBLIC_KEY, async (err, data) => {
@@ -221,12 +230,12 @@ async function tokenVerifier(req) {
                 if (err) {
                     if (err.name === 'TokenExpiredError') {
 
-                        return new Error('Token expired!');
+                        return { 'verified': false, 'message': 'Token expired!' };
 
                         // Take action for expired token, like refreshing or prompting re-authentication
                     } else {
 
-                        return new Error('Toekn verification failed: ', err.message);
+                        return { 'verified': false, 'message': err.message };
 
                         // Handle other types of errors, like invalid token
                     }
@@ -239,6 +248,8 @@ async function tokenVerifier(req) {
                 var user = await prisma.user.findUnique({
                     where: { User_ID: data.User_ID },
                     select: {
+                        User_ID: true,
+                        Role: true,
                         Full_Name: true,
                         Employer_REO_ID: true,
                         Session: { select: { Token: true } }
@@ -252,16 +263,17 @@ async function tokenVerifier(req) {
                 if (user.Session.Token !== token) {
                     return { 'verified': false, 'message': 'Token is disposed!' };
                 }
-
-                req.body.Role = data.Role;
-                req.body.User_ID = data.User_ID;
+                
+                req.body.Role = user.Role;
+                req.body.User_ID = user.User_ID;
                 req.body.Full_Name = user.Full_Name;
                 (user.Employer_REO_ID && (req.body.Employer_REO_ID = user.Employer_REO_ID));
 
                 return { 'verified': true, 'message': "Token is valid" };
             } catch (error) {
+                console.log(error.message);
                 console.log('tooken verifier');
-                return error;
+                return { 'verified': false, 'message': error.message };
             }
 
         });
@@ -270,7 +282,7 @@ async function tokenVerifier(req) {
 
     } catch (error) {
         console.log('tooken verifier')
-        return error;
+        return { 'verified': false, 'message': error.message };
     }
 }
 
@@ -282,9 +294,8 @@ async function tokenMiddlewere(req, res, next) {
         if (!req.headers['x-mobile-app']) {
             const csrfCookie = req.cookies.csrfToken;
             const csrfHeader = req.headers["x-csrf-token"];
-
             if (!csrfHeader || csrfHeader !== csrfCookie) {
-                return res.status(403).send({message: "Invalid CSRF token"});
+                return res.status(403).send({ message: "Invalid CSRF token" });
             }
         }
 
@@ -304,22 +315,19 @@ async function tokenMiddlewere(req, res, next) {
         next();
 
     } catch (error) {
-        res.status(404).send({message: 'token middleware error!'});
+        res.status(404).send({ message: 'token middleware error!' });
         console.log(error.message);
         throw error;
     }
 
 }
 
-// Usage
-// var token = generateTokenByPrivate_key({ User_ID: 123, userName:"fe9lsh3ben",role: "normal user" });
-// console.log('Generated Token:', token);
 
-// token = generateTokenBySecret({ User_ID: 123, userName:"fe9lsh3ben",role: "normal user" });
-// console.log('Generated Token:', token);
-
-
-
+const checkToken = () => async (req, res) => {
+    let verification = await tokenVerifier(req);
+    if (!verification.verified) return res.status(401).send(verification.message);
+    res.status(200).send();
+}
 
 module.exports = {
     generateTokenByPrivate_key,
@@ -327,5 +335,6 @@ module.exports = {
     tokenVerifier,
     tokenMiddlewere,
     syncTokens,
+    checkToken,
     TokenType
 }

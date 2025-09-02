@@ -1,10 +1,6 @@
 const { express } = require('../libraries/utilities');
 const { prisma, AD_Type } = require('../libraries/prisma_utilities');
-const { officeAuthentication,
-    markitingFalLicenseAuthentication,
-    REUAuthentication,
-    READAuthentication
-} = require('../middlewares/authentications');
+
 
 const {
     generate_READ,
@@ -12,7 +8,12 @@ const {
     edit_READ,
     delete_READ,
     tokenMiddlewere,
-    bodyCleaner } = require('../libraries/functions&middlewares_lib');
+    bodyCleaner,
+
+    officeAuthentication,
+    markitingFalLicenseAuthentication,
+    REUAuthentication,
+    READAuthentication} = require('../libraries/functions&middlewares_lib');
 
 
 const RE_AD = express.Router();

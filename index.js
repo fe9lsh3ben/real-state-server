@@ -51,7 +51,8 @@ const {
     FalLicense,
     REU,
     Contract,
-    RE_AD
+    RE_AD,
+    Notification
 
 } = require('./libraries/routes_lib');
 
@@ -76,12 +77,11 @@ app.use('/RE_AD', RE_AD)
 
 app.use('/contract', Contract);
 
-
+app.use('/notification', Notification);
 
 app.get('/', (req, res) => {
     res.status(200).send('Server is running!');
 })
-
 
 
 //___________SERVER______________
@@ -90,9 +90,8 @@ app.get('/', (req, res) => {
 const port = 3050;
 const host = '127.0.0.1'
 var server = http.createServer(options, app);
-
+ 
 server.listen(port, host, () => {
-
     console.log(`server listining at ${host}:${port}`)
 });
 
