@@ -325,7 +325,7 @@ async function tokenMiddlewere(req, res, next) {
 
 const checkToken = () => async (req, res) => {
     let verification = await tokenVerifier(req);
-    if (!verification.verified) return res.status(401).send(verification.message);
+    if (!verification.verified) return res.status(401).send(verification);
     res.status(200).send();
 }
 
