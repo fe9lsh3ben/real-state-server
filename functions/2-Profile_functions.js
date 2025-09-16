@@ -99,6 +99,7 @@ const signup = (prisma) => async (req, res) => {
         }
         // Send response
         return res.status(201).send({
+            message: "User created successfully",
             data: user,
         });
 

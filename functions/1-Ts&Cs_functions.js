@@ -1,7 +1,7 @@
-const {dbErrorHandler} = require("../libraries/utilities");
+const { dbErrorHandler } = require("../libraries/utilities");
 
 const createNewTandC = (prisma, Committed_By) => async (req, res) => {
-    
+
     let result;
     try {
         let TC_type;
@@ -34,17 +34,20 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
             take: 1,
         });
 
-        
+
 
         if (found.length === 0) {
+            console.log(req.body.Content);
             result = await prisma.TermsAndCondition.create({
+                
                 data: {
                     TC_ID: `${TC_ID_type}_000001`,
-                    Content: [{ "1": req.body.Content }],
+                    Content: req.body.Content,
                     Committed_By: TC_type,
                     Made_By: req.body.Made_By,
                 },
             });
+            console.log(result);
         } else {
             const latestTC = found[0];
             const extractedStrings = latestTC.TC_ID.match(/^([A-Za-z_]+)(\d+)$/);
@@ -61,13 +64,13 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
             result = await prisma.termsAndCondition.create({
                 data: {
                     TC_ID: `${prefix}${paddedIncrement}`,
-                    Content: [{ "1": req.body.Content }],
+                    Content: req.body.Content,
                     Committed_By: TC_type,
                     Made_By: req.body.Made_By,
-                },
+                }, 
             });
         }
-
+        
         return res.send(result);
 
     } catch (error) {
@@ -84,9 +87,10 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
 
 const getLastTerms = (prisma) => async (req, res) => {
     try {
+
         let TC_ID_type;
 
-        switch (req.body.Committed_By) {
+        switch (req.query.Committed_By) {
             case "OFFICE_OWNER":
                 TC_ID_type = 'OO';
                 break;
@@ -112,13 +116,18 @@ const getLastTerms = (prisma) => async (req, res) => {
         if (!terms || terms.length === 0) {
             return res.status(404).send('Terms and Conditions not found.');
         }
-
-        return res.status(200).send(terms);
+        if(req.query.lang === 'en'){
+            delete terms.Content.ar;
+        }else{
+            delete terms.Content.en;
+        }
+        return res.status(200).send(terms[0]);
 
     } catch (error) {
+        console.error('getLastTerms error:', error);
         dbErrorHandler(res, error, 'getLastTerms');
     }
 };
 
 
-module.exports = {createNewTandC, getLastTerms}
+module.exports = { createNewTandC, getLastTerms }

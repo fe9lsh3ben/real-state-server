@@ -121,7 +121,7 @@ model AuditTrail {
 model TermsAndCondition {
     TC_ID        String       @id
     Created_At   DateTime     @default(now())
-    Content      Json[]
+    Content      Json
     Other        Json[]
     Committed_By Committed_By
     Users        User[]
