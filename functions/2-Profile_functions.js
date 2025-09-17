@@ -117,8 +117,7 @@ const signup = (prisma) => async (req, res) => {
 
 
 const login = (prisma) => async (req, res) => {
-    console.log(req.body);
-    try {
+     try {
         const { Username, Password } = req.body;
 
         // Find user by username

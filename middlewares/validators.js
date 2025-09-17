@@ -14,30 +14,28 @@ function validatePassword(password) {
 // signup verifier example : {"Username": "fe9lsh3ben", "Password":"10890Fsh", "Email":"fe9olsh3ben@gmail.com", "GovID":"1089036089", "Address":"Makkah-Makkah-Shuqeyah", "FullName":"Faisal Mohammed", "UserPhone": "0546737456"}
 const signupVerifier = (req, res, next) => {
 
-    
+
     const body = req.body;
-   
+
     if (body == undefined) {
-        
-        // console.log(1)
+
         res.status(400).send('No details entered');
         return
 
     } else if (!(body.Username && body.Password && body.Email && body.Gov_ID && body.Address && body.Full_Name && body.User_Phone)) {
-        console.log(body.Username == true);
-        console.log(req.body);
+
         res.status(400).send('Your details are not complete');
         return;
 
     } else if (!body.TC_ID) {
-        
+
         res.status(400).send('You must accept the terms and conditions');
         return
-    
+
     } else {
         try {
 
-            const { Username, Password, Email,   Gov_ID, Address,  Full_Name,  User_Phone } = body;
+            const { Username, Password, Email, Gov_ID, Address, Full_Name, User_Phone } = body;
 
 
             if (!validator.isAlphanumeric(Username)) {
@@ -47,13 +45,13 @@ const signupVerifier = (req, res, next) => {
             }
 
             var validatedPassword = validatePassword(Password);
-            
-            if(!validatedPassword.isValidLength){
+
+            if (!validatedPassword.isValidLength) {
                 res.status(400).send('Password should be at least 8 characters long!');
                 return
             }
-            
-            if(!validatedPassword.hasUpperCaseAndLowerCase){
+
+            if (!validatedPassword.hasUpperCaseAndLowerCase) {
                 res.status(400).send('Password should contain both uppercase and lowercase letters!');
                 return
             }
@@ -116,7 +114,7 @@ const signupVerifier = (req, res, next) => {
             // }
 
 
-            
+
             next();
 
         } catch (e) {
@@ -128,7 +126,7 @@ const signupVerifier = (req, res, next) => {
 }
 
 function signupValidator(prisma) {
-    
+
     return async (req, res, next) => {
 
         const { Username, Email, Gov_ID, User_Phone } = req.body;
@@ -152,7 +150,7 @@ function signupValidator(prisma) {
                     User_Phone: true
                 }
             });
-            
+
             if (matchedUser) {
                 if (matchedUser.Username == Username) {
                     res.status(400).send('Username is already taken');
@@ -169,7 +167,7 @@ function signupValidator(prisma) {
                 }
             }
 
-            
+
             next()
         } catch (error) {
             res.status(400).send(error.message)
