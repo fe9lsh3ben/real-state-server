@@ -107,7 +107,6 @@ const getLastTerms = (prisma) => async (req, res) => {
             where: { TC_ID: { contains: TC_ID_type } },
             orderBy: { TC_ID: 'desc' },
         });
-        console.log(terms);
         if (!terms || terms.length === 0) {
             return res.status(404).send('Terms and Conditions not found.');
         }

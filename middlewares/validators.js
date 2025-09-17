@@ -24,7 +24,8 @@ const signupVerifier = (req, res, next) => {
         return
 
     } else if (!(body.Username && body.Password && body.Email && body.Gov_ID && body.Address && body.Full_Name && body.User_Phone)) {
-        
+        console.log(body.Username == true);
+        console.log(req.body);
         res.status(400).send('Your details are not complete');
         return;
 
