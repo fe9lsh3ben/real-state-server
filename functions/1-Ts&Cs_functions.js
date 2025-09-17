@@ -28,16 +28,13 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
                 return res.status(400).send("Invalid Committed_By value");
         }
 
-        const found = await prisma.TermsAndCondition.findMany({
+        const found = await prisma.TermsAndCondition.findFirst({
             where: { TC_ID: { contains: TC_ID_type } },
             orderBy: { TC_ID: 'desc' },
-            take: 1,
         });
 
 
-
-        if (found.length === 0) {
-            console.log(req.body.Content);
+        if (!found) {
             result = await prisma.TermsAndCondition.create({
 
                 data: {
@@ -47,9 +44,8 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
                     Made_By: req.body.Made_By,
                 },
             });
-            console.log(result);
         } else {
-            const latestTC = found[0];
+            const latestTC = found;
             const extractedStrings = latestTC.TC_ID.match(/^([A-Za-z_]+)(\d+)$/);
 
             if (!extractedStrings) {
