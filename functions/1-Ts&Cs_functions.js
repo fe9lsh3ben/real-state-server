@@ -39,7 +39,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
         if (found.length === 0) {
             console.log(req.body.Content);
             result = await prisma.TermsAndCondition.create({
-                
+
                 data: {
                     TC_ID: `${TC_ID_type}_000001`,
                     Content: req.body.Content,
@@ -67,10 +67,10 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
                     Content: req.body.Content,
                     Committed_By: TC_type,
                     Made_By: req.body.Made_By,
-                }, 
+                },
             });
         }
-        
+
         return res.send(result);
 
     } catch (error) {
@@ -88,9 +88,9 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
 const getLastTerms = (prisma) => async (req, res) => {
     try {
 
-        let TC_ID_type;
+        const { Committed_By, Lang } = req.query;
 
-        switch (req.query.Committed_By) {
+        switch (Committed_By) {
             case "OFFICE_OWNER":
                 TC_ID_type = 'OO';
                 break;
@@ -107,21 +107,21 @@ const getLastTerms = (prisma) => async (req, res) => {
                 return res.status(400).send('Invalid Committed_By value');
         }
 
-        const terms = await prisma.TermsAndCondition.findMany({
+        const terms = await prisma.TermsAndCondition.findFirst({
             where: { TC_ID: { contains: TC_ID_type } },
             orderBy: { TC_ID: 'desc' },
-            take: 1,
         });
-
+        console.log(terms);
         if (!terms || terms.length === 0) {
             return res.status(404).send('Terms and Conditions not found.');
         }
-        if(req.query.lang === 'en'){
+
+        if (Lang === 'en') {
             delete terms.Content.ar;
-        }else{
+        } else {
             delete terms.Content.en;
         }
-        return res.status(200).send(terms[0]);
+        return res.status(200).send(terms);
 
     } catch (error) {
         console.error('getLastTerms error:', error);
