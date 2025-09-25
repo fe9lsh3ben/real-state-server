@@ -13,6 +13,7 @@ app.use(cors({
   origin: 'http://localhost:51727',
   credentials: true,
   allowedHeaders: [
+    "x-csrf-token",
     "Origin",
     "Content-Type",
     "X-Amz-Date",

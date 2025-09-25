@@ -13,7 +13,7 @@ const { createNewTandC, getLastTerms } = require('../functions/1-Ts&Cs_functions
 
 //profile functions
 const { signup, login, becomeOfficeStaff,
-    get_Profile, edit_Profile
+    get_Profile, edit_Profile, logout
 } = require('../functions/2-Profile_functions');
 
 //Real Estate office functions
@@ -75,6 +75,7 @@ module.exports = {
     get_Profile,
     edit_Profile,
     becomeOfficeStaff,
+    logout,
 
     //Real Estate office functions
     generate_REO,

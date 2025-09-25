@@ -263,7 +263,9 @@ async function tokenVerifier(req) {
                 if (user.Session.Token !== token) {
                     return { 'verified': false, 'message': 'Token is disposed!' };
                 }
-                
+                if(req.body === undefined){
+                    req.body = {};
+                }
                 req.body.Role = user.Role;
                 req.body.User_ID = user.User_ID;
                 req.body.Full_Name = user.Full_Name;
@@ -272,7 +274,7 @@ async function tokenVerifier(req) {
                 return { 'verified': true, 'message': "Token is valid" };
             } catch (error) {
                 console.log(error.message);
-                console.log('tooken verifier');
+                console.log('jwt verifier');
                 return { 'verified': false, 'message': error.message };
             }
 
@@ -290,7 +292,6 @@ async function tokenVerifier(req) {
 async function tokenMiddlewere(req, res, next) {
 
     try {
-
         if (!req.headers['x-mobile-app']) {
             const csrfCookie = req.cookies.csrfToken;
             const csrfHeader = req.headers["x-csrf-token"];

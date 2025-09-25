@@ -130,20 +130,21 @@ model TermsAndCondition {
 
 // Define the Session table
 model Session {
-    SToken_ID  Int      @id @default(autoincrement())
-    Token      String   @unique
-    User_ID    Int      @unique
-    User       User     @relation(fields: [User_ID], references: [User_ID])
-    Expires_At DateTime
+    SToken_ID  Int       @id @default(autoincrement())
+    Token      String?   @unique
+    User_ID    Int       @unique
+    User       User      @relation(fields: [User_ID], references: [User_ID])
+    Expires_At DateTime?
+    Revoked_At DateTime?
 }
 
 model RefreshToken {
-    RToken_ID     Int      @id @default(autoincrement())
-    Refresh_Token String   @unique
-    UserID        Int      @unique
-    User          User     @relation(fields: [UserID], references: [User_ID])
-    Created_At    DateTime @default(now())
-    Expires_At    DateTime
+    RToken_ID     Int       @id @default(autoincrement())
+    Refresh_Token String?   @unique
+    UserID        Int       @unique
+    User          User      @relation(fields: [UserID], references: [User_ID])
+    Expires_At    DateTime?
+    Revoked_At    DateTime?
 }
 
 // Define the User table
@@ -298,23 +299,23 @@ model Contract {
 }
 
 model Notification {
-    Note_ID     Int       @id @default(autoincrement())
-    Sender_ID   Int
-    Note_Type   Note_Type // "REQUEST" | "QUERY" | etc
-    Content     String
-    Read        Boolean   @default(false)
-    Created_At  DateTime  @default(now())
+    Note_ID    Int       @id @default(autoincrement())
+    Sender_ID  Int
+    Note_Type  Note_Type // "REQUEST" | "QUERY" | etc
+    Content    String
+    Read       Boolean   @default(false)
+    Created_At DateTime  @default(now())
 
-    Office_ID   Int
-    Office      RealEstateOffice @relation(fields: [Office_ID], references: [Office_ID])
+    Office_ID Int
+    Office    RealEstateOffice @relation(fields: [Office_ID], references: [Office_ID])
 }
 
 model DeletionLog {
-    logID     Int      @id @default(autoincrement())
-    recordID  Int
-    tableName String
-    deletedBy String
-    deletdAt  DateTime @default(now())
+    Log_ID     Int      @id @default(autoincrement())
+    Record_ID  Int
+    Table_Name String
+    Deleted_By String
+    Deletd_At  DateTime @default(now())
 }
 
 ///Real Estate AD specifications feild in JSON: -

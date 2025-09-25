@@ -7,6 +7,7 @@ const {
     get_Profile,
     edit_Profile,
     becomeOfficeStaff,
+    logout,
     checkToken,
     tokenMiddlewere, generateTokenByRefreshToken
 } = require('../libraries/functions&middlewares_lib');
@@ -66,5 +67,11 @@ profile.route('/renew_token')
 
 profile.route('/check_token')
 .put(checkToken());
+
+
+
+profile.route('/logout')
+.put(tokenMiddlewere, logout(prisma));
+
 
 module.exports = {profile};

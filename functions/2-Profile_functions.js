@@ -60,6 +60,17 @@ const signup = (prisma) => async (req, res) => {
             },
         });
 
+        if (req.headers['x-mobile-app']) {
+            return res.status(201).send({
+                data: {
+                    user,
+                    token: storedSession.Token,
+                    refresh_token: storedRefresh.Refresh_Token
+                },
+                message: "User created successfully"
+            });
+        }
+
         res.cookie("session", storedSession.Token, {
             httpOnly: true,
             sameSite: "lax",
@@ -87,19 +98,11 @@ const signup = (prisma) => async (req, res) => {
 
         delete user.Password;
 
-        if (req.headers['x-mobile-app']) {
-            return res.status(201).send({
-                data: {
-                    user,
-                    token: storedSession.Token,
-                    refresh_token: storedRefresh.Refresh_Token
-                },
-                message: "User created successfully"
-            });
-        }
+        
         // Send response
         return res.status(201).send({
             message: "User created successfully",
+            csrfToken,
             data: user,
         });
 
@@ -117,7 +120,7 @@ const signup = (prisma) => async (req, res) => {
 
 
 const login = (prisma) => async (req, res) => {
-     try {
+      try {
         const { Username, Password } = req.body;
 
         // Find user by username
@@ -220,6 +223,7 @@ const login = (prisma) => async (req, res) => {
         // Send response
         return res.status(201).send({
             message: 'Login successful',
+            csrfToken,
             data: updatedUser
         });
 
@@ -361,10 +365,45 @@ const edit_Profile = (prisma) => async (req, res) => {
     }
 };
 
+const logout = (prisma) => async (req, res) => {
+    try {
+
+        await prisma.user.update({
+            where: { User_ID: req.body.User_ID },
+            data: {
+                Session: {
+                    update: {
+                        Token: null,
+                        Expires_At: null,
+                        Revoked_At: new Date()
+                    },
+                },
+                Refresh_Token: {
+                    update: {
+                        Refresh_Token: null,
+                        Expires_At: null,
+                        Revoked_At: new Date()
+                    },
+                },
+            },
+        })
+        if (req.headers['x-mobile-app']) {
+            return res.status(200).send('Logout successful');
+        }
+        res.clearCookie('session');
+        res.clearCookie('refreshToken');
+        res.clearCookie('csrfToken');
+        res.status(200).send('Logout successful');
+    } catch (error) {
+        dbErrorHandler(res, error, 'logout');
+    }
+};
+
 module.exports = {
     signup,
     login,
     becomeOfficeStaff,
     get_Profile,
-    edit_Profile
+    edit_Profile,
+    logout
 }
