@@ -13,7 +13,7 @@ async function officeAuthentication(req, res, next) {
 
 
         if (!req.body.Office_ID)
-            return res.status(400).send('Office_ID is required.');
+            return res.status(400).send({'message': 'Office_ID is required.'});
 
         const office = await prisma.realEstateOffice.findUnique({
             where: {
@@ -26,10 +26,10 @@ async function officeAuthentication(req, res, next) {
             }
         });
 
-        if (!office) return res.status(404).send('Real Estate Office not found.');
+        if (!office) return res.status(404).send({'message': 'Real Estate Office not found.'});
         // console.log(office.Staff.find(staff => staff.User_ID === req.body.User_ID) )
         if (office.Owner_ID !== req.body.User_ID && !office.Staff.find(staff => staff.User_ID === req.body.User_ID)) {
-            return res.status(403).send('You are not authorized to access this office, no relationship found.');
+            return res.status(403).send({'message': 'You are not authorized to access this office, no relationship found.'});
         }
         
         req.body.Office_ID = office.Office_ID;
@@ -62,10 +62,10 @@ async function markitingFalLicenseAuthentication(req, res, next) {
         });
 
         let License = office.FalLicense[0];
-        if (!License) return res.status(404).send('No Marketing Fal License found.');
+        if (!License) return res.status(404).send({'message': 'No Marketing Fal License found.'});
 
         if (Date.now() > new Date(License.Expiry_Date).getTime())
-            return res.status(404).send('Marketing Fal License expired.');
+            return res.status(404).send({'message': 'Marketing Fal License expired.'});
 
         req.body.Fal_License_Number = License.Fal_License_Number;
         req.body.Expiry_Date = License.Expiry_Date;
@@ -82,7 +82,7 @@ async function REUAuthentication(req, res, next) {
 
     try {
         if (!req.body.Unit_ID) {
-            return res.status(400).send('Unit ID is required.');
+            return res.status(400).send({'message': 'Unit ID is required.'});
         }
 
         const unit = await prisma.realEstateUnit.findUnique({
@@ -92,11 +92,11 @@ async function REUAuthentication(req, res, next) {
         });
 
         if (!unit) {
-            return res.status(404).send('Real Estate Unit not found.');
+            return res.status(404).send({'message': 'Real Estate Unit not found.'});
         }
 
         if (unit.Affiliated_Office_ID !== req.body.Office_ID) {
-            return res.status(403).send('Unit does not belong to your office.');
+            return res.status(403).send({'message': 'Unit does not belong to your office.'});
         }
 
         req.body.Unit_ID = unit.Unit_ID;
@@ -112,7 +112,7 @@ const READAuthentication = async (req, res, next) => {
 
     try {
         if (!req.body.AD_ID) {
-            return res.status(400).send('Ad ID is required.');
+            return res.status(400).send({'message': 'Ad ID is required.'});
         }
 
         const ad = await prisma.realEstateAD.findUnique({
@@ -126,10 +126,10 @@ const READAuthentication = async (req, res, next) => {
         });
 
         if (!ad) {
-            return res.status(404).send('Real Estate Ad not found.');
+            return res.status(404).send({'message': 'Real Estate Ad not found.'});
         }
         if (ad.Office_ID !== req.body.Office_ID) {
-            return res.status(403).send('Ad does not belong to your office.');
+            return res.status(403).send({'message': 'Ad does not belong to your office.'});
         }
 
         req.body.AD_ID = ad.AD_ID;
@@ -145,9 +145,9 @@ const contractAuthentication = async (req, res, next) => {
 
     try {
 
-        if (!req.body.Query_Type) return res.status(400).send('Query type is required.');
+        if (!req.body.Query_Type) return res.status(400).send({'message': 'Query type is required.'});
 
-        if (!Object.values(Contract_Query_Type).includes(req.body.Query_Type)) return res.status(400).send('Invalid query type.');
+        if (!Object.values(Contract_Query_Type).includes(req.body.Query_Type)) return res.status(400).send({'message': 'Invalid query type.'});
 
         if (req.body.Query_Type === Contract_Query_Type.LIST_FOR_OFFICE || req.body.Query_Type === Contract_Query_Type.DETAILED_FOR_OFFICE) {
             return officeAuthentication(req, res, next);
@@ -165,7 +165,7 @@ const contractUnregisteredAuthentication = async (req, res, next) => {
 
     try {
 
-        res.status(403).send('The function is not yet implemented.');
+        res.status(403).send({'message': 'The function is not yet implemented.'});
 
     } catch (error) {
         console.error('contract auth error:', error);

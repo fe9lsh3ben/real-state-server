@@ -44,7 +44,7 @@ const generate_REU = (prisma) => async (req, res) => {
         }
 
         if (!validUnitTypes.includes(Unit_Type)) {
-            res.status(400).send('Invalid Unit Type.');
+            res.status(400).send({'message': 'Invalid Unit Type.'});
             return;
         }
 
@@ -55,7 +55,7 @@ const generate_REU = (prisma) => async (req, res) => {
         });
 
         if (reu) {
-            res.status(400).send('Real Estate Unit already exists with this Deed Number.');
+            res.status(400).send({'message': 'Real Estate Unit already exists with this Deed Number.'});
             return;
         }
         const { Region, City, District, Direction, Latitude, Longitude } = Address;
@@ -118,10 +118,10 @@ const get_REU = (prisma) => async (req, res) => {
         switch (Search_Type) {
             case SearchType.SEARCH_ONE: {
                 const Unit_ID = parseInt(req.body.Unit_ID);
-                if (isNaN(Unit_ID)) return res.status(400).send("Invalid or missing Unit ID.");
+                if (isNaN(Unit_ID)) return res.status(400).send({'message': "Invalid or missing Unit ID."});
 
                 const unit = await prisma.realEstateUnit.findUnique({ where: { Unit_ID } });
-                if (!unit) return res.status(404).send('Real Estate unit not found.');
+                if (!unit) return res.status(404).send({'message': 'Real Estate unit not found.'});
 
                 return res.status(200).send(unit);
             }
@@ -130,13 +130,13 @@ const get_REU = (prisma) => async (req, res) => {
                 const { Geo_level, Geo_value } = req.body;
 
                 if (!Geo_level || !Geo_value) {
-                    return res.status(400).send("Missing Geo_level or Geo_value.");
+                    return res.status(400).send({'message': "Missing Geo_level or Geo_value."});
                 }
 
                 // Validate that Geo_level is one of the allowed fields
                 const allowedFields = ['Region', 'City', 'District'];
                 if (!allowedFields.includes(Geo_level)) {
-                    return res.status(400).send("Invalid Geo_level.");
+                    return res.status(400).send({'message': "Invalid Geo_level."});
                 }
 
                 // Build dynamic where clause
@@ -148,7 +148,7 @@ const get_REU = (prisma) => async (req, res) => {
                     where: whereClause
                 });
 
-                if (!units.length) return res.status(404).send('No Real Estate units found.');
+                if (!units.length) return res.status(404).send({'message': 'No Real Estate units found.'});
                 return res.status(200).send(units);
 
             }
@@ -160,7 +160,7 @@ const get_REU = (prisma) => async (req, res) => {
                     isNaN(minLatitude) || isNaN(maxLatitude) ||
                     isNaN(minLongitude) || isNaN(maxLongitude)
                 ) {
-                    return res.status(400).send("bounds are invalid.");
+                    return res.status(400).send({'message': "bounds are invalid."});
                 }
 
                 const units = await prisma.realEstateUnit.findMany({
@@ -179,14 +179,14 @@ const get_REU = (prisma) => async (req, res) => {
                     },
                 });
 
-                if (!units.length) return res.status(404).send('No Real Estate units found in screen bounds.');
+                if (!units.length) return res.status(404).send({'message': 'No Real Estate units found in screen bounds.'});
                 return res.status(200).send(units);
             }
 
 
             case SearchType.SEARCH_DIRECTION: {
                 const { Direction, City } = req.body;
-                if (!Direction) return res.status(400).send("Direction is required.");
+                if (!Direction) return res.status(400).send({'message': "Direction is required."});
 
                 const units = await prisma.realEstateUnit.findMany({
                     where: {
@@ -198,7 +198,7 @@ const get_REU = (prisma) => async (req, res) => {
                     }
                 });
 
-                if (!units.length) return res.status(404).send('No Real Estate units found for that direction.');
+                if (!units.length) return res.status(404).send({'message': 'No Real Estate units found for that direction.'});
                 return res.status(200).send(units);
             }
 
@@ -206,7 +206,7 @@ const get_REU = (prisma) => async (req, res) => {
                 const { City, Unit_Type, Direction} = req.body;
 
                 const filters = {};
-                if (!City) return res.status(400).send("City is required.");
+                if (!City) return res.status(400).send({'message': "City is required."});
 
                 filters.City = City;
                 if (Unit_Type) filters.Unit_Type = Unit_Type;
@@ -216,14 +216,14 @@ const get_REU = (prisma) => async (req, res) => {
                 const units = await prisma.realEstateUnit.findMany({ where: filters });
 
                 if (!units.length)
-                    return res.status(404).send('No Real Estate units found for that criteria.');
+                    return res.status(404).send({'message': 'No Real Estate units found for that criteria.'});
 
                 return res.status(200).send(units);
             }
 
 
             default:
-                return res.status(400).send('Invalid Search_Type.');
+                return res.status(400).send({'message': 'Invalid Search_Type.'});
         }
 
     } catch (error) {
@@ -244,12 +244,12 @@ const update_REU = (prisma) => async (req, res) => {
         } = req.body;
         
         if (!Unit_ID) {
-            return res.status(400).send('Unit_ID is required.');
+            return res.status(400).send({'message': 'Unit_ID is required.'});
         }
 
         // Ensure at least one field to update is present
         if (!(Unit_Type || Deed_Owners || Outdoor_Unit_Images)) {
-            return res.status(400).send('Nothing to change?!...');
+            return res.status(400).send({'message': 'Nothing to change?!...'});
         }
 
         const existingUnit = await prisma.realEstateUnit.findUnique({
@@ -258,7 +258,7 @@ const update_REU = (prisma) => async (req, res) => {
         });
 
         if (!existingUnit) {
-            return res.status(404).send('Real Estate Unit not found.');
+            return res.status(404).send({'message': 'Real Estate Unit not found.'});
         }
 
         if(Array.isArray(existingUnit.Initiator.Edited_By)){
@@ -307,13 +307,13 @@ const delete_REU = (prisma) => async (req, res) => {
         const unitId = parseInt(req.body.Unit_ID);
 
         if (!unitId) {
-            return res.status(400).send("Real estate unit ID is required!");
+            return res.status(400).send({'message': "Real estate unit ID is required!"});
         }
         const deletedUnit = await prisma.realEstateUnit.delete({
             where: { Unit_ID: unitId },
         });
         if (!deletedUnit) {
-            return res.status(404).send("Real estate unit not found!");
+            return res.status(404).send({'message': "Real estate unit not found!"});
         }
 
         deleteAd(deletedUnit.Unit_ID, 'realEstateUnit', req.body.User_ID);
@@ -326,7 +326,7 @@ const delete_REU = (prisma) => async (req, res) => {
     } catch (error) {
         if (error.code === 'P2025') {
 
-            return res.status(404).send("Real estate unit not found!");
+            return res.status(404).send({'message': "Real estate unit not found!"});
         }
 
         dbErrorHandler(res, error, "delete real estate unit");

@@ -14,6 +14,7 @@ app.use(cors({
   credentials: true,
   allowedHeaders: [
     "x-csrf-token",
+    "x-mobile-app",
     "Origin",
     "Content-Type",
     "X-Amz-Date",
@@ -81,7 +82,7 @@ app.use('/contract', Contract);
 app.use('/notification', Notification);
 
 app.get('/', (req, res) => {
-    res.status(200).send('Server is running!');
+    res.status(200).send({'message': 'Server is running!'});
 })
 
 

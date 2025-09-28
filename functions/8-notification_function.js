@@ -11,8 +11,8 @@ const createNotification = (prisma) => async (req, res) => {
 
     try {
         const { Office_ID, User_ID, Note_Type, Content } = req.body;
-        if (!Office_ID || !User_ID || !Note_Type || !Content) return res.status(400).send('Office ID, Sender ID, Note Type, and Content are required!');
-        if (!Note_Type.includes(Note_Type)) return res.status(400).send('Note Type must be one of the following: REQUEST, QUERY');
+        if (!Office_ID || !User_ID || !Note_Type || !Content) return res.status(400).send({'message': 'Office ID, Sender ID, Note Type, and Content are required!'});
+        if (!Note_Type.includes(Note_Type)) return res.status(400).send({'message': 'Note Type must be one of the following: REQUEST, QUERY'});
 
         const note = await prisma.notification.create({
             data: { Sender_ID: User_ID, Note_Type, Content, Office_ID }

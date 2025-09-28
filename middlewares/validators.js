@@ -19,17 +19,17 @@ const signupVerifier = (req, res, next) => {
 
     if (body == undefined) {
 
-        res.status(400).send('No details entered');
+        res.status(400).send({'message': 'No details entered'});
         return
 
     } else if (!(body.Username && body.Password && body.Email && body.Gov_ID && body.Address && body.Full_Name && body.User_Phone)) {
 
-        res.status(400).send('Your details are not complete');
+        res.status(400).send({'message': 'Your details are not complete'});
         return;
 
     } else if (!body.TC_ID) {
 
-        res.status(400).send('You must accept the terms and conditions');
+        res.status(400).send({'message': 'You must accept the terms and conditions'});
         return
 
     } else {
@@ -40,56 +40,45 @@ const signupVerifier = (req, res, next) => {
 
             if (!validator.isAlphanumeric(Username)) {
 
-                res.status(400).send('Username entry should be letters and numaric only!');
+                res.status(400).send({'message': 'Username entry should be letters and numaric only!'});
                 return
             }
 
             var validatedPassword = validatePassword(Password);
 
             if (!validatedPassword.isValidLength) {
-                res.status(400).send('Password should be at least 8 characters long!');
+                res.status(400).send({'message': 'Password should be at least 8 characters long!'});
                 return
             }
 
             if (!validatedPassword.hasUpperCaseAndLowerCase) {
-                res.status(400).send('Password should contain both uppercase and lowercase letters!');
+                res.status(400).send({'message': 'Password should contain both uppercase and lowercase letters!'});
                 return
             }
 
-            // if (validatedPassword) {
-            //     if (validatePassword.isValidLength) {
-            //         res.status(400).send('Unvalid password lingth!');
-            //         return
-            //     }
-
-            //     if (validatePassword.hasUpperCaseAndLowerCase) {
-            //         res.status(400).send('Unvalid password upper and lowercase!');
-            //         return
-            //     }
-            // }
 
             if (!validator.isEmail(Email)) {
 
-                res.status(400).send('enter valid email')
+                res.status(400).send({'message': 'enter valid email'})
                 return
             }
 
             if (!validator.isNumeric(Gov_ID)) {
 
-                res.status(400).send('GovID should be numaric entry')
+                res.status(400).send({'message': 'GovID should be numaric entry'})
                 return
             }
 
             if (Address === undefined || Object.keys(Address) === 0 || Address === null) {
 
-                res.status(400).send('Address should be entered')
+                res.status(400).send({'message': 'Address should be entered'})
                 return
             }
 
 
             for (var namePart of Full_Name) {
                 if (!validator.isAlpha(namePart)) {
-                    res.status(400).send('name should be letters only!');
+                    res.status(400).send({'message': 'name should be letters only!'});
                     return;
                 }
             }
@@ -98,22 +87,9 @@ const signupVerifier = (req, res, next) => {
 
             if (!validator.isNumeric(User_Phone)) {
 
-                res.status(400).send('User Phone should be numaric entry')
+                res.status(400).send({'message': 'User Phone should be numaric entry'})
                 return
             }
-
-            // if (!validator.isDate(birthOfDate)) {
-
-            //     res.status(400).send('insert valid date format')
-            //     return
-
-            // } else if (18 > (DateDiff.inDays(new Date(birthOfDate), new Date())) / 365) {
-
-            //     res.status(400).send('Your age should be above 18!')
-            //     return
-            // }
-
-
 
             next();
 
@@ -153,18 +129,19 @@ function signupValidator(prisma) {
 
             if (matchedUser) {
                 if (matchedUser.Username == Username) {
-                    res.status(400).send('Username is already taken');
+                    res.status(400).send({ 'message': 'Username is already taken' });
                     return;
                 } else if (matchedUser.Email == Email) {
-                    res.status(400).send('Email is already taken');
+                    res.status(400).send({ 'message': 'Email is already taken' });
                     return;
                 } else if (matchedUser.Gov_ID == Gov_ID) {
-                    res.status(400).send('GovID is already taken');
+                    res.status(400).send({ 'message': 'Goverment ID is already taken' });
                     return;
                 } else if (matchedUser.User_Phone == User_Phone) {
-                    res.status(400).send('UserPhone is already taken');
+                    res.status(400).send({ 'message': 'User phone is already taken' });
                     return;
-                }
+                } 
+                
             }
 
 

@@ -53,7 +53,7 @@ const get_FalLicense = (prisma) => async (req, res) => {
         const { Fal_License_Number, Office_ID } = req.body;
 
         if (!Fal_License_Number && !Office_ID) {
-            return res.status(400).send("License_Number or Office_ID is required.");
+            return res.status(400).send({'message': "License_Number or Office_ID is required."});
         }
 
         let license;
@@ -69,13 +69,13 @@ const get_FalLicense = (prisma) => async (req, res) => {
             });
 
             if (licenses.length === 0) {
-                return res.status(404).send('No Fal License found for this office.');
+                return res.status(404).send({'message': 'No Fal License found for this office.'});
             }
             license = licenses;
         }
 
         if (!license) {
-            return res.status(404).send('Fal License not found.');
+            return res.status(404).send({'message': 'Fal License not found.'});
         }
 
         return res.status(200).send(license);
@@ -92,7 +92,7 @@ const delete_FalLicense = (prisma) => async (req, res) => {
         const { Fal_License_Number } = req.body;
 
         if (!Fal_License_Number) {
-            return res.status(400).send("License_Number or Office_ID is required!");
+            return res.status(400).send({'message': "License_Number or Office_ID is required!"});
         }
 
 
@@ -101,7 +101,7 @@ const delete_FalLicense = (prisma) => async (req, res) => {
         });
 
         if (!deleted) {
-            return res.status(404).send("Fal License not found.");
+            return res.status(404).send({'message': "Fal License not found."});
         }
 
         deleteAd(deleted.License_ID, 'FalLicense', req.body.User_ID);

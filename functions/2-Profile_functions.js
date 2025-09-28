@@ -12,7 +12,7 @@ const signup = (prisma) => async (req, res) => {
         let body = req.body;
 
         if (!body.Address) {
-            return res.status(400).send('Address is required.');
+            return res.status(400).send({ 'message': 'Address is required.' });
         }
         const mapped = mapAddressToScalars(body.Address);
         Object.assign(body, mapped);
@@ -98,7 +98,7 @@ const signup = (prisma) => async (req, res) => {
 
         delete user.Password;
 
-        
+
         // Send response
         return res.status(201).send({
             message: "User created successfully",
@@ -120,7 +120,7 @@ const signup = (prisma) => async (req, res) => {
 
 
 const login = (prisma) => async (req, res) => {
-      try {
+    try {
         const { Username, Password } = req.body;
 
         // Find user by username
@@ -243,7 +243,7 @@ const becomeOfficeStaff = (prisma, User_Type) => async (req, res) => {
     try {
 
         if (req.body.Role === User_Type.REAL_ESTATE_OFFICE_STAFF) {
-            return res.status(400).send('You are already an office staff!');
+            return res.status(400).send({ 'message': 'You are already an office staff!' });
         }
 
         user = await prisma.user.findUnique({
@@ -252,11 +252,11 @@ const becomeOfficeStaff = (prisma, User_Type) => async (req, res) => {
         });
 
         if (!user) {
-            return res.status(404).send('User not found.');
+            return res.status(404).send({ 'message': 'User not found.' });
         }
 
         if (user.Role === User_Type.REAL_ESTATE_OFFICE_STAFF) {
-            return res.status(400).send('You are already an office staff!');
+            return res.status(400).send({ 'message': 'You are already an office staff!' });
         }
 
         await prisma.user.update({
@@ -306,7 +306,7 @@ const get_Profile = (prisma) => async (req, res) => {
         });
 
         if (!profile) {
-            return res.status(404).send('Profile not found.');
+            return res.status(404).send({ 'message': 'Profile not found.' });
         }
 
         return res.status(200).send(profile);
@@ -325,7 +325,7 @@ const edit_Profile = (prisma) => async (req, res) => {
             (address.Region || address.City);
 
         if (!(req.body.Email || req.body.Profile_Image || hasAddressFields || req.body.Other1)) {
-            return res.status(400).send('Nothing to change?!...');
+            return res.status(400).send({ 'message': 'Nothing to change?!...' });
         }
 
         const updateData = {};
@@ -386,15 +386,16 @@ const logout = (prisma) => async (req, res) => {
                     },
                 },
             },
-        })
+        });
         if (req.headers['x-mobile-app']) {
-            return res.status(200).send('Logout successful');
+            return res.status(200).send({ 'message': 'Logout successful' });
         }
         res.clearCookie('session');
         res.clearCookie('refreshToken');
         res.clearCookie('csrfToken');
-        res.status(200).send('Logout successful');
+        res.status(200).send({ 'message': 'Logout successful' });
     } catch (error) {
+        console.error(error);
         dbErrorHandler(res, error, 'logout');
     }
 };

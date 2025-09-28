@@ -25,7 +25,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
                 TC_type = Committed_By.BUSINESS_BENEFICIARY;
                 break;
             default:
-                return res.status(400).send("Invalid Committed_By value");
+                return res.status(400).send({'message': "Invalid Committed_By value"});
         }
 
         const found = await prisma.TermsAndCondition.findFirst({
@@ -49,7 +49,7 @@ const createNewTandC = (prisma, Committed_By) => async (req, res) => {
             const extractedStrings = latestTC.TC_ID.match(/^([A-Za-z_]+)(\d+)$/);
 
             if (!extractedStrings) {
-                return res.status(500).send("Invalid TC_ID format");
+                return res.status(500).send({'message': "Invalid TC_ID format"});
             }
 
             const prefix = extractedStrings[1];
@@ -100,7 +100,7 @@ const getLastTerms = (prisma) => async (req, res) => {
                 TC_ID_type = 'BB';
                 break;
             default:
-                return res.status(400).send('Invalid Committed_By value');
+                return res.status(400).send({'message': 'Invalid Committed_By value'});
         }
 
         const terms = await prisma.TermsAndCondition.findFirst({
@@ -108,7 +108,7 @@ const getLastTerms = (prisma) => async (req, res) => {
             orderBy: { TC_ID: 'desc' },
         });
         if (!terms || terms.length === 0) {
-            return res.status(404).send('Terms and Conditions not found.');
+            return res.status(404).send({'message': 'Terms and Conditions not found.'});
         }
 
         if (Lang === 'en') {

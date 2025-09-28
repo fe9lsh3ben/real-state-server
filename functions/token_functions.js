@@ -168,7 +168,7 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
             token = authHeader && authHeader.split(' ')[1];
         }
         if (!token) {
-            return res.status(401).send('Refresh token is required!');
+            return res.status(401).send({'message': 'Refresh token is required!'});
         }
 
         let data;
@@ -177,16 +177,16 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
         } catch (err) {
             if (err.name === 'TokenExpiredError') {
                 if (req.headers['x-mobile-app']) {
-                    return res.status(401).send('Token expired!');
+                    return res.status(401).send({'message': 'Token expired!'});
                 }
                 return res.redirect("/login");
             } else {
-                return res.status(401).send('error occured!');
+                return res.status(401).send({'message': 'error occured!'});
             }
         }
 
         if (data.tokenType !== TokenType.REFRESH_TOKEN) {
-            return res.status(401).send('Invalid token type!');
+            return res.status(401).send({'message': 'Invalid token type!'});
         }
 
         const resourceToken = await prisma.user.findUnique({
@@ -197,14 +197,14 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
         });
 
         if (resourceToken.Refresh_Tokens?.Refresh_Token !== token) {
-            return res.status(401).send('Invalid refresh token!');
+            return res.status(401).send({'message': 'Invalid refresh token!'});
 
         }
 
         syncTokens(data, 'Token was refreshed', res);
 
     } catch (error) {
-        return res.status(500).send('error occured!');
+        return res.status(500).send({'message': 'error occured!'});
     }
 };
 

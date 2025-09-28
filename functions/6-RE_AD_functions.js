@@ -48,11 +48,11 @@ const generate_READ = (prisma) => async (req, res) => {
         }
 
         if (!validAdTypes.includes(AD_Type)) {
-            return res.status(400).send("Invalid AD_Type value.");
+            return res.status(400).send({'message': "Invalid AD_Type value."});
         }
 
         if (!validUnitTypes.includes(AD_Unit_Type)) {
-            return res.status(400).send("Invalid AD_Unit_Type value.");
+            return res.status(400).send({'message': "Invalid AD_Unit_Type value."});
         }
 
         const Initiator = { Created_By: { User_ID: req.body.User_ID, Full_Name: req.body.Full_Name }, Edited_By: [] };
@@ -104,7 +104,7 @@ const get_READ = (prisma) => async (req, res) => {
             case SearchType.COMPLETE: {
                 Object.assign(req.body, req.query);
                 const AD_ID = parseInt(req.body.AD_ID);
-                if (isNaN(AD_ID)) return res.status(400).send("Invalid or missing Ad ID.");
+                if (isNaN(AD_ID)) return res.status(400).send({'message': "Invalid or missing Ad ID."});
 
                 const ad = await prisma.realEstateAD.findUnique({
                     where: { AD_ID },
@@ -135,7 +135,7 @@ const get_READ = (prisma) => async (req, res) => {
                     }
                 });
 
-                if (!ad) return res.status(404).send('Real Estate ad not found.');
+                if (!ad) return res.status(404).send({'message': 'Real Estate ad not found.'});
              
                 if(!req.body.Office_ID || ad.Office_ID !== parseInt(req.body.Office_ID)) {
                     delete ad.Initiator;
@@ -165,14 +165,14 @@ const get_READ = (prisma) => async (req, res) => {
                     maxLongitude
                 } = req.body;
 
-                if (!AD_Type || !AD_Unit_Type) return res.status(400).send("Missing AD type and AD unit type are required.");
+                if (!AD_Type || !AD_Unit_Type) return res.status(400).send({'message': "Missing AD type and AD unit type are required."});
 
                 if (!validAdTypes.includes(AD_Type)) {
-                    return res.status(400).send("Invalid AD_Type value.");
+                    return res.status(400).send({'message': "Invalid AD_Type value."});
                 }
 
                 if (!validUnitTypes.includes(AD_Unit_Type)) {
-                    return res.status(400).send("Invalid AD_Unit_Type value.");
+                    return res.status(400).send({'message': "Invalid AD_Unit_Type value."});
                 }
 
                 const where = {};
@@ -184,19 +184,19 @@ const get_READ = (prisma) => async (req, res) => {
                 }];
 
                 if (Office_ID) {
-                    if (isNaN(Office_ID)) return res.status(400).send("Invalid or missing Office ID.");
+                    if (isNaN(Office_ID)) return res.status(400).send({'message': "Invalid or missing Office ID."});
                     where.AND.push({ Office_ID: Office_ID });
                 }
 
 
                 if (Lower_Price) {
-                    if (isNaN(Lower_Price) || Lower_Price < 0) return res.status(400).send("Invalid or missing Lower Price.");
+                    if (isNaN(Lower_Price) || Lower_Price < 0) return res.status(400).send({'message': "Invalid or missing Lower Price."});
                     where.AND.push({ Unit_Price: { gte: Lower_Price } });
 
                 }
 
                 if (Upper_Price) {
-                    if (isNaN(Upper_Price) || Upper_Price < 0) return res.status(400).send("Invalid or missing Upper Price.");
+                    if (isNaN(Upper_Price) || Upper_Price < 0) return res.status(400).send({'message': "Invalid or missing Upper Price."});
                     where.AND.push({ Unit_Price: { lte: Upper_Price } });
 
                 }
@@ -219,7 +219,7 @@ const get_READ = (prisma) => async (req, res) => {
 
 
                     } catch (err) {
-                        return res.status(400).send("Invalid AD Content JSON format.");
+                        return res.status(400).send({'message': "Invalid AD Content JSON format."});
                     }
                 }
 
@@ -234,7 +234,7 @@ const get_READ = (prisma) => async (req, res) => {
                 const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
                 if (allCoords.some(coord => coord !== undefined)) {
                     if (allCoords.some(coord => coord === undefined || isNaN(coord))) {
-                        return res.status(400).send("Invalid or incomplete map bounds.");
+                        return res.status(400).send({'message': "Invalid or incomplete map bounds."});
                     }
 
                     unitWhere.Latitude = { gte: Number(minLatitude), lte: Number(maxLatitude) };
@@ -282,14 +282,14 @@ const get_READ = (prisma) => async (req, res) => {
                     maxLongitude
                 } = req.body;
 
-                if (!AD_Type || !AD_Unit_Type) return res.status(400).send("Missing AD type and AD unit type are required.");
+                if (!AD_Type || !AD_Unit_Type) return res.status(400).send({'message': "Missing AD type and AD unit type are required."});
 
                 if (!validAdTypes.includes(AD_Type)) {
-                    return res.status(400).send("Invalid AD_Type value.");
+                    return res.status(400).send({'message': "Invalid AD_Type value."});
                 }
 
                 if (!validUnitTypes.includes(AD_Unit_Type)) {
-                    return res.status(400).send("Invalid AD_Unit_Type value.");
+                    return res.status(400).send({'message': "Invalid AD_Unit_Type value."});
                 }
 
                 const where = {};
@@ -301,19 +301,19 @@ const get_READ = (prisma) => async (req, res) => {
                 }];
 
                 if (Office_ID) {
-                    if (isNaN(Office_ID)) return res.status(400).send("Invalid or missing Office ID.");
+                    if (isNaN(Office_ID)) return res.status(400).send({'message': "Invalid or missing Office ID."});
                     where.AND.push({ Office_ID: Office_ID });
                 }
 
 
                 if (Lower_Price) {
-                    if (isNaN(Lower_Price) || Lower_Price < 0) return res.status(400).send("Invalid or missing Lower Price.");
+                    if (isNaN(Lower_Price) || Lower_Price < 0) return res.status(400).send({'message': "Invalid or missing Lower Price."});
                     where.AND.push({ Unit_Price: { gte: Lower_Price } });
 
                 }
 
                 if (Upper_Price) {
-                    if (isNaN(Upper_Price) || Upper_Price < 0) return res.status(400).send("Invalid or missing Upper Price.");
+                    if (isNaN(Upper_Price) || Upper_Price < 0) return res.status(400).send({'message': "Invalid or missing Upper Price."});
                     where.AND.push({ Unit_Price: { lte: Upper_Price } });
 
                 }
@@ -336,7 +336,7 @@ const get_READ = (prisma) => async (req, res) => {
 
 
                     } catch (err) {
-                        return res.status(400).send("Invalid AD Content JSON format.");
+                        return res.status(400).send({'message': "Invalid AD Content JSON format."});
                     }
                 }
 
@@ -351,7 +351,7 @@ const get_READ = (prisma) => async (req, res) => {
                 const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
                 if (allCoords.some(coord => coord !== undefined)) {
                     if (allCoords.some(coord => coord === undefined || isNaN(coord))) {
-                        return res.status(400).send("Invalid or incomplete map bounds.");
+                        return res.status(400).send({'message': "Invalid or incomplete map bounds."});
                     }
 
                     unitWhere.Latitude = { gte: Number(minLatitude), lte: Number(maxLatitude) };
@@ -389,7 +389,7 @@ const get_READ = (prisma) => async (req, res) => {
 
 
             default:
-                return res.status(400).send('Invalid Search_Type.');
+                return res.status(400).send({'message': 'Invalid Search_Type.'});
         }
 
     } catch (error) {
@@ -414,19 +414,19 @@ const edit_READ = (prisma) => async (req, res) => {
         } = req.body;
 
         if (!AD_ID) {
-            return res.status(400).send("Ad ID is required to update the unit.");
+            return res.status(400).send({'message': "Ad ID is required to update the unit."});
         }
 
         if (!(AD_Type || AD_Unit_Type || AD_Specifications || Indoor_Unit_Images || Unit_Price || Hedden)) {
-            return res.status(400).send("Nothing to update.");
+            return res.status(400).send({'message': "Nothing to update."});
         }
 
         if (AD_Type && !validAdTypes.includes(AD_Type)) {
-            return res.status(400).send("Invalid AD_Type value.");
+            return res.status(400).send({'message': "Invalid AD_Type value."});
         }
 
         if (AD_Unit_Type && !validUnitTypes.includes(AD_Unit_Type)) {
-            return res.status(400).send("Invalid AD_Unit_Type value.");
+            return res.status(400).send({'message': "Invalid AD_Unit_Type value."});
         }
 
         const ad = await prisma.realEstateAD.findUnique({
@@ -434,7 +434,7 @@ const edit_READ = (prisma) => async (req, res) => {
         });
 
         if (!ad) {
-            return res.status(404).send("Ad not found.");
+            return res.status(404).send({'message': "Ad not found."});
         }
 
 
@@ -503,7 +503,7 @@ const delete_READ = (prisma) => async (req, res) => {
         const { AD_ID } = req.body;
 
         if (!AD_ID) {
-            return res.status(400).send("AD_ID is required to delete the Real Estate AD.");
+            return res.status(400).send({'message': "AD_ID is required to delete the Real Estate AD."});
         }
 
         const deletedAD = await prisma.realEstateAD.delete({

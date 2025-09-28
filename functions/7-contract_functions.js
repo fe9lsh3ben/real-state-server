@@ -78,7 +78,7 @@ const get_Contract = (prisma) => async (req, res) => {
                 });
 
                 if (contracts.length === 0) {
-                    return res.status(404).send('No contracts found.');
+                    return res.status(404).send({'message': 'No contracts found.'});
                 }
 
 
@@ -94,11 +94,11 @@ const get_Contract = (prisma) => async (req, res) => {
                 });
 
                 if (!contract) {
-                    return res.status(404).send('Contract not found.');
+                    return res.status(404).send({'message': 'Contract not found.'});
                 }
 
                 if (contract.Office_ID !== req.body.Office_ID) {
-                    return res.status(403).send('You are not authorized to access this contract.');
+                    return res.status(403).send({'message': 'You are not authorized to access this contract.'});
                 }
 
                 return res.status(200).json(contract);
@@ -108,7 +108,7 @@ const get_Contract = (prisma) => async (req, res) => {
             case Query_Type.DETAILED_FOR_USER:
                 res.status(200).json({});
             default:
-                return res.status(400).send('Invalid query type.');
+                return res.status(400).send({'message': 'Invalid query type.'});
         }
 
     } catch (error) {
@@ -121,7 +121,7 @@ const get_Contract_Unregistered = (prisma) => async (req, res) => {
     try {
 
         if (!req.body.GOV_ID || !req.body.Phone_Number) {
-            return res.status(400).send('goverment ID and phone number are required.');
+            return res.status(400).send({'message': 'goverment ID and phone number are required.'});
         }
 
         const contract = await prisma.contract.findMany({
@@ -141,7 +141,7 @@ const get_Contract_Unregistered = (prisma) => async (req, res) => {
         });
 
         if (contract.length === 0) {
-            return res.status(404).send('No contracts found.');
+            return res.status(404).send({'message': 'No contracts found.'});
         }
 
 

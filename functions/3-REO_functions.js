@@ -23,7 +23,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 
         // Validate required fields
         if (!Commercial_Register || !Address || !Office_Name) {
-            return res.status(400).send("Commercial Register, Address, Office Name, and User_ID are required!");
+            return res.status(400).send({'message': "Commercial Register, Address, Office Name, and User_ID are required!"});
         }
 
         const takenOffice = await prisma.realEstateOffice.findUnique({
@@ -61,10 +61,10 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
                 }
             })
             if (!licnese) {
-                return res.status(400).send("Fal License Number does not exist!");
+                return res.status(400).send({'message': "Fal License Number does not exist!"});
             }
             if (User_ID !== licnese.Owner_ID) {
-                return res.status(400).send("You are not the owner of this License!");
+                return res.status(400).send({'message': "You are not the owner of this License!"});
             }
             dataEntry.License_ID = licnese.License_ID;
         }
@@ -118,10 +118,10 @@ const get_REO = (prisma) => async (req, res) => {
         switch (Search_Type) {
             case SearchType.SEARCH_ONE: {
                 const Office_ID = parseInt(req.query.Office_ID);
-                if (isNaN(Office_ID)) return res.status(400).send("Invalid or missing Office_ID.");
+                if (isNaN(Office_ID)) return res.status(400).send({'message': "Invalid or missing Office_ID."});
 
                 const office = await prisma.realEstateOffice.findUnique({ where: { Office_ID } });
-                if (!office) return res.status(404).send('Real Estate Office not found.');
+                if (!office) return res.status(404).send({'message': 'Real Estate Office not found.'});
 
                 return res.status(200).send(office);
             }
@@ -130,13 +130,13 @@ const get_REO = (prisma) => async (req, res) => {
                 const { Geo_level, Geo_value } = req.query;
 
                 if (!Geo_level || !Geo_value) {
-                    return res.status(400).send("Missing Geo_level or Geo_value.");
+                    return res.status(400).send({'message': "Missing Geo_level or Geo_value."});
                 }
 
                 // Validate that Geo_level is one of the allowed fields
                 const allowedFields = ['Region', 'City', 'District'];
                 if (!allowedFields.includes(Geo_level)) {
-                    return res.status(400).send("Invalid Geo_level.");
+                    return res.status(400).send({'message': "Invalid Geo_level."});
                 }
 
                 // Build dynamic where clause
@@ -148,7 +148,7 @@ const get_REO = (prisma) => async (req, res) => {
                     where: whereClause
                 });
 
-                if (!offices.length) return res.status(404).send('No Real Estate Offices found.');
+                if (!offices.length) return res.status(404).send({'message': 'No Real Estate Offices found.'});
                 return res.status(200).send(offices);
 
             }
@@ -160,7 +160,7 @@ const get_REO = (prisma) => async (req, res) => {
                     isNaN(minLatitude) || isNaN(maxLatitude) ||
                     isNaN(minLongitude) || isNaN(maxLongitude)
                 ) {
-                    return res.status(400).send("bounds are invalid.");
+                    return res.status(400).send({'message': "bounds are invalid."});
                 }
 
                 const offices = await prisma.realEstateOffice.findMany({
@@ -179,14 +179,14 @@ const get_REO = (prisma) => async (req, res) => {
                     },
                 });
 
-                if (!offices.length) return res.status(404).send('No Real Estate Offices found in screen bounds.');
+                if (!offices.length) return res.status(404).send({'message': 'No Real Estate Offices found in screen bounds.'});
                 return res.status(200).send(offices);
             }
 
 
             case SearchType.SEARCH_DIRECTION: {
                 const { Direction, City } = req.query;
-                if (!Direction) return res.status(400).send("Direction is required.");
+                if (!Direction) return res.status(400).send({'message': "Direction is required."});
 
                 const offices = await prisma.realEstateOffice.findMany({
                     where: {
@@ -202,12 +202,12 @@ const get_REO = (prisma) => async (req, res) => {
                     }
                 });
 
-                if (!offices.length) return res.status(404).send('No Real Estate Offices found for that direction.');
+                if (!offices.length) return res.status(404).send({'message': 'No Real Estate Offices found for that direction.'});
                 return res.status(200).send(offices);
             }
 
             default:
-                return res.status(400).send('Invalid Search_Type.');
+                return res.status(400).send({'message': 'Invalid Search_Type.'});
         }
 
     } catch (error) {
@@ -223,12 +223,12 @@ const update_REO = (prisma) => async (req, res) => {
 
         // Validate required identifier
         if (!Office_ID) {
-            return res.status(400).send("Office_ID is required.");
+            return res.status(400).send({'message': "Office_ID is required."});
         }
 
         // Ensure at least one updatable field is present
         if (!(Office_Phone || Office_Image || Address)) {
-            return res.status(400).send("At least one field (Office Phone, Office Image, Address, Fal License) must be provided to update.");
+            return res.status(400).send({'message': "At least one field (Office Phone, Office Image, Address, Fal License) must be provided to update."});
         }
 
         const updateData = {};
@@ -253,10 +253,10 @@ const update_REO = (prisma) => async (req, res) => {
                 }
             })
             if (!licnese) {
-                return res.status(400).send("Fal License Number does not exist!");
+                return res.status(400).send({'message': "Fal License Number does not exist!"});
             }
             if (User_ID !== licnese.Owner_ID) {
-                return res.status(400).send("You are not the owner of this License!");
+                return res.status(400).send({'message': "You are not the owner of this License!"});
             }
             dataEntry.License_ID = licnese.License_ID;
         }
