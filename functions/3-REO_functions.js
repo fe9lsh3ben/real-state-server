@@ -34,9 +34,9 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
         })
 
         if (takenOffice) {
-            return res.status(400).send(`
+            return res.status(400).send({"message":`
                 Office Name already exists!. 
-                If the first office belongs to you, add "Branch number" to the new one name.`);
+                If the first office belongs to you, add "Branch number" to the new one name.`});
         }
 
         const { Region, City, District, Direction, Latitude, Longitude } = Address;
