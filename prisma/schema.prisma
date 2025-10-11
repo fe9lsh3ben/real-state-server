@@ -69,6 +69,11 @@ enum Direction {
     SOUTH
     EAST
     WEST
+    NORTHEAST 
+    SOUTHEAST 
+    SOUTHWEST
+    NORTHWEST
+    CENTER
 }
 
 enum Committed_By {
@@ -196,8 +201,8 @@ model RealEstateOffice {
     Owner               User   @relation(name: "Office Owner", fields: [Owner_ID], references: [User_ID])
     Office_Name         String @unique
     Office_Phone        String
-    Office_Image        Bytes?
-
+    Office_Image        Bytes
+    Office_Banner_Image Bytes
     //Address      
     Region    String
     City      String
