@@ -202,7 +202,7 @@ model RealEstateOffice {
     Office_Name         String @unique
     Office_Phone        String
     Office_Image        Bytes
-    Office_Banner_Image Bytes
+    Office_Banner_Image Bytes?
     //Address      
     Region    String
     City      String

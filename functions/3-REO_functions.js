@@ -26,15 +26,13 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 
 
         const missingFields = [];
-        if (!Unit_Type) missingFields.push("Unit Type");
-        if (!RE_Name) missingFields.push("RE Name");
-        if (!Deed_Number) missingFields.push("Deed Number");
-        if (!Deed_Date) missingFields.push("Deed Date");
-        if (!Deed_Owners) missingFields.push("Deed Owners");
+        if (!Commercial_Register) missingFields.push("Commercial_Register");
         if (!Address) missingFields.push("Address");
-        if (!Outdoor_Unit_Images) missingFields.push("Outdoor Unit Images");
+        if (!Office_Name) missingFields.push("Office Name");
+        if (!Office_Phone) missingFields.push("Office Phone");
         if (!Office_Image) missingFields.push("Office Image");
-        if (!Office_Banner_Image) missingFields.push("Office Banner Image");
+        if (!Address) missingFields.push("Address");
+        if (!Fal_License_Number) missingFields.push("Fal License Number");
 
         if (missingFields.length > 0) {
             return res.status(400).send(`Missing required fields: ${missingFields.join(", ")}`);
@@ -68,25 +66,30 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Status: Office_Or_User_Status.ACTIVE,
             Owner_ID: User_ID
         };
-
-        if (Fal_License_Number) {
-            let licnese = await prisma.falLicense.findUnique({
+         if (Fal_License_Number) {
+            let falLicnese = await prisma.falLicense.findUnique({
                 where: {
                     Fal_License_Number: Fal_License_Number
                 }
             })
-            if (!licnese) {
+            if (!falLicnese) {
                 return res.status(400).send({ 'message': "Fal License Number does not exist!" });
             }
-            if (User_ID !== licnese.Owner_ID) {
+            if (User_ID !== falLicnese.Owner_ID) {
                 return res.status(400).send({ 'message': "You are not the owner of this License!" });
             }
-            dataEntry.License_ID = licnese.License_ID;
+            dataEntry.License_ID = {
+                FalLicense: {
+                    connect: { License_ID: parseInt(falLicnese.License_ID) }
+                }
+            };
         }
 
         try {
             dataEntry.Office_Image = Buffer.from(Office_Image, 'base64');
-            dataEntry.Office_Banner_Image = Buffer.from(Office_Banner_Image, 'base64');
+            if (Office_Banner_Image) {
+                dataEntry.Office_Banner_Image = Buffer.from(Office_Banner_Image, 'base64');
+            }
         }
         catch (e) {
             return res.status(400).send({ 'message': "Office Image or Office Banner Image is not valid" });
