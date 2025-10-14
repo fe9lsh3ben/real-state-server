@@ -32,7 +32,6 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
         if (!Office_Phone) missingFields.push("Office Phone");
         if (!Office_Image) missingFields.push("Office Image");
         if (!Address) missingFields.push("Address");
-        if (!Fal_License_Number) missingFields.push("Fal License Number");
 
         if (missingFields.length > 0) {
             return res.status(400).send(`Missing required fields: ${missingFields.join(", ")}`);
@@ -66,24 +65,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Status: Office_Or_User_Status.ACTIVE,
             Owner_ID: User_ID
         };
-         if (Fal_License_Number) {
-            let falLicnese = await prisma.falLicense.findUnique({
-                where: {
-                    Fal_License_Number: Fal_License_Number
-                }
-            })
-            if (!falLicnese) {
-                return res.status(400).send({ 'message': "Fal License Number does not exist!" });
-            }
-            if (User_ID !== falLicnese.Owner_ID) {
-                return res.status(400).send({ 'message': "You are not the owner of this License!" });
-            }
-            dataEntry.License_ID = {
-                FalLicense: {
-                    connect: { License_ID: parseInt(falLicnese.License_ID) }
-                }
-            };
-        }
+
 
         try {
             dataEntry.Office_Image = Buffer.from(Office_Image, 'base64');
@@ -95,14 +77,22 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             return res.status(400).send({ 'message': "Office Image or Office Banner Image is not valid" });
         }
 
-        createdOffice = await prisma.realEstateOffice.create({ data: dataEntry });
+        createdOffice = await prisma.realEstateOffice.create({
+            data: dataEntry,
+            select: {
+                Office_ID: true,
+                Latitude: true,
+                Longitude: true
+            }
+        });
 
         const user = await prisma.user.update({
             where: { User_ID: User_ID },
             data: { Role: User_Type.REAL_ESTATE_OFFICE_OWNER },
         });
-
+        console.log('creating');
         return syncTokens(
+            req,
             user,
             {
                 message: "Real Estate Office was successfully created!",
@@ -113,7 +103,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
         );
 
     } catch (error) {
-
+        console.error('Error:', error.message);
         // Rollback if partial entity was created
         if (typeof createdOffice !== 'undefined' && createdOffice?.Office_ID) {
             try {

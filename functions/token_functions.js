@@ -62,10 +62,10 @@ async function generateTokenByPrivate_key(body, period, tokenType = TokenType.AC
     }
 }
 
-async function syncTokens(data, message, res) {
+async function syncTokens(req,user, message, res) {
     try {
-        const accessToken = await generateTokenByPrivate_key(data, '4h');
-        const refreshToken = await generateTokenByPrivate_key(data, '14d', TokenType.REFRESH_TOKEN);
+        const accessToken = await generateTokenByPrivate_key(user, '4h');
+        const refreshToken = await generateTokenByPrivate_key(user, '14d', TokenType.REFRESH_TOKEN);
 
         const accessDecoded = jwt.decode(accessToken);
         const refreshDecoded = jwt.decode(refreshToken);
@@ -74,7 +74,7 @@ async function syncTokens(data, message, res) {
         const refreshExpiry = new Date(refreshDecoded.exp * 1000);
 
         const updatedUser = await prisma.user.update({
-            where: { User_ID: data.User_ID },
+            where: { User_ID: user.User_ID },
             data: {
                 Refresh_Token: {
                     update: {
@@ -108,15 +108,10 @@ async function syncTokens(data, message, res) {
 
         if (req.headers['x-mobile-app']) {
             return res.status(201).send({
-                data: {
-                    user_id: updatedUser.User_ID,
-                    role: updatedUser.Role,
-                    employer_reo_id: updatedUser.Employer_REO_ID,
-                    token: updatedUser.Session.Token,
-                    refresh_token: updatedUser.Refresh_Token.Refresh_Token
-                },
+                user_data: updatedUser,
                 message
             });
+
         }
 
         res.cookie("session", updatedUser.Session.Token, {
@@ -137,6 +132,7 @@ async function syncTokens(data, message, res) {
         // Generate CSRF token (random string)
         const csrfToken = crypto.randomBytes(32).toString("hex");
 
+
         // Send CSRF token to client (readable by JS)
         res.cookie("csrfToken", csrfToken, {
             httpOnly: false, // JS can read it
@@ -146,8 +142,11 @@ async function syncTokens(data, message, res) {
         });
 
 
-
-        return res.status(200).json({ user_data: updatedUser, message });
+        delete updatedUser.Session;
+        delete updatedUser.Refresh_Token;
+        console.log(updatedUser);
+        console.log('success');
+        return res.status(201).json({ user_data: updatedUser, message });
 
     } catch (error) {
         throw error;
@@ -168,7 +167,7 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
             token = authHeader && authHeader.split(' ')[1];
         }
         if (!token) {
-            return res.status(401).send({'message': 'Refresh token is required!'});
+            return res.status(401).send({ 'message': 'Refresh token is required!' });
         }
 
         let data;
@@ -177,16 +176,16 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
         } catch (err) {
             if (err.name === 'TokenExpiredError') {
                 if (req.headers['x-mobile-app']) {
-                    return res.status(401).send({'message': 'Token expired!'});
+                    return res.status(401).send({ 'message': 'Token expired!' });
                 }
                 return res.redirect("/login");
             } else {
-                return res.status(401).send({'message': 'error occured!'});
+                return res.status(401).send({ 'message': 'error occured!' });
             }
         }
 
         if (data.tokenType !== TokenType.REFRESH_TOKEN) {
-            return res.status(401).send({'message': 'Invalid token type!'});
+            return res.status(401).send({ 'message': 'Invalid token type!' });
         }
 
         const resourceToken = await prisma.user.findUnique({
@@ -197,14 +196,14 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
         });
 
         if (resourceToken.Refresh_Tokens?.Refresh_Token !== token) {
-            return res.status(401).send({'message': 'Invalid refresh token!'});
+            return res.status(401).send({ 'message': 'Invalid refresh token!' });
 
         }
 
         syncTokens(data, 'Token was refreshed', res);
 
     } catch (error) {
-        return res.status(500).send({'message': 'error occured!'});
+        return res.status(500).send({ 'message': 'error occured!' });
     }
 };
 
@@ -263,7 +262,7 @@ async function tokenVerifier(req) {
                 if (user.Session.Token !== token) {
                     return { 'verified': false, 'message': 'Token is disposed!' };
                 }
-                if(req.body === undefined){
+                if (req.body === undefined) {
                     req.body = {};
                 }
                 req.body.Role = user.Role;

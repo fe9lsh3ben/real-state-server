@@ -11,6 +11,7 @@ const Fal_Type = Object.freeze({
 
 
 const generate_FalLicense = (prisma) => async (req, res) => {
+    console.log('req.body');  
     let createdLicense;
     try {
         const {
