@@ -68,8 +68,17 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 
 
         try {
+            var sizeInBytes = Buffer.byteLength(Office_Image, 'base64');
+            if (sizeInBytes > 2 * 1024 * 1024) {
+                return res.status(400).send({ 'message': "Office Image is more than 2MB" });
+            }
+
             dataEntry.Office_Image = Buffer.from(Office_Image, 'base64');
             if (Office_Banner_Image) {
+                sizeInBytes = Buffer.byteLength(Office_Banner_Image, 'base64');
+                if (sizeInBytes > 5 * 1024 * 1024) {
+                    return res.status(400).send({ 'message': "Office Banner Image is more than 5MB" });
+                }
                 dataEntry.Office_Banner_Image = Buffer.from(Office_Banner_Image, 'base64');
             }
         }
