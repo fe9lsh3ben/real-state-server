@@ -146,7 +146,7 @@ async function syncTokens(req,user, message, res) {
         delete updatedUser.Refresh_Token;
         console.log(updatedUser);
         console.log('success');
-        return res.status(201).json({ user_data: updatedUser, message });
+        return res.status(201).json({ user_data: updatedUser, ...message });
 
     } catch (error) {
         throw error;
