@@ -180,6 +180,7 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
                 }
                 return res.redirect("/login");
             } else {
+                console.log(err);
                 return res.status(401).send({ 'message': 'error occured!' });
             }
         }
@@ -191,7 +192,7 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
         const resourceToken = await prisma.user.findUnique({
             where: { User_ID: data.User_ID },
             select: {
-                Refresh_Tokens: { select: { Refresh_Token: true } },
+                Refresh_Token: { select: { Refresh_Token: true } },
             },
         });
 
@@ -203,6 +204,7 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
         syncTokens(data, 'Token was refreshed', res);
 
     } catch (error) {
+        console.log(error);
         return res.status(500).send({ 'message': 'error occured!' });
     }
 };

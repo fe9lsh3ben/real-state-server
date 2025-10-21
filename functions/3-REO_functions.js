@@ -18,8 +18,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Office_Phone,
             Office_Image,
             Office_Banner_Image,
-            Fal_License_Number,
-            User_ID
+             User_ID
         } = req.body;
 
         // Validate required fields

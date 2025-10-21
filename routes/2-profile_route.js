@@ -61,7 +61,7 @@ profile.route('/edit_profile')
 
 profile.route('/renew_token')
 //**if return value is jwt expired take an action.
-.put(generateTokenByRefreshToken(prisma));
+.put(tokenMiddlewere, generateTokenByRefreshToken(prisma));
 
 
 
