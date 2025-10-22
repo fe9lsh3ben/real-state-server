@@ -62,7 +62,7 @@ async function generateTokenByPrivate_key(body, period, tokenType = TokenType.AC
     }
 }
 
-async function syncTokens(req,user, message, res) {
+async function syncTokens(req, user, message, res) {
     try {
         const accessToken = await generateTokenByPrivate_key(user, '4h');
         const refreshToken = await generateTokenByPrivate_key(user, '14d', TokenType.REFRESH_TOKEN);
@@ -72,7 +72,6 @@ async function syncTokens(req,user, message, res) {
 
         const accessExpiry = new Date(accessDecoded.exp * 1000);
         const refreshExpiry = new Date(refreshDecoded.exp * 1000);
-
         const updatedUser = await prisma.user.update({
             where: { User_ID: user.User_ID },
             data: {
@@ -144,9 +143,7 @@ async function syncTokens(req,user, message, res) {
 
         delete updatedUser.Session;
         delete updatedUser.Refresh_Token;
-        console.log(updatedUser);
-        console.log('success');
-        return res.status(201).json({ user_data: updatedUser, ...message });
+        return res.status(201).json({ user_data: updatedUser, message });
 
     } catch (error) {
         throw error;
@@ -157,9 +154,7 @@ async function syncTokens(req,user, message, res) {
 
 const generateTokenByRefreshToken = (prisma) => async (req, res) => {
     try {
-
         let token;
-
         if (req.cookies.refreshToken) {
             token = req.cookies.refreshToken;
         } else {
@@ -195,13 +190,11 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
                 Refresh_Token: { select: { Refresh_Token: true } },
             },
         });
-
-        if (resourceToken.Refresh_Tokens?.Refresh_Token !== token) {
+        if (resourceToken.Refresh_Token?.Refresh_Token !== token) {
             return res.status(401).send({ 'message': 'Invalid refresh token!' });
 
         }
-
-        syncTokens(data, 'Token was refreshed', res);
+        syncTokens(req, data, 'Token was refreshed', res);
 
     } catch (error) {
         console.log(error);
@@ -213,6 +206,7 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
 async function tokenVerifier(req) {
 
     try {
+        
         let token;
         if (req.cookies.session) {
             token = req.cookies.session;
@@ -293,6 +287,7 @@ async function tokenVerifier(req) {
 async function tokenMiddlewere(req, res, next) {
 
     try {
+        console.log(req.cookies.session);
         if (!req.headers['x-mobile-app']) {
             const csrfCookie = req.cookies.csrfToken;
             const csrfHeader = req.headers["x-csrf-token"];
