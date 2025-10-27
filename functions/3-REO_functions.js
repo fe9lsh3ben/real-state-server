@@ -90,7 +90,8 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             select: {
                 Office_ID: true,
                 Latitude: true,
-                Longitude: true
+                Longitude: true,
+                Office_Image: true,
             }
         });
 

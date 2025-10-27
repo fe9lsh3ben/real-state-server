@@ -62,7 +62,7 @@ async function generateTokenByPrivate_key(body, period, tokenType = TokenType.AC
     }
 }
 
-async function syncTokens(req, user, message, res) {
+async function syncTokens(req, user, content, res) {
     try {
         const accessToken = await generateTokenByPrivate_key(user, '4h');
         const refreshToken = await generateTokenByPrivate_key(user, '14d', TokenType.REFRESH_TOKEN);
@@ -108,24 +108,24 @@ async function syncTokens(req, user, message, res) {
         if (req.headers['x-mobile-app']) {
             return res.status(201).send({
                 user_data: updatedUser,
-                message
+                message: content.message
             });
 
         }
 
-        res.cookie("session", updatedUser.Session.Token, {
-            httpOnly: true,
-            sameSite: "lax",
-            secure: false, // set true if using HTTPS
-            maxAge: 1000 * 60 * 60 * 4, // 1 hour
+         res.cookie("session", updatedUser.Session.Token, {
+            httpOnly: false,
+            sameSite: "none", // none, lax or strict
+            secure: true,     // set to true in prod with https
+            maxAge: 1000 * 60 * 60 * 4,
         });
 
-
         res.cookie("refreshToken", updatedUser.Refresh_Token.Refresh_Token, {
-            httpOnly: true,
-            sameSite: "strict",
-            secure: false,
-            path: "/profile/renew_token" // limit usage only to refresh endpoint
+            httpOnly: false,
+            sameSite: "none", // none, lax or strict
+            secure: true,
+            path: "/profile/renew_token",
+            maxAge: 1000 * 60 * 60 * 24 * 7,
         });
 
         // Generate CSRF token (random string)
@@ -143,7 +143,13 @@ async function syncTokens(req, user, message, res) {
 
         delete updatedUser.Session;
         delete updatedUser.Refresh_Token;
-        return res.status(201).json({ user_data: updatedUser, message });
+        return res.status(201).json({
+            csrfToken: csrfToken,
+            user_data: updatedUser,
+            office_content: content.office_content,
+            message: content.message,
+            note: content.note
+        });
 
     } catch (error) {
         throw error;
@@ -206,7 +212,7 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
 async function tokenVerifier(req) {
 
     try {
-        
+
         let token;
         if (req.cookies.session) {
             token = req.cookies.session;
@@ -287,12 +293,23 @@ async function tokenVerifier(req) {
 async function tokenMiddlewere(req, res, next) {
 
     try {
-        console.log(req.cookies.session);
         if (!req.headers['x-mobile-app']) {
+            if (!req.cookies.refreshToken || !req.cookies.session) {
+                return res.status(401).send({ message: "No session or refresh tokens found" });
+            }
             const csrfCookie = req.cookies.csrfToken;
             const csrfHeader = req.headers["x-csrf-token"];
+           
             if (!csrfHeader || csrfHeader !== csrfCookie) {
-                return res.status(403).send({ message: "Invalid CSRF token" });
+                const csrfToken = crypto.randomBytes(32).toString("hex");
+                res.cookie("csrfToken", csrfToken, {
+                    httpOnly: false, // JS can read it
+                    sameSite: "lax",
+                    secure: false, // set true if using HTTPS
+                    maxAge: 1000 * 60 * 60 * 4,
+                });
+
+                return res.status(403).send({ message: "Invalid CSRF token", csrfToken });
             }
         }
 

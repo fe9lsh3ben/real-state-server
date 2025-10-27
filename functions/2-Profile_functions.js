@@ -71,19 +71,19 @@ const signup = (prisma) => async (req, res) => {
             });
         }
 
-        res.cookie("session", storedSession.Token, {
-            httpOnly: true,
-            sameSite: "lax",
-            secure: false, // set true if using HTTPS
-            maxAge: 1000 * 60 * 60 * 4, // 4 hour
+        res.cookie("session", updatedUser.Session.Token, {
+            httpOnly: false,
+            sameSite: "none", // none, lax or strict
+            secure: true,     // set to true in prod with https
+            maxAge: 1000 * 60 * 60 * 4,
         });
 
-
-        res.cookie("refreshToken", storedRefresh.Refresh_Token, {
-            httpOnly: true,
+        res.cookie("refreshToken", updatedUser.Refresh_Token.Refresh_Token, {
+            httpOnly: false,
+            sameSite: "none", // none, lax or strict
             secure: true,
-            sameSite: "strict",
-            path: "/profile/renew_token" // limit usage only to refresh endpoint
+            path: "/profile/renew_token",
+            maxAge: 1000 * 60 * 60 * 24 * 7,
         });
         // Generate CSRF token (random string)
         const csrfToken = crypto.randomBytes(32).toString("hex");
@@ -207,10 +207,11 @@ const login = (prisma) => async (req, res) => {
         });
 
         res.cookie("refreshToken", updatedUser.Refresh_Token.Refresh_Token, {
-            httpOnly: true,
+            httpOnly: false,
             sameSite: "none",
             secure: true,
-            path: "/profile/renew_token"
+            // path: "/profile/renew_token",
+            maxAge: 1000 * 60 * 60 * 24 * 7,
         });
 
         const csrfToken = crypto.randomBytes(32).toString("hex");
