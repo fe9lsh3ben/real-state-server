@@ -17,7 +17,7 @@ async function dbErrorHandler(res, error, refrence = '') {
     } else if (error.code === 'P2025') {
         res.status(404).json({ 'message': 'From Error Handler Record not found.' });
     } else {
-        res.status(500).json({ 'message': `From Error Handler Internal server error ${refrence}.` });
+        res.status(500).json({ 'message': `From Error Handler Internal server error: ${refrence}.` });
     }
 
 }

@@ -18,7 +18,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Office_Phone,
             Office_Image,
             Office_Banner_Image,
-             User_ID
+            User_ID
         } = req.body;
 
         // Validate required fields
@@ -135,21 +135,21 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 
 const get_REO = (prisma) => async (req, res) => {
     try {
-        const { Search_Type } = req.query;
-
+        const { Search_Type } = req.body;
+        console.log(Search_Type == SearchType.SEARCH_ONE);
         switch (Search_Type) {
             case SearchType.SEARCH_ONE: {
-                const Office_ID = parseInt(req.query.Office_ID);
+                const Office_ID = parseInt(req.body.Office_ID);
                 if (isNaN(Office_ID)) return res.status(400).send({ 'message': "Invalid or missing Office_ID." });
 
-                const office = await prisma.realEstateOffice.findUnique({ where: { Office_ID } });
+                const office = await prisma.realEstateOffice.findMany({ where: { Office_ID } });
                 if (!office) return res.status(404).send({ 'message': 'Real Estate Office not found.' });
 
                 return res.status(200).send(office);
             }
 
             case SearchType.SEARCH_MANY: {
-                const { Geo_level, Geo_value } = req.query;
+                const { Geo_level, Geo_value } = req.body;
 
                 if (!Geo_level || !Geo_value) {
                     return res.status(400).send({ 'message': "Missing Geo_level or Geo_value." });
@@ -176,13 +176,13 @@ const get_REO = (prisma) => async (req, res) => {
             }
 
             case SearchType.SEARCH_ON_SCREEN: {
-                const { minLatitude, maxLatitude, minLongitude, maxLongitude } = req.query;
+                const { minLatitude, maxLatitude, minLongitude, maxLongitude } = req.body;
 
                 if (
                     isNaN(minLatitude) || isNaN(maxLatitude) ||
                     isNaN(minLongitude) || isNaN(maxLongitude)
                 ) {
-                    return res.status(400).send({ 'message': "bounds are invalid." });
+                    return res.status(400).send({ 'message': "bounds should be numbers." });
                 }
 
                 const offices = await prisma.realEstateOffice.findMany({
@@ -207,7 +207,7 @@ const get_REO = (prisma) => async (req, res) => {
 
 
             case SearchType.SEARCH_DIRECTION: {
-                const { Direction, City } = req.query;
+                const { Direction, City } = req.body;
                 if (!Direction) return res.status(400).send({ 'message': "Direction is required." });
 
                 const offices = await prisma.realEstateOffice.findMany({

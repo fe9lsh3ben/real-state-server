@@ -303,6 +303,11 @@ const get_Profile = (prisma) => async (req, res) => {
                 Employer_REO_ID: true,
                 Username: true,
                 Balance: true,
+                RE_Offices: {
+                    select: {
+                        REO_ID: true,
+                    },
+                },
             },
         });
 
@@ -316,7 +321,64 @@ const get_Profile = (prisma) => async (req, res) => {
     }
 };
 
+const get_Custom_Profile = (prisma) => async (req, res) => {
+    try {
+        console.log(req.body);
+        const {
+            User_ID,
+            Role,
+            Email,
+            Profile_Image,
+            Gov_ID,
+            Region,
+            City,
+            Full_Name,
+            User_Phone,
+            Other1,
+            Employer_REO_ID,
+            Username,
+            Balance,
+            RE_Offices
+        } = req.body;
 
+        const selectedFields = {
+            ...(Role && { Role: true }),
+            ...(Email && { Email: true }),
+            ...(Profile_Image && { Profile_Image: true }),
+            ...(Gov_ID && { Gov_ID: true }),
+            ...(Region && { Region: true }),
+            ...(City && { City: true }),
+            ...(Full_Name && { Full_Name: true }),
+            ...(User_Phone && { User_Phone: true }),
+            ...(Other1 && { Other1: true }),
+            ...(Employer_REO_ID && { Employer_REO_ID: true }),
+            ...(Username && { Username: true }),
+            ...(Balance && { Balance: true }),
+            ...(RE_Offices && {
+                RE_Offices: {
+                    select: {
+                        Office_ID: true,
+                    },
+                },
+            }),
+            User_ID: true,
+        };
+
+        const profile = await prisma.user.findUnique({
+            where: { User_ID: User_ID },
+            select: selectedFields,
+        });
+
+        if (!profile) {
+            return res.status(404).send({ 'message': 'Profile not found.' });
+        }
+
+        return res.status(200).send(profile);
+    } catch (error) {
+        console.error(error);
+        dbErrorHandler(res, error, 'get profile');
+    }
+};
 
 
 const edit_Profile = (prisma) => async (req, res) => {
@@ -406,6 +468,7 @@ module.exports = {
     login,
     becomeOfficeStaff,
     get_Profile,
+    get_Custom_Profile,
     edit_Profile,
     logout
 }

@@ -5,6 +5,7 @@ const {
     signupValidator, signupVerifier, signup,
     login,
     get_Profile,
+    get_Custom_Profile,
     edit_Profile,
     becomeOfficeStaff,
     logout,
@@ -51,7 +52,8 @@ profile.route('/login')
 profile.route('/get_profile')
 .get(tokenMiddlewere,get_Profile(prisma));
 
-
+profile.route('/get_custom_profile')
+.get(tokenMiddlewere,get_Custom_Profile(prisma));
 
 profile.route('/edit_profile')
 //Request's body example: {"Email":"fe9olsh3ben@gmail.com","Address":{"Region":"Mekkah", "City":"Rabigh"},"Other1":[{"":""}]}

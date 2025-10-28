@@ -324,6 +324,7 @@ async function tokenMiddlewere(req, res, next) {
             return;
         }
         if (req.query) {
+            console.log('from query: ', req.query)
             Object.assign(req.body, req.query);
         }
         next();
