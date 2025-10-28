@@ -113,7 +113,7 @@ async function syncTokens(req, user, content, res) {
 
         }
 
-         res.cookie("session", updatedUser.Session.Token, {
+        res.cookie("session", updatedUser.Session.Token, {
             httpOnly: false,
             sameSite: "none", // none, lax or strict
             secure: true,     // set to true in prod with https
@@ -299,7 +299,7 @@ async function tokenMiddlewere(req, res, next) {
             }
             const csrfCookie = req.cookies.csrfToken;
             const csrfHeader = req.headers["x-csrf-token"];
-           
+
             if (!csrfHeader || csrfHeader !== csrfCookie) {
                 const csrfToken = crypto.randomBytes(32).toString("hex");
                 res.cookie("csrfToken", csrfToken, {
@@ -316,7 +316,6 @@ async function tokenMiddlewere(req, res, next) {
         const result = await tokenVerifier(req);
         if (result instanceof Error) {
             res.status(401).send(result.message);
-            console.log(result.message);
             return;
         }
         if (!result || !result.verified) {
@@ -324,7 +323,6 @@ async function tokenMiddlewere(req, res, next) {
             return;
         }
         if (req.query) {
-            console.log('from query: ', req.query)
             Object.assign(req.body, req.query);
         }
         next();

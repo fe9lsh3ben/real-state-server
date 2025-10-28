@@ -323,8 +323,7 @@ const get_Profile = (prisma) => async (req, res) => {
 
 const get_Custom_Profile = (prisma) => async (req, res) => {
     try {
-        console.log(req.body);
-        const {
+         const {
             User_ID,
             Role,
             Email,

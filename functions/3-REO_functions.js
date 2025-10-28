@@ -136,7 +136,8 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 const get_REO = (prisma) => async (req, res) => {
     try {
         const { Search_Type } = req.body;
-        console.log(Search_Type == SearchType.SEARCH_ONE);
+        console.log(req.body.Search_Type == SearchType.SEARCH_ONE);
+        console.log(SearchType.SEARCH_ONE)
         switch (Search_Type) {
             case SearchType.SEARCH_ONE: {
                 const Office_ID = parseInt(req.body.Office_ID);
