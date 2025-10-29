@@ -305,7 +305,7 @@ const get_Profile = (prisma) => async (req, res) => {
                 Balance: true,
                 RE_Offices: {
                     select: {
-                        REO_ID: true,
+                        Office_ID: true,
                     },
                 },
             },
@@ -317,6 +317,7 @@ const get_Profile = (prisma) => async (req, res) => {
 
         return res.status(200).send(profile);
     } catch (error) {
+        console.log(error);
         dbErrorHandler(res, error, 'get profile');
     }
 };
