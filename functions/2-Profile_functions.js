@@ -325,6 +325,7 @@ const get_Profile = (prisma) => async (req, res) => {
                 Employer_REO_ID: true,
                 Username: true,
                 Balance: true,
+                Fal_Licenses: true,
                 RE_Offices: {
                     select: {
                         Office_ID: true,
