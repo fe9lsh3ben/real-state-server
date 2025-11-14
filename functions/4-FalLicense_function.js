@@ -40,7 +40,11 @@ const generate_FalLicense = (prisma) => async (req, res) => {
                 Owner_ID: User_ID,
                 Issue_Date: new Date(Issue_Date),
                 Expiry_Date: new Date(Expiry_Date),
-
+                Offices: {
+                    connect: {
+                        Office_ID: req.body.Office_ID
+                    }
+                }
             }
         });
 

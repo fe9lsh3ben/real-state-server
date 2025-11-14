@@ -299,7 +299,6 @@ async function tokenMiddlewere(req, res, next) {
             }
             const csrfCookie = req.cookies.csrfToken;
             const csrfHeader = req.headers["x-csrf-token"];
-
             if (!csrfHeader || csrfHeader !== csrfCookie) {
                 const csrfToken = crypto.randomBytes(32).toString("hex");
                 res.cookie("csrfToken", csrfToken, {

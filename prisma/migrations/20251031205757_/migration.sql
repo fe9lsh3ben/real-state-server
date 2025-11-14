@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "public"."UserType" ADD VALUE 'MULTY_REAL_ESTATE_OFFICE_OWNER';

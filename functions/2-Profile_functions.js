@@ -38,7 +38,6 @@ const signup = (prisma) => async (req, res) => {
         // Decode tokens for expiry
         let decoded = jwt.decode(refreshToken);
         const refreshExpiry = new Date(decoded.exp * 1000);
-
         // Store refresh token
         const storedRefresh = await prisma.refreshToken.create({
             data: {
@@ -50,7 +49,6 @@ const signup = (prisma) => async (req, res) => {
 
         decoded = jwt.decode(accessToken);
         const accessExpiry = new Date(decoded.exp * 1000);
-
         // Store session with access token
         const storedSession = await prisma.Session.create({
             data: {
@@ -71,14 +69,14 @@ const signup = (prisma) => async (req, res) => {
             });
         }
 
-        res.cookie("session", updatedUser.Session.Token, {
+        res.cookie("session", storedSession.Token, {
             httpOnly: false,
             sameSite: "none", // none, lax or strict
             secure: true,     // set to true in prod with https
             maxAge: 1000 * 60 * 60 * 4,
         });
 
-        res.cookie("refreshToken", updatedUser.Refresh_Token.Refresh_Token, {
+        res.cookie("refreshToken", storedRefresh.Refresh_Token, {
             httpOnly: false,
             sameSite: "none", // none, lax or strict
             secure: true,
@@ -87,7 +85,6 @@ const signup = (prisma) => async (req, res) => {
         });
         // Generate CSRF token (random string)
         const csrfToken = crypto.randomBytes(32).toString("hex");
-
         // Send CSRF token to client (readable by JS)
         res.cookie("csrfToken", csrfToken, {
             httpOnly: false, // JS can read it
@@ -98,7 +95,6 @@ const signup = (prisma) => async (req, res) => {
 
         delete user.Password;
 
-
         // Send response
         return res.status(201).send({
             message: "User created successfully",
@@ -108,8 +104,25 @@ const signup = (prisma) => async (req, res) => {
 
     } catch (error) {
         if (typeof user !== "undefined" && user?.User_ID) {
-            await prisma.user.delete({ where: { User_ID: user.User_ID } });
-            console.log('Error occurred and user was deleted');
+            console.log('Rolling back: deleting partially created user...');
+            await prisma.Session.findUnique({ where: { User_ID: user.User_ID } }).then(async (session) => {
+                if (session) {
+                    await prisma.Session.delete({ where: { User_ID: user.User_ID } });
+                }
+            });
+            await prisma.refreshToken.findUnique({ where: { User_ID: user.User_ID } }).then(async (refreshToken) => {
+                if (refreshToken) {
+                    await prisma.refreshToken.delete({ where: { User_ID: user.User_ID } });
+                }
+            });
+            await prisma.user.findUnique({ where: { User_ID: user.User_ID } }).then(async (user) => {
+                if (user) {
+                    await prisma.user.delete({ where: { User_ID: user.User_ID } });
+                }
+            });
+            console.log('Rollback complete.');
+
+            console.log('Error occurred and user was deleted. \n Error: ', error);
         }
 
         dbErrorHandler(res, error, "signup");
@@ -184,9 +197,18 @@ const login = (prisma) => async (req, res) => {
                         Expires_At: true,
                     },
                 },
+                RE_Offices: {
+                    select: {
+                        Office_ID: true,
+                        Office_Name: true,
+                        Office_Phone: true,
+                        Office_Image: true,
+                        Office_Banner_Image: true,
+                        Other: true,
+                    },
+                },
             }
         });
-
         if (req.headers['x-mobile-app']) {
             return res.status(201).send({
                 data: {
@@ -324,7 +346,7 @@ const get_Profile = (prisma) => async (req, res) => {
 
 const get_Custom_Profile = (prisma) => async (req, res) => {
     try {
-         const {
+        const {
             User_ID,
             Role,
             Email,

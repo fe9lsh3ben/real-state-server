@@ -15,6 +15,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Commercial_Register,
             Address,
             Office_Name,
+            Other,
             Office_Phone,
             Office_Image,
             Office_Banner_Image,
@@ -25,7 +26,8 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 
 
         const missingFields = [];
-        if (!Commercial_Register) missingFields.push("Commercial_Register");
+        if (!Commercial_Register) missingFields.push("Commercial Register");
+        if (!Other) missingFields.push("Office Services");
         if (!Address) missingFields.push("Address");
         if (!Office_Name) missingFields.push("Office Name");
         if (!Office_Phone) missingFields.push("Office Phone");
@@ -49,12 +51,13 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
                 Office Name already exists!. 
                 If the first office belongs to you, add "Branch number" to the new one name.`});
         }
-
+        console.log(Other)
         const { Region, City, District, Direction, Latitude, Longitude } = Address;
         const dataEntry = {
             Commercial_Register,
             Office_Name,
             Office_Phone,
+            Other,
             Region,
             City,
             District,
@@ -91,7 +94,12 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
                 Office_ID: true,
                 Latitude: true,
                 Longitude: true,
+                Office_Name: true,
                 Office_Image: true,
+                Office_Phone: true,
+                Office_Banner_Image: true,
+                Other: true,
+                Status: true
             }
         });
 
@@ -117,8 +125,14 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
         if (typeof createdOffice !== 'undefined' && createdOffice?.Office_ID) {
             try {
                 console.log('Rolling back: deleting partially created office...');
-                await prisma.realEstateOffice.delete({
+                await prisma.realEstateOffice.findUnique({
                     where: { Office_ID: createdOffice.Office_ID },
+                }).then(async (office) => {
+                    if (office) {
+                        await prisma.realEstateOffice.delete({
+                            where: { Office_ID: office.Office_ID },
+                        });
+                    }
                 });
                 console.log('Rollback successful.');
             } catch (rollbackError) {
@@ -136,14 +150,28 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 const get_REO = (prisma) => async (req, res) => {
     try {
         const { Search_Type } = req.body;
-        console.log(req.body.Search_Type == SearchType.SEARCH_ONE);
-        console.log(SearchType.SEARCH_ONE)
         switch (Search_Type) {
             case SearchType.SEARCH_ONE: {
                 const Office_ID = parseInt(req.body.Office_ID);
                 if (isNaN(Office_ID)) return res.status(400).send({ 'message': "Invalid or missing Office_ID." });
+                const selection = {};
+                for (const key in req.query) {
+                    if (key.startsWith('selection[')) { // this return true, but the fowllowing line is not executed
+                        const field = key.match(/selection\[(.+)\]/)[1];
+                        selection[field] = req.query[key] === 'true';
+                    }
+                }
 
-                const office = await prisma.realEstateOffice.findMany({ where: { Office_ID } });
+                if (Object.keys(selection).length === 0) {
+                    return res.status(400).send({ 'message': "No selection parameter, it is an empty object." });
+                }
+
+                const office = await prisma.realEstateOffice.findMany({
+                    where: { Office_ID },
+                    select:
+                        (selection || {})
+
+                });
                 if (!office) return res.status(404).send({ 'message': 'Real Estate Office not found.' });
 
                 return res.status(200).send(office);
@@ -238,6 +266,7 @@ const get_REO = (prisma) => async (req, res) => {
         return dbErrorHandler(res, error, 'get REO');
     }
 };
+
 
 
 const update_REO = (prisma) => async (req, res) => {
