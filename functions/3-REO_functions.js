@@ -19,11 +19,14 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Office_Phone,
             Office_Image,
             Office_Banner_Image,
-            User_ID
+            User_ID,
+            TC_ID
         } = req.body;
-
+        console.log('this is user ID:', User_ID)
         // Validate required fields
-
+        if (!TC_ID || !String(TC_ID).includes('OO')) {
+            return res.status(400).send({ 'message': 'Terms and Conditions not found.' });
+        }
 
         const missingFields = [];
         if (!Commercial_Register) missingFields.push("Commercial Register");
@@ -53,7 +56,9 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
         }
         console.log(Other)
         const { Region, City, District, Direction, Latitude, Longitude } = Address;
+
         const dataEntry = {
+            TermsAndCondition: { connect: { TC_ID: TC_ID } },
             Commercial_Register,
             Office_Name,
             Office_Phone,
@@ -65,7 +70,9 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Latitude,
             Longitude,
             Status: Office_Or_User_Status.ACTIVE,
-            Owner_ID: User_ID
+            Owner: {
+                connect: { User_ID: User_ID }
+            }
         };
 
 

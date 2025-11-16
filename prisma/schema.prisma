@@ -26,7 +26,6 @@ datasource db {
 ////________ Enums Module__________//
 
 enum User_Type {
-    ADMIN
     REAL_ESTATE_OFFICE_OWNER
     MULTY_REAL_ESTATE_OFFICE_OWNER
     REAL_ESTATE_OFFICE_STAFF
@@ -36,6 +35,15 @@ enum User_Type {
     OTHER
 
     @@map("UserType")
+}
+
+enum Admin_Privilege {
+    FULL //Create lower admins and give them privilege, plus lower privilege
+    PARTIAL //delete normal sources, snd give agrement for critical sources, plus lower privilege
+    LIMITED //create critical surces like terms, plus lower privilege
+    MONITOR //Monitoring and make reports.
+
+    @@map("AdminPrivilege")
 }
 
 enum Office_Or_User_Status {
@@ -70,8 +78,8 @@ enum Direction {
     SOUTH
     EAST
     WEST
-    NORTHEAST 
-    SOUTHEAST 
+    NORTHEAST
+    SOUTHEAST
     SOUTHWEST
     NORTHWEST
     CENTER
@@ -124,14 +132,40 @@ model AuditTrail {
     Created_At  DateTime @default(now())
 }
 
+model AdministrationUser {
+    Admin_ID               Int                 @id @default(autoincrement())
+    Gov_ID                 String
+    Name                   String
+    Username               String
+    Password               String
+    Privilege              Admin_Privilege
+    TermsAndConditionsMade TermsAndCondition[]
+    Created_At             DateTime            @default(now())
+
+    //uncomment the following lines if you want to add more fields
+
+    // Security:-
+    // Last_Login_At   DateTime?
+    // Last_Login_IP   String?
+    // Failed_Attempts Int       @default(0)
+    // Locked_Until    DateTime?
+
+    // Audit:-
+    // Created_By_Admin_ID Int?
+    // Updated_By_Admin_ID Int?
+    // Updated_At          DateTime?
+}
+
 model TermsAndCondition {
-    TC_ID        String       @id
-    Created_At   DateTime     @default(now())
+    TC_ID        String             @id
+    Created_At   DateTime           @default(now())
     Content      Json
     Other        Json[]
     Committed_By Committed_By
     Users        User[]
-    Made_By      String
+    Offices      RealEstateOffice[]
+    Admin_ID     Int
+    Made_By      AdministrationUser @relation(fields: [Admin_ID], references: [Admin_ID])
 }
 
 // Define the Session table
@@ -147,7 +181,7 @@ model Session {
 model RefreshToken {
     RToken_ID     Int       @id @default(autoincrement())
     Refresh_Token String?   @unique
-    User_ID        Int       @unique
+    User_ID       Int       @unique
     User          User      @relation(fields: [User_ID], references: [User_ID])
     Expires_At    DateTime?
     Revoked_At    DateTime?
@@ -196,15 +230,18 @@ model User {
 }
 
 model RealEstateOffice {
-    Office_ID           Int    @id @default(autoincrement())
+    Office_ID           Int               @id @default(autoincrement())
     Commercial_Register String
     Owner_ID            Int
-    Owner               User   @relation(name: "Office Owner", fields: [Owner_ID], references: [User_ID])
-    Office_Name         String @unique
+    Owner               User              @relation(name: "Office Owner", fields: [Owner_ID], references: [User_ID])
+    Office_Name         String            @unique
     Office_Phone        String
     Office_Image        Bytes
     Office_Banner_Image Bytes?
     Other               Json?
+    TermsCondetion_ID   String
+    TermsAndCondition   TermsAndCondition @relation(fields: [TermsCondetion_ID], references: [TC_ID])
+
     //Address      
     Region    String
     City      String

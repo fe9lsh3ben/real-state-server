@@ -10,7 +10,9 @@ const signup = (prisma) => async (req, res) => {
         req.body.Password = hashedPass;
 
         let body = req.body;
-
+        if(!body.TC_ID || String(body.TC_ID).includes('B')){
+            return res.status(400).send({'message': 'Terms and Conditions not found.'});
+        }
         if (!body.Address) {
             return res.status(400).send({ 'message': 'Address is required.' });
         }
