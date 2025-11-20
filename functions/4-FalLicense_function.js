@@ -1,4 +1,4 @@
-const { dbErrorHandler, deleteAd } = require("../libraries/utilities");
+const { dbErrorHandler } = require("../libraries/utilities");
 const Fal_Type = Object.freeze({
     BROKERING: 'BROKERING',
     MARKETING: 'MARKETING',
@@ -11,7 +11,6 @@ const Fal_Type = Object.freeze({
 
 
 const generate_FalLicense = (prisma) => async (req, res) => {
-    console.log('req.body');  
     let createdLicense;
     try {
         const {
@@ -32,7 +31,11 @@ const generate_FalLicense = (prisma) => async (req, res) => {
             return res.status(400).send(
                 "License Type must be one of the following: BROKERING, MARKETING, PROPERTY MANAGEMENT, FACILITY MANAGEMENT, AUCTION MANAGEMENT, CONSULTING, REAL ESTATE ADVERTISING"
             );
-        }  
+        }
+        var license = await prisma.falLicense.findUnique({ where: { Fal_License_Number } });
+        if (license) {
+            return res.status(400).send({ 'message': "This license already exists." });
+        }
         createdLicense = await prisma.falLicense.create({
             data: {
                 Fal_License_Number,
@@ -59,7 +62,7 @@ const generate_FalLicense = (prisma) => async (req, res) => {
             console.log('Error occurred and license was deleted!');
         }
 
-        dbErrorHandler(res, error, "generate fal license");
+        dbErrorHandler(res, error, "Generate fal license");
         console.error(error.code, error.message);
     }
 };
@@ -120,9 +123,10 @@ const delete_FalLicense = (prisma) => async (req, res) => {
             return res.status(404).send({ 'message': "Fal License not found." });
         }
 
-        deleteAd(deleted.License_ID, 'FalLicense', req.body.User_ID);
-
-        return res.status(200).json({ message: "Fal License was successfully deleted!" });
+        return res.status(200).json({
+            message: "Fal License was successfully deleted!",
+            deleted_license: deleted
+        });
 
     } catch (error) {
         dbErrorHandler(res, error, "delete fal license");

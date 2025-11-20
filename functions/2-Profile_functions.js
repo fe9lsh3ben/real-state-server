@@ -10,7 +10,7 @@ const signup = (prisma) => async (req, res) => {
         req.body.Password = hashedPass;
 
         let body = req.body;
-        if(!body.TC_ID || String(body.TC_ID).includes('B')){
+        if(!body.TC_ID || !String(body.TC_ID).includes('B')){
             return res.status(400).send({'message': 'Terms and Conditions not found.'});
         }
         if (!body.Address) {
@@ -70,6 +70,7 @@ const signup = (prisma) => async (req, res) => {
                 message: "User created successfully"
             });
         }
+        
 
         res.cookie("session", storedSession.Token, {
             httpOnly: false,
@@ -82,16 +83,18 @@ const signup = (prisma) => async (req, res) => {
             httpOnly: false,
             sameSite: "none", // none, lax or strict
             secure: true,
-            path: "/profile/renew_token",
+            // path: "/profile/renew_token",
             maxAge: 1000 * 60 * 60 * 24 * 7,
         });
+
+        
         // Generate CSRF token (random string)
         const csrfToken = crypto.randomBytes(32).toString("hex");
         // Send CSRF token to client (readable by JS)
         res.cookie("csrfToken", csrfToken, {
-            httpOnly: false, // JS can read it
-            sameSite: "lax",
-            secure: false, // set true if using HTTPS
+            httpOnly: false,
+            sameSite: "none",
+            secure: true, // set true if using HTTPS
             maxAge: 1000 * 60 * 60 * 4,
         });
 
