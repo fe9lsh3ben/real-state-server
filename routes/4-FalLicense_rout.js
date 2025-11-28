@@ -18,7 +18,7 @@ FalLicense.route('/')
 /*example: { 
 "Office_ID": "44",
 "Fal_License_Number": "12345", 
-"License_Type": "MARKETING", 
+"License_Type": "BROKERING_AND_MARKITING_FOR_VIRTUAL_PLATFORM", 
 "Issue_Date": "2020-01-01", 
 "Expiry_Date": "2029-01-01"
  }

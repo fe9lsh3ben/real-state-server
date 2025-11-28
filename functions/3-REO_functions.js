@@ -278,22 +278,43 @@ const get_REO = (prisma) => async (req, res) => {
 
 const update_REO = (prisma) => async (req, res) => {
     try {
-        const { Office_ID, Office_Phone, Office_Image, Address, Fal_License_Number } = req.body;
-
+        const { Office_ID, Office_Phone, Office_Image, Office_Banner_Image, Remove_Banner, Other, Address } = req.body;
         // Validate required identifier
         if (!Office_ID) {
             return res.status(400).send({ 'message': "Office_ID is required." });
         }
 
         // Ensure at least one updatable field is present
-        if (!(Office_Phone || Office_Image || Address)) {
+        if (!(Office_Phone || Office_Image || Office_Banner_Image || Remove_Banner || Other || Address)) {
             return res.status(400).send({ 'message': "At least one field (Office Phone, Office Image, Address, Fal License) must be provided to update." });
         }
 
         const updateData = {};
+        const selection = {};
 
-        if (Office_Phone) updateData.Office_Phone = Office_Phone;
-        if (Office_Image) updateData.Office_Image = Office_Image;
+        if (Office_Phone) {
+            updateData.Office_Phone = Office_Phone;
+            selection.Office_Phone = true;
+        }
+        if (Office_Image) {
+            updateData.Office_Image = Office_Image;
+            selection.Office_Image = true;
+        }
+
+        if (Office_Banner_Image) {
+            updateData.Office_Banner_Image = Office_Banner_Image;
+            selection.Office_Banner_Image = true;
+        }
+
+        if (Remove_Banner) {
+            updateData.Office_Banner_Image = null;
+            selection.Office_Banner_Image = true;
+        }
+
+        if (Other) {
+            updateData.Other = Other;
+            selection.Other = true;
+        }
 
         if (Address) {
             const { Region, City, District, Direction, Latitude, Longitude } = req.body.Address;
@@ -303,25 +324,19 @@ const update_REO = (prisma) => async (req, res) => {
             updateData.Direction = Direction;
             updateData.Latitude = Latitude;
             updateData.Longitude = Longitude;
+            selection.Region = true;
+            selection.City = true;
+            selection.District = true;
+            selection.Direction = true;
+            selection.Latitude = true;
+            selection.Longitude = true;
         }
 
-        if (Fal_License_Number) {
-            let licnese = await prisma.falLicense.findUnique({
-                where: {
-                    Fal_License_Number: Fal_License_Number
-                }
-            })
-            if (!licnese) {
-                return res.status(400).send({ 'message': "Fal License Number does not exist!" });
-            }
-            if (User_ID !== licnese.Owner_ID) {
-                return res.status(400).send({ 'message': "You are not the owner of this License!" });
-            }
-            dataEntry.License_ID = licnese.License_ID;
-        }
+
         const updatedOffice = await prisma.realEstateOffice.update({
             where: { Office_ID: parseInt(Office_ID) },
             data: updateData,
+            select: selection
         });
 
         return res.status(202).json({

@@ -1,12 +1,9 @@
 const { dbErrorHandler } = require("../libraries/utilities");
 const Fal_Type = Object.freeze({
-    BROKERING: 'BROKERING',
-    MARKETING: 'MARKETING',
-    PROPERTY_MANAGEMENT: 'PROPERTY_MANAGEMENT',
-    FACILITY_MANAGEMENT: 'FACILITY_MANAGEMENT',
-    AUCTION_MANAGEMENT: 'AUCTION_MANAGEMENT',
-    CONSULTING: 'CONSULTING',
-    REAL_ESTATE_ADVERTISING: 'REAL_ESTATE_ADVERTISING',
+    BROKERING_AND_MARKITING:'BROKERING_AND_MARKITING',
+    BROKERING_AND_MARKITING_FOR_VIRTUAL_PLATFORM:'BROKERING_AND_MARKITING_FOR_VIRTUAL_PLATFORM',
+    REAL_ESTATE_ANALYSIS:'REAL_ESTATE_ANALYSIS',
+    REAL_ESTATE_CONSULTANT:'REAL_ESTATE_CONSULTANT',
 });
 
 
@@ -23,14 +20,14 @@ const generate_FalLicense = (prisma) => async (req, res) => {
 
         // Validate required fields
         if (!Fal_License_Number || !License_Type || !Issue_Date || !Expiry_Date) {
-            return res.status(400).send(
-                "License Number, License Type, Issue Date, Expiry Date  are required."
-            );
+            return res.status(400).send({
+                'message' : "License Number, License Type, Issue Date, Expiry Date  are required."
+            });
         }
         if (!Fal_Type.hasOwnProperty(License_Type)) {
-            return res.status(400).send(
-                "License Type must be one of the following: BROKERING, MARKETING, PROPERTY MANAGEMENT, FACILITY MANAGEMENT, AUCTION MANAGEMENT, CONSULTING, REAL ESTATE ADVERTISING"
-            );
+            return res.status(400).send({
+                'message' : "License Type must be one of the following: BROKERING AND MARKITING, BROKERING AND MARKITING FOR VIRTUAL PLATFORM, REAL ESTATE ANALYSIS, REAL ESTATE CONSULTANT"
+            });
         }
         var license = await prisma.falLicense.findUnique({ where: { Fal_License_Number } });
         if (license) {

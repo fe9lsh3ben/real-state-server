@@ -93,13 +93,10 @@ enum Committed_By {
 }
 
 enum Fal_Type {
-    BROKERING
-    MARKETING
-    PROPERTY_MANAGEMENT
-    FACILITY_MANAGEMENT
-    AUCTION_MANAGEMENT
-    CONSULTING
-    REAL_ESTATE_ADVERTISING
+    BROKERING_AND_MARKITING
+    BROKERING_AND_MARKITING_FOR_VIRTUAL_PLATFORM
+    REAL_ESTATE_ANALYSIS
+    REAL_ESTATE_CONSULTANT
 }
 
 enum AD_Type {
@@ -133,6 +130,7 @@ model AuditTrail {
 }
 
 model AdministrationUser {
+    //INSERT INTO "AdministrationUser" ("Gov_ID", "Name", "Username", "Password", "Privilege") VALUES ('G-456789', 'Jane Doe', 'jane.admin', 'hashed_secure_password', 'FULL');
     Admin_ID               Int                 @id @default(autoincrement())
     Gov_ID                 String
     Name                   String
@@ -156,7 +154,8 @@ model AdministrationUser {
     // Updated_At          DateTime?
 }
 
-model TermsAndCondition {
+model TermsAndCondition {  
+    //INSERT INTO "TermsAndCondition" ("TC_ID", "Content", "Other", "Committed_By", "Admin_ID") VALUES ('BB_000001', '{"ar": "الشروط والأحكام للمستفيد", "en":"terms and conditions for BENEFICIARY"}', ARRAY['{"type": "legal_disclaimer"}', '{"source": "external_link"}']::JSONB[], 'BENEFICIARY', 1);
     TC_ID        String             @id
     Created_At   DateTime           @default(now())
     Content      Json
@@ -290,7 +289,7 @@ model RealEstateUnit {
     RE_Name     String
     Deed_Number String                @unique
     Deed_Date   DateTime
-    Deed_Owners Json[] //{Owner_Phone_Number, Owner_GovID, Owner_Name}
+    Deed_Owners Json[] //{Owner_Name, Owner_GovID, Owner_Phone_Number}
 
     Affiliated_Office_ID Int?
     Affiliated_Office    RealEstateOffice? @relation("OfficeAndREUnit", fields: [Affiliated_Office_ID], references: [Office_ID])

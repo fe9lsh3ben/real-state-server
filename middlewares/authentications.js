@@ -51,7 +51,7 @@ async function markitingFalLicenseAuthentication(req, res, next) {
                 Office_ID: req.body.Office_ID,
                 FalLicense: {
                     some: {
-                        License_Type: "MARKETING"
+                        License_Type: "BROKERING_AND_MARKITING_FOR_VIRTUAL_PLATFORM"
                     }
                 }
             },
