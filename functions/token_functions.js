@@ -295,6 +295,7 @@ async function tokenMiddlewere(req, res, next) {
     try {
 
         if (!req.headers['x-mobile-app']) {
+            
             if (!req.cookies.refreshToken || !req.cookies.session) {
                 return res.status(401).send({ message: "No session or refresh tokens found" });
             }

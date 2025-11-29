@@ -99,6 +99,10 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             data: dataEntry,
             select: {
                 Office_ID: true,
+                Region,
+                City: true,
+                District: true,
+                Direction: true,
                 Latitude: true,
                 Longitude: true,
                 Office_Name: true,
@@ -296,6 +300,33 @@ const update_REO = (prisma) => async (req, res) => {
             updateData.Office_Phone = Office_Phone;
             selection.Office_Phone = true;
         }
+
+        try {
+            let sizeInBytes;
+            if (Office_Image) {
+                sizeInBytes = Buffer.byteLength(Office_Image, 'base64');
+                if (sizeInBytes > 2 * 1024 * 1024) {
+                    return res.status(400).send({ 'message': "Office Image is more than 2MB" });
+                }
+
+                updateData.Office_Image = Buffer.from(Office_Image, 'base64');
+            }
+
+            if (Office_Banner_Image) {
+                sizeInBytes = Buffer.byteLength(Office_Banner_Image, 'base64');
+                if (sizeInBytes > 5 * 1024 * 1024) {
+                    return res.status(400).send({ 'message': "Office Banner Image is more than 5MB" });
+                }
+                updateData.Office_Banner_Image = Buffer.from(Office_Banner_Image, 'base64');
+            }
+        }
+        catch (e) {
+            return res.status(400).send({ 'message': "Office Image or Office Banner Image is not valid" });
+        }
+
+
+
+
         if (Office_Image) {
             updateData.Office_Image = Office_Image;
             selection.Office_Image = true;

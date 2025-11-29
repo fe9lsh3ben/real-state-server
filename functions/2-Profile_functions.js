@@ -10,8 +10,8 @@ const signup = (prisma) => async (req, res) => {
         req.body.Password = hashedPass;
 
         let body = req.body;
-        if(!body.TC_ID || !String(body.TC_ID).includes('B')){
-            return res.status(400).send({'message': 'Terms and Conditions not found.'});
+        if (!body.TC_ID || !String(body.TC_ID).includes('B')) {
+            return res.status(400).send({ 'message': 'Terms and Conditions not found.' });
         }
         if (!body.Address) {
             return res.status(400).send({ 'message': 'Address is required.' });
@@ -70,7 +70,7 @@ const signup = (prisma) => async (req, res) => {
                 message: "User created successfully"
             });
         }
-        
+
 
         res.cookie("session", storedSession.Token, {
             httpOnly: false,
@@ -87,7 +87,7 @@ const signup = (prisma) => async (req, res) => {
             maxAge: 1000 * 60 * 60 * 24 * 7,
         });
 
-        
+
         // Generate CSRF token (random string)
         const csrfToken = crypto.randomBytes(32).toString("hex");
         // Send CSRF token to client (readable by JS)
@@ -209,6 +209,12 @@ const login = (prisma) => async (req, res) => {
                         Office_Phone: true,
                         Office_Image: true,
                         Office_Banner_Image: true,
+                        Region: true,
+                        City: true,
+                        District: true,
+                        Direction: true,
+                        Latitude: true,
+                        Longitude: true,
                         Other: true,
                     },
                 },

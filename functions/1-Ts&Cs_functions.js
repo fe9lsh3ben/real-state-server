@@ -108,7 +108,6 @@ const getLastTerms = (prisma) => async (req, res) => {
         });
 
         if (!terms || terms.length === 0) {
-            console.log(terms.length === 0);
             return res.status(404).send({ 'message': 'Terms and Conditions not found.' });
         }
 
@@ -118,7 +117,7 @@ const getLastTerms = (prisma) => async (req, res) => {
         } else {
             delete terms.Content.en;
         }
-        console.log(terms);
+
         return res.status(200).send(terms);
 
     } catch (error) {

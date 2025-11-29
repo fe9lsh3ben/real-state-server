@@ -37,7 +37,7 @@ const generate_REU = (prisma) => async (req, res) => {
         if (!Deed_Date) missingFields.push("Deed Date");
         if (!Deed_Owners) missingFields.push("Deed Owners");
         if (!Address) missingFields.push("Address");
-        if (!Outdoor_Unit_Images) missingFields.push("Outdoor Unit Images");
+        
 
         if (missingFields.length > 0) {
             return res.status(400).send(`Missing required fields: ${missingFields.join(", ")}`);
@@ -85,7 +85,7 @@ const generate_REU = (prisma) => async (req, res) => {
             Direction,
             Latitude,
             Longitude,
-            Outdoor_Unit_Images,
+            ...(Outdoor_Unit_Images && {Outdoor_Unit_Images})
         };
 
         if (req.body.Polygon) {
