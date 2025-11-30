@@ -12,7 +12,7 @@ const SearchType = Object.freeze({
 
 const validUnitTypes = [
     "LAND", "BUILDING", "APARTMENT", "VILLA", "STORE", "FARM",
-    "CORRAL", "STORAGE", "OFFICE", "SHOWROOM", "OTHER"
+    "CORRAL", "STORAGE", "OFFICE", "SHOWROOM", "WEDDING_HALL", "OTHER"
 ];
 
 const generate_REU = (prisma) => async (req, res) => {
@@ -42,7 +42,6 @@ const generate_REU = (prisma) => async (req, res) => {
         if (missingFields.length > 0) {
             return res.status(400).send(`Missing required fields: ${missingFields.join(", ")}`);
         }
-        
         if (!validUnitTypes.includes(Unit_Type)) {
             res.status(400).send({ 'message': 'Invalid Unit Type.' });
             return;

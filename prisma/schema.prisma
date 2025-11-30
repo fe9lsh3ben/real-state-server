@@ -68,6 +68,7 @@ enum Real_Estate_Unit_Type {
     STORAGE
     OFFICE
     SHOWROOM
+    WEDDING_HALL
     OTHER
 
     @@map("RealEstateType")
@@ -154,7 +155,7 @@ model AdministrationUser {
     // Updated_At          DateTime?
 }
 
-model TermsAndCondition {  
+model TermsAndCondition {
     //INSERT INTO "TermsAndCondition" ("TC_ID", "Content", "Other", "Committed_By", "Admin_ID") VALUES ('BB_000001', '{"ar": "الشروط والأحكام للمستفيد", "en":"terms and conditions for BENEFICIARY"}', ARRAY['{"type": "legal_disclaimer"}', '{"source": "external_link"}']::JSONB[], 'BENEFICIARY', 1);
     TC_ID        String             @id
     Created_At   DateTime           @default(now())
