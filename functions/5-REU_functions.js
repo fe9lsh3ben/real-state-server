@@ -246,6 +246,10 @@ const update_REU = (prisma) => async (req, res) => {
             return res.status(400).send({ 'message': 'Unit_ID is required.' });
         }
 
+        if (!Full_Name) {
+            return res.status(400).send({ 'message': 'Full_Name is required.' });
+        }
+
         // Ensure at least one field to update is present
         if (!(Unit_Type || Deed_Owners || Outdoor_Unit_Images)) {
             return res.status(400).send({ 'message': 'Nothing to change?!...' });
@@ -274,7 +278,12 @@ const update_REU = (prisma) => async (req, res) => {
             }];
         }
 
-
+        if (Deed_Owners) {
+            if (existingUnit.Deed_Owners.length <= 1) {
+                return res.status(400).send({ 'message': 'At least one Deed owner is required.' });
+            }
+        }
+        
         const updateData = {
             ...(Unit_Type && { Unit_Type }),
             ...(Deed_Owners && { Deed_Owners }),
