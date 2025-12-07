@@ -184,7 +184,6 @@ const get_REO = (prisma) => async (req, res) => {
 
                 });
                 if (!office) return res.status(404).send({ 'message': 'Real Estate Office not found.' });
-
                 return res.status(200).send(office);
             }
 
