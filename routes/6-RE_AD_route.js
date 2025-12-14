@@ -26,6 +26,7 @@ RE_AD.route('/')
     "Office_ID": "46",
     "RealEstate" :"3" ,"AD_Type" : "RENT" ,
     "AD_Unit_Type": "APARTMENT" ,
+    "Price": "1000" ,
     "AD_Specifications":{
     "Area" : "300" , "Ready" : "yes"}
     }*/

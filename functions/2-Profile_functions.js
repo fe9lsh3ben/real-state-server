@@ -220,6 +220,13 @@ const login = (prisma) => async (req, res) => {
                 },
             }
         });
+        updatedUser.RE_Offices = updatedUser.RE_Offices.map((office) => {
+            office.My_Office_ID = office.Office_ID;
+            delete office.Office_ID;
+
+            return office;
+        });
+
         if (req.headers['x-mobile-app']) {
             return res.status(201).send({
                 data: {

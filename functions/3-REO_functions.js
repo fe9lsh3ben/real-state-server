@@ -1,13 +1,9 @@
 
 const { syncTokens } = require('./token_functions');
-const SearchType = Object.freeze({
-    SEARCH_ONE: 'search_one',
-    SEARCH_MANY: 'search_many',
-    SEARCH_ON_SCREEN: 'search_on_screen',
-    SEARCH_DIRECTION: 'search_direction',
-});
 
-const { dbErrorHandler } = require('../libraries/utilities');
+const { dbErrorHandler, SearchType, } = require('../libraries/utilities');
+
+const { officeAuthentication } = require('../middlewares/authentications');
 const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, res) => {
     let createdOffice;
     try {
@@ -113,12 +109,13 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
                 Status: true
             }
         });
+        createdOffice.My_Office_ID = createdOffice.Office_ID;
+        delete createdOffice.Office_ID;
 
         const user = await prisma.user.update({
             where: { User_ID: User_ID },
             data: { Role: User_Type.REAL_ESTATE_OFFICE_OWNER },
         });
-        console.log('creating');
         return syncTokens(
             req,
             user,
@@ -160,34 +157,40 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 
 const get_REO = (prisma) => async (req, res) => {
     try {
-        const { Search_Type } = req.body;
-        switch (Search_Type) {
-            case SearchType.SEARCH_ONE: {
-                const Office_ID = parseInt(req.body.Office_ID);
-                if (isNaN(Office_ID)) return res.status(400).send({ 'message': "Invalid or missing Office_ID." });
-                const selection = {};
-                for (const key in req.query) {
-                    if (key.startsWith('selection[')) { // this return true, but the fowllowing line is not executed
-                        const field = key.match(/selection\[(.+)\]/)[1];
-                        selection[field] = req.query[key] === 'true';
-                    }
-                }
+        const { Search_Type, selection } = req.body;
 
-                if (Object.keys(selection).length === 0) {
+        switch (Search_Type) {
+            case SearchType.DETAIL_VIEW: {
+                const Office_ID = parseInt(req.body.Office_ID);
+                const parsedSelection = JSON.parse(selection);
+                if (isNaN(Office_ID)) return res.status(400).send({ 'message': "Invalid or missing Office_ID." });
+
+
+                if (Object.keys(parsedSelection).length === 0) {
                     return res.status(400).send({ 'message': "No selection parameter, it is an empty object." });
                 }
 
-                const office = await prisma.realEstateOffice.findMany({
+                const office = await prisma.realEstateOffice.findFirst({
                     where: { Office_ID },
                     select:
-                        (selection || {})
+                        (parsedSelection || {})
 
                 });
+
+
+
                 if (!office) return res.status(404).send({ 'message': 'Real Estate Office not found.' });
-                return res.status(200).send(office);
+
+                office['RealEstate_Units'] = office['RealEstate_Units'].map(unit => ({
+                    ...unit,
+                    Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
+                }));
+
+
+                return res.status(200).send([office]);
             }
 
-            case SearchType.SEARCH_MANY: {
+            case SearchType.LIST_VIEW: {
                 const { Geo_level, Geo_value } = req.body;
 
                 if (!Geo_level || !Geo_value) {
@@ -214,14 +217,14 @@ const get_REO = (prisma) => async (req, res) => {
 
             }
 
-            case SearchType.SEARCH_ON_SCREEN: {
+            case SearchType.MAP_PINS_VIEW: {
                 const { minLatitude, maxLatitude, minLongitude, maxLongitude } = req.body;
 
-                if (
-                    isNaN(minLatitude) || isNaN(maxLatitude) ||
-                    isNaN(minLongitude) || isNaN(maxLongitude)
-                ) {
-                    return res.status(400).send({ 'message': "bounds should be numbers." });
+                const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
+                const allValid = allCoords.every(coord => coord !== undefined && !isNaN(coord));
+
+                if (!allValid) {
+                    return res.status(400).send({ 'message': "Invalid or incomplete map bounds. All four bounds must be valid." });
                 }
 
                 const offices = await prisma.realEstateOffice.findMany({
@@ -244,27 +247,60 @@ const get_REO = (prisma) => async (req, res) => {
                 return res.status(200).send(offices);
             }
 
+            case SearchType.OFFICE_DETAIL_VIEW: {
 
-            case SearchType.SEARCH_DIRECTION: {
-                const { Direction, City } = req.body;
-                if (!Direction) return res.status(400).send({ 'message': "Direction is required." });
-
-                const offices = await prisma.realEstateOffice.findMany({
-                    where: {
-                        AND: [
-                            {
-                                Direction: Direction
-                            },
-                            {
-                                City: City
-                            },
-                        ]
-
+                return await officeAuthentication(req, res, async () => {
+                    
+                    if (res.headersSent){
+                        return;
                     }
+
+                    const Office_ID = parseInt(req.body.My_Office_ID);
+                    const parsedSelection = JSON.parse(selection);
+                    if (isNaN(Office_ID)) return res.status(400).send({ 'message': "Invalid or missing Office_ID." });
+
+                    if (Object.keys(parsedSelection).length === 0) {
+                        return res.status(400).send({ 'message': "No selection parameter, it is an empty object." });
+                    }
+
+                    const office = await prisma.realEstateOffice.findFirst({
+                        where: { Office_ID },
+                        select:
+                            (parsedSelection || {})
+
+                    });
+
+                    if (!office) {
+                        return res.status(404).send({ 'message': 'Real Estate Office not found.' });
+                    }
+                    office['RealEstate_Units'] = office['RealEstate_Units'].map(unit => ({
+                        ...unit,
+                        Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
+                    }));
+                    return res.status(200).send([office]);
                 });
 
-                if (!offices.length) return res.status(404).send({ 'message': 'No Real Estate Offices found for that direction.' });
-                return res.status(200).send(offices);
+            }
+
+            case SearchType.OFFICE_LIST_VIEW: {
+                officeAuthentication(req, res);
+                if (res.headersSent) {
+                    return;
+                }
+            }
+
+            case SearchType.OFFICE_MAP_PINS_VIEW: {
+                officeAuthentication(req, res);
+                if (res.headersSent) {
+                    return;
+                }
+            }
+
+            case SearchType.OFFICE_CUSTOM_FILTER_QUERY: {
+                officeAuthentication(req, res);
+                if (res.headersSent) {
+                    return;
+                }
             }
 
             default:

@@ -35,6 +35,22 @@ function mapAddressToScalars(address) {
 }
 
 
+const SearchType = Object.freeze({
+
+    // --- Public Queries ---
+    DETAIL_VIEW: 'detail_view',
+    LIST_VIEW: 'list_view',
+    MAP_PINS_VIEW: 'map_pins_view',
+    CUSTOM_FILTER_QUERY: 'custom_filter_query',
+
+    // --- Office's Queries ---
+    OFFICE_DETAIL_VIEW: 'office_detail_view',
+    OFFICE_LIST_VIEW: 'office_list_view',
+    OFFICE_MAP_PINS_VIEW: 'office_map_pins_view',
+    OFFICE_CUSTOM_FILTER_QUERY: 'office_custom_filter_query',
+
+});
+
 module.exports = {
     cookieParser,
     express,
@@ -43,6 +59,7 @@ module.exports = {
     http,
     cors,
     fs,
+    SearchType,
     dbErrorHandler,
     mapAddressToScalars
 }

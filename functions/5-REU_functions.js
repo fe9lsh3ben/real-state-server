@@ -1,14 +1,10 @@
 
 const { parse } = require('dotenv');
-const { dbErrorHandler, deleteAd } = require('../libraries/utilities');
+const { dbErrorHandler, SearchType } = require('../libraries/utilities');
+const { officeAuthentication, REUAuthentication } = require('../middlewares/authentications');
 
-const SearchType = Object.freeze({
-    SEARCH_ONE: 'search_one',
-    SEARCH_MANY: 'search_many',
-    SEARCH_ON_SCREEN: 'search_on_screen',
-    SEARCH_DIRECTION: 'search_direction',
-    CUSTOM_SEARCH: 'custom_search',
-});
+
+
 
 const validUnitTypes = [
     "LAND", "BUILDING", "APARTMENT", "VILLA", "STORE", "FARM",
@@ -115,17 +111,40 @@ const get_REU = (prisma) => async (req, res) => {
         const { Search_Type } = req.body;
 
         switch (Search_Type) {
-            case SearchType.SEARCH_ONE: {
+            case SearchType.DETAIL_VIEW: {
                 const Unit_ID = parseInt(req.body.Unit_ID);
                 if (isNaN(Unit_ID)) return res.status(400).send({ 'message': "Invalid or missing Unit ID." });
 
-                const unit = await prisma.realEstateUnit.findUnique({ where: { Unit_ID } });
+                const unit = await prisma.realEstateUnit.findFirst({
+                    where: { Unit_ID },
+                    select: {
+                        Direction: true,
+                        Latitude: true,
+                        Longitude: true,
+                        Outdoor_Unit_Images: true,
+                        Unit_ADs: {
+                            select: {
+                                AD_ID: true,
+                                AD_Type: true,
+                                AD_Unit_Type: true,
+                                AD_Title: true,
+                                Unit_Price: true,
+                                Indoor_Unit_Images: true,
+                            }
+                        }
+                    }
+                });
                 if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
 
-                return res.status(200).send(unit);
+                unit.Unit_ADs = unit.Unit_ADs.map(ad => ({
+                    ...ad,
+                    Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
+                }));
+
+                return res.status(200).send([unit]);
             }
 
-            case SearchType.SEARCH_MANY: {
+            case SearchType.LIST_VIEW: {
                 const { Geo_level, Geo_value } = req.body;
 
                 if (!Geo_level || !Geo_value) {
@@ -144,22 +163,36 @@ const get_REU = (prisma) => async (req, res) => {
                 };
 
                 const units = await prisma.realEstateUnit.findMany({
-                    where: whereClause
+                    where: whereClause,
+                    select: {
+                        Unit_ID: true,
+                        Unit_Type: true,
+                        City: true,
+                        Direction: true,
+                        District: true,
+                        Outdoor_Unit_Images: true,
+                    }
                 });
 
                 if (!units.length) return res.status(404).send({ 'message': 'No Real Estate units found.' });
-                return res.status(200).send(units);
+
+                const unitsWithFirstImage = units.map(unit => ({
+                    ...unit,
+                    Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
+                }));
+
+                return res.status(200).send(unitsWithFirstImage);
 
             }
 
-            case SearchType.SEARCH_ON_SCREEN: {
+            case SearchType.MAP_PINS_VIEW: {
                 const { minLatitude, maxLatitude, minLongitude, maxLongitude } = req.body;
 
-                if (
-                    isNaN(minLatitude) || isNaN(maxLatitude) ||
-                    isNaN(minLongitude) || isNaN(maxLongitude)
-                ) {
-                    return res.status(400).send({ 'message': "bounds are invalid." });
+                const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
+                const allValid = allCoords.every(coord => coord !== undefined && !isNaN(coord));
+
+                if (!allValid) {
+                    return res.status(400).send({ 'message': "Invalid or incomplete map bounds. All four bounds must be valid." });
                 }
 
                 const units = await prisma.realEstateUnit.findMany({
@@ -183,25 +216,7 @@ const get_REU = (prisma) => async (req, res) => {
             }
 
 
-            case SearchType.SEARCH_DIRECTION: {
-                const { Direction, City } = req.body;
-                if (!Direction) return res.status(400).send({ 'message': "Direction is required." });
-
-                const units = await prisma.realEstateUnit.findMany({
-                    where: {
-                        AND: [
-                            { Direction: Direction },
-                            { City: City },
-                        ]
-
-                    }
-                });
-
-                if (!units.length) return res.status(404).send({ 'message': 'No Real Estate units found for that direction.' });
-                return res.status(200).send(units);
-            }
-
-            case SearchType.CUSTOM_SEARCH: {
+            case SearchType.CUSTOM_FILTER_QUERY: {
                 const { City, Unit_Type, Direction } = req.body;
 
                 const filters = {};
@@ -218,6 +233,83 @@ const get_REU = (prisma) => async (req, res) => {
                     return res.status(404).send({ 'message': 'No Real Estate units found for that criteria.' });
 
                 return res.status(200).send(units);
+            }
+
+            case SearchType.OFFICE_DETAIL_VIEW: {
+                //Office_ID is required
+                return await officeAuthentication(
+                    req,
+                    res,
+                    () => REUAuthentication(req, res, async () => {
+                        const Unit_ID = parseInt(req.body.Unit_ID);
+                        if (isNaN(Unit_ID)) return res.status(400).send({ 'message': "Invalid or missing Unit ID." });
+
+                        const unit = await prisma.realEstateUnit.findFirst({
+                            where: { Unit_ID },
+                            select: {
+                                Deed_Number: true,
+                                Deed_Date: true,
+                                Deed_Owners: true,
+                                Initiator: true,
+                                Direction: true,
+                                Latitude: true,
+                                Longitude: true,
+                                Outdoor_Unit_Images: true,
+                                Created_At: true,
+                                Updated_At: true,
+                                Unit_ADs: {
+                                    select: {
+                                        AD_ID: true,
+                                        AD_Type: true,
+                                        AD_Unit_Type: true,
+                                        Indoor_Unit_Images: true,
+                                        Unit_Price: true,
+                                        Hedden: true
+                                    }
+                                }
+                            }
+                        });
+
+                        if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
+
+                        unit.Unit_ADs = unit.Unit_ADs.map(ad => ({
+                            ...ad,
+                            Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
+                        }));
+
+                        return res.status(200).send([unit]);
+                    }));
+
+
+
+            }
+
+            case SearchType.OFFICE_LIST_VIEW: {
+                //Office_ID is required
+                Object.assign(req.body, req.query);
+                officeAuthentication(req, res,);
+                if (res.headersSent) {
+                    return;
+                }
+
+            }
+
+            case SearchType.OFFICE_MAP_PINS_VIEW: {
+                //Office_ID is required
+                Object.assign(req.body, req.query);
+                officeAuthentication(req, res,);
+                if (res.headersSent) {
+                    return;
+                }
+
+            }
+
+            case SearchType.OFFICE_CUSTOM_FILTER_QUERY: {
+                Object.assign(req.body, req.query);
+                officeAuthentication(req, res,);
+                if (res.headersSent) {
+                    return;
+                }
             }
 
 
@@ -291,7 +383,7 @@ const update_REU = (prisma) => async (req, res) => {
             }
             updatedOwners = existingUnit.Deed_Owners.filter((owner) => {
                 console.log(owner.Owner_Name !== Deed_Owner_Delete.Owner_Name);
-               return owner.Owner_Name !== Deed_Owner_Delete.Owner_Name
+                return owner.Owner_Name !== Deed_Owner_Delete.Owner_Name
             });
         }
 

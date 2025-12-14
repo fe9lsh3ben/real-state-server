@@ -324,11 +324,11 @@ model RealEstateAD {
 
     AD_Type            AD_Type
     AD_Unit_Type       Real_Estate_Unit_Type
+    AD_Title           String
     Indoor_Unit_Images Bytes[]
     AD_Specifications  Json //{Description , Price, Other} 
-    AD_Started_At      DateTime              @map("Ad_StartedAt") // each time the ofice refresh the ad, the AD_Started_At is refreshed
     Unit_Price         Decimal               @default(0.0) @db.Decimal(11, 2)
-    Visable_Zoom       Decimal               @default(1.0)
+    Visable_Zoom       Decimal?               
     Hedden             Boolean               @default(false)
 }
 
