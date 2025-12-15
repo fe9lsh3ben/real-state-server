@@ -13,11 +13,15 @@ async function officeAuthentication(req, res, next) {
 
     try {
 
-        if (!req.body.My_Office_ID)
+        if (!req.body.My_Office_ID) {
             return res.status(400).send({ 'message': 'Your Office ID is required.' });
+        }
+        if (typeof req.body.My_Office_ID === 'string') {
+            req.body.My_Office_ID = parseInt(req.body.My_Office_ID);
+        }
         const office = await prisma.realEstateOffice.findUnique({
             where: {
-                Office_ID: parseInt(req.body.My_Office_ID),
+                Office_ID: req.body.My_Office_ID,
             },
             select: {
                 Office_ID: true,
@@ -45,10 +49,13 @@ async function officeAuthentication(req, res, next) {
 
 async function markitingFalLicenseAuthentication(req, res, next) {
     try {
-      
+
+        if (typeof req.body.My_Office_ID === 'string') {
+            req.body.My_Office_ID = parseInt(req.body.My_Office_ID);
+        }
         const office = await prisma.realEstateOffice.findFirst({
             where: {
-                Office_ID: parseInt(req.body.My_Office_ID),
+                Office_ID: req.body.My_Office_ID,
                 FalLicense: {
                     some: {
                         License_Type: "BROKERING_AND_MARKITING_FOR_VIRTUAL_PLATFORM"
@@ -84,9 +91,13 @@ async function REUAuthentication(req, res, next) {
         if (!req.body.Unit_ID) {
             return res.status(400).send({ 'message': 'Unit ID is required.' });
         }
+
+        if (typeof req.body.Unit_ID === 'string') {
+            req.body.Unit_ID = parseInt(req.body.Unit_ID);
+        }
         const unit = await prisma.realEstateUnit.findUnique({
             where: {
-                Unit_ID: parseInt(req.body.Unit_ID)
+                Unit_ID: req.body.Unit_ID
             }
         });
 
@@ -114,9 +125,13 @@ const READAuthentication = async (req, res, next) => {
             return res.status(400).send({ 'message': 'Ad ID is required.' });
         }
 
+        if (typeof req.body.AD_ID === 'string') {
+            req.body.AD_ID = parseInt(req.body.AD_ID);
+        }
+
         const ad = await prisma.realEstateAD.findUnique({
             where: {
-                AD_ID: parseInt(req.body.AD_ID)
+                AD_ID: req.body.AD_ID
             },
             select: {
                 AD_ID: true,

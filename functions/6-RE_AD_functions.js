@@ -24,7 +24,7 @@ const generate_READ = (prisma) => async (req, res) => {
             Indoor_Unit_Images,
             AD_Specifications,
             Unit_Price,
-            Office_ID,
+            My_Office_ID,
         } = req.body;
 
         // Check required fields
@@ -35,16 +35,15 @@ const generate_READ = (prisma) => async (req, res) => {
         if (!AD_Title) missingFields.push("AD Title");
         if (!AD_Specifications) missingFields.push("AD Content");
         if (Unit_Price === null || Unit_Price === undefined) missingFields.push("Unit Price");
-        if (!Office_ID) missingFields.push("Office ID");
+        if (!My_Office_ID) missingFields.push("Office ID");
 
         if (missingFields.length > 0) {
-            console.log(!Unit_Price);
-            return res.status(400).send(`Missing required fields: ${missingFields.join(", ")}`);
+            return res.status(400).send({ 'message': `Missing required fields: ${missingFields.join(", ")}` });
         }
+
         if (!validAdTypes.includes(AD_Type)) {
             return res.status(400).send({ 'message': "Invalid AD_Type value." });
         }
-
         if (!validUnitTypes.includes(AD_Unit_Type)) {
             return res.status(400).send({ 'message': "Invalid AD_Unit_Type value." });
         }
@@ -54,12 +53,11 @@ const generate_READ = (prisma) => async (req, res) => {
             return res.status(400).send({ 'message': "Invalid price value." });
         }
 
-
         const Initiator = { Created_By: { User_ID: req.body.User_ID, Full_Name: req.body.Full_Name }, Edited_By: [] };
 
 
         const dataEntry = {
-            Office_ID: Office_ID,
+            Office_ID: My_Office_ID,
             Unit_ID: Unit_ID,
             AD_Type,
             AD_Unit_Type,
@@ -102,8 +100,14 @@ const get_READ = (prisma) => async (req, res) => {
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
                 Object.assign(req.body, req.query);
-                const AD_ID = parseInt(req.body.AD_ID);
-                if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid or missing Ad ID." });
+                let AD_ID;
+                if (!req.body.AD_ID) {
+                    return res.status(400).send({ 'message': "Ad ID is required." });
+                }
+                if (typeof req.body.AD_ID === 'string') {
+                    AD_ID = parseInt(req.body.AD_ID);
+                }
+                if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid Ad ID." });
 
                 const ad = await prisma.realEstateAD.findFirst({
                     where: {
@@ -111,7 +115,7 @@ const get_READ = (prisma) => async (req, res) => {
                         Hedden: false,
                     },
                     select: {
-                        
+
                     }
                 });
 
@@ -656,7 +660,7 @@ const get_READ = (prisma) => async (req, res) => {
                 }
             }
 
-        
+
 
 
             default:
