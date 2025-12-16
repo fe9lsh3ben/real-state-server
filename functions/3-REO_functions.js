@@ -1,3 +1,4 @@
+const sharp = require('sharp');
 
 const { syncTokens } = require('./token_functions');
 
@@ -18,7 +19,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             User_ID,
             TC_ID
         } = req.body;
-        console.log('this is user ID:', User_ID)
+
         // Validate required fields
         if (!TC_ID || !String(TC_ID).includes('OO')) {
             return res.status(400).send({ 'message': 'Terms and Conditions not found.' });
@@ -50,7 +51,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
                 Office Name already exists!. 
                 If the first office belongs to you, add "Branch number" to the new one name.`});
         }
-        console.log(Other)
+
         const { Region, City, District, Direction, Latitude, Longitude } = Address;
 
         const dataEntry = {
@@ -73,29 +74,33 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 
 
         try {
-            var sizeInBytes = Buffer.byteLength(Office_Image, 'base64');
-            if (sizeInBytes > 2 * 1024 * 1024) {
+            let binaryBuffer = Buffer.from(Office_Image, 'base64');
+            let sizeInBytes = await sharp(binaryBuffer).jpeg({ quality: 60 }).toBuffer();
+
+            if (sizeInBytes.length > 2 * 1024 * 1024) {
                 return res.status(400).send({ 'message': "Office Image is more than 2MB" });
             }
 
-            dataEntry.Office_Image = Buffer.from(Office_Image, 'base64');
+            dataEntry.Office_Image = Buffer.from(sizeInBytes, 'base64');
+
             if (Office_Banner_Image) {
-                sizeInBytes = Buffer.byteLength(Office_Banner_Image, 'base64');
-                if (sizeInBytes > 5 * 1024 * 1024) {
+                sizeInBytes = Buffer.from(Office_Banner_Image, 'base64');
+                if (sizeInBytes.length > 5 * 1024 * 1024) {
                     return res.status(400).send({ 'message': "Office Banner Image is more than 5MB" });
                 }
                 dataEntry.Office_Banner_Image = Buffer.from(Office_Banner_Image, 'base64');
             }
         }
         catch (e) {
+            console.log(e);
             return res.status(400).send({ 'message': "Office Image or Office Banner Image is not valid" });
         }
-
+        console.log('cooool');
         createdOffice = await prisma.realEstateOffice.create({
             data: dataEntry,
             select: {
                 Office_ID: true,
-                Region,
+                Region: true,
                 City: true,
                 District: true,
                 Direction: true,
@@ -250,8 +255,8 @@ const get_REO = (prisma) => async (req, res) => {
             case SearchType.OFFICE_DETAIL_VIEW: {
 
                 return await officeAuthentication(req, res, async () => {
-                    
-                    if (res.headersSent){
+
+                    if (res.headersSent) {
                         return;
                     }
 
@@ -339,8 +344,8 @@ const update_REO = (prisma) => async (req, res) => {
         try {
             let sizeInBytes;
             if (Office_Image) {
-                sizeInBytes = Buffer.byteLength(Office_Image, 'base64');
-                if (sizeInBytes > 2 * 1024 * 1024) {
+                sizeInBytes = Buffer.from(Office_Image, 'base64');
+                if (sizeInBytes.length > 2 * 1024 * 1024) {
                     return res.status(400).send({ 'message': "Office Image is more than 2MB" });
                 }
 
@@ -348,8 +353,8 @@ const update_REO = (prisma) => async (req, res) => {
             }
 
             if (Office_Banner_Image) {
-                sizeInBytes = Buffer.byteLength(Office_Banner_Image, 'base64');
-                if (sizeInBytes > 5 * 1024 * 1024) {
+                sizeInBytes = Buffer.from(Office_Banner_Image, 'base64');
+                if (sizeInBytes.length > 5 * 1024 * 1024) {
                     return res.status(400).send({ 'message': "Office Banner Image is more than 5MB" });
                 }
                 updateData.Office_Banner_Image = Buffer.from(Office_Banner_Image, 'base64');
