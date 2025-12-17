@@ -95,7 +95,6 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             console.log(e);
             return res.status(400).send({ 'message': "Office Image or Office Banner Image is not valid" });
         }
-        console.log('cooool');
         createdOffice = await prisma.realEstateOffice.create({
             data: dataEntry,
             select: {
