@@ -1,7 +1,8 @@
 
 const { parse } = require('dotenv');
-const { dbErrorHandler, SearchType } = require('../libraries/utilities');
-const { officeAuthentication, REUAuthentication } = require('../middlewares/authentications');
+const { tokenMiddlewere } = require('./token_functions');
+const { dbErrorHandler, SearchType, } = require('../libraries/utilities');
+const { officeAuthentication, REUAuthentication, } = require('../middlewares/authentications');
 
 
 
@@ -72,7 +73,7 @@ const generate_REU = (prisma) => async (req, res) => {
             Deed_Number,
             Deed_Date: new Date(Deed_Date),
             Deed_Owners,
-            Affiliated_Office_ID: req.body.Office_ID,
+            Affiliated_Office_ID: req.body.My_Office_ID,
             Initiator,
             Region,
             City,
@@ -82,7 +83,6 @@ const generate_REU = (prisma) => async (req, res) => {
             Longitude,
             ...(Outdoor_Unit_Images && { Outdoor_Unit_Images })
         };
-
         if (req.body.Polygon) {
             dataEntry.Polygon = await prisma.realEstateUnit.create_WKT_Polygon(req.body.Polygon)
         }
@@ -109,7 +109,7 @@ const generate_REU = (prisma) => async (req, res) => {
 const get_REU = (prisma) => async (req, res) => {
     try {
         const { Search_Type } = req.body;
-
+        console.log(Search_Type);
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
                 const Unit_ID = parseInt(req.body.Unit_ID);
@@ -235,8 +235,46 @@ const get_REU = (prisma) => async (req, res) => {
                 return res.status(200).send(units);
             }
 
-            case SearchType.OFFICE_DETAIL_VIEW: {
+            case SearchType.OFFICE_LIST_VIEW: {
+                console.log('am here')
                 //Office_ID is required
+                // return await tokenMiddlewere(
+                //     req,
+                //     res,
+                //     async () => officeAuthentication(
+                //         req,
+                //         res,
+                //         async () => {
+                //             const My_Office_ID = req.body.My_Office_ID;
+
+                //             const units = await prisma.realEstateUnit.findMany({
+                //                 where: { My_Office_ID },
+                //                 select: {
+                //                     Unit_ID: true,
+                //                     Unit_Type: true,
+                //                     RE_Name: true,
+                //                     City: true,
+                //                     District: true,
+                //                     Outdoor_Unit_Images: true,
+                //                 }
+                //             });
+
+                //             if (!units) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
+
+                //             units = units.map(unit => ({
+                //                 ...unit,
+                //                 Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
+                //             }));
+
+                //             return res.status(200).send(units);
+                //         }
+                //     ));
+
+
+
+            }
+            case SearchType.OFFICE_DETAIL_VIEW: {
+                // Office_ID is required
                 return await officeAuthentication(
                     req,
                     res,
@@ -284,32 +322,24 @@ const get_REU = (prisma) => async (req, res) => {
 
             }
 
-            case SearchType.OFFICE_LIST_VIEW: {
-                //Office_ID is required
-                Object.assign(req.body, req.query);
-                officeAuthentication(req, res,);
-                if (res.headersSent) {
-                    return;
-                }
 
-            }
 
             case SearchType.OFFICE_MAP_PINS_VIEW: {
                 //Office_ID is required
-                Object.assign(req.body, req.query);
-                officeAuthentication(req, res,);
-                if (res.headersSent) {
-                    return;
-                }
+                // return await officeAuthentication(
+                //     req,
+                //     res,
+                //     async () => REUAuthentication(req, res, async () => {
+                //     }));
 
             }
 
             case SearchType.OFFICE_CUSTOM_FILTER_QUERY: {
-                Object.assign(req.body, req.query);
-                officeAuthentication(req, res,);
-                if (res.headersSent) {
-                    return;
-                }
+                // Object.assign(req.body, req.query);
+                // return officeAuthentication(req, res,()=>{
+
+                // });
+
             }
 
 

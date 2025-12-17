@@ -26,7 +26,7 @@ REO.route('/')
 // query parameters : 'http://127.0.0.1:3050/REO?City=Rabigh&Direction=NORTH&Search_Type=search_direction'
 
  
-.get(tokenMiddlewere, get_REO(prisma))
+.get(get_REO(prisma))
 
 //Request's body example: {"Office_ID": 44,"Office_Phone":"0126784123"}
 .put(tokenMiddlewere, officeAuthentication, update_REO(prisma));
