@@ -522,7 +522,7 @@ const get_READ = (prisma) => async (req, res) => {
                 // Replace Indoor_Unit_Images array with the first image only
                 const adsWithFirstImage = ads.map(ad => ({
                     ...ad,
-                    Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
+                    Indoor_Unit_Images: [ad.Indoor_Unit_Images?.[0]]|| null
                 }));
 
                 return res.status(200).send(adsWithFirstImage);
