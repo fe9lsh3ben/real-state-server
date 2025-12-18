@@ -256,7 +256,7 @@ model RealEstateOffice {
 
     Staff User[] @relation("OfficeStaff")
 
-    RealEstate_Units RealEstateUnit[] @relation("OfficeAndREUnit")
+    Real_Estate_Units RealEstateUnit[] @relation("OfficeAndREUnit")
     Contracts        Contract[]
     ADs              RealEstateAD[]
     Visitors         Json? //{date : number of visitors}

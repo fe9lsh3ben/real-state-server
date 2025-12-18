@@ -1,6 +1,6 @@
 const sharp = require('sharp');
 
-const { syncTokens } = require('./token_functions');
+const { syncTokens, tokenMiddlewere } = require('./token_functions');
 
 const { dbErrorHandler, SearchType, } = require('../libraries/utilities');
 
@@ -71,7 +71,6 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
                 connect: { User_ID: User_ID }
             }
         };
-
 
         try {
             let binaryBuffer = Buffer.from(Office_Image, 'base64');
@@ -161,7 +160,7 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 
 const get_REO = (prisma) => async (req, res) => {
     try {
-        const { Search_Type, selection } = req.body;
+        const { Search_Type, selection } = req.query;
 
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
@@ -252,59 +251,71 @@ const get_REO = (prisma) => async (req, res) => {
             }
 
             case SearchType.OFFICE_DETAIL_VIEW: {
+                return tokenMiddlewere(req, res, async () => {
+                    return officeAuthentication(req, res, async () => {
 
-                return await officeAuthentication(req, res, async () => {
+                        const officeID = req.body.My_Office_ID;
 
-                    if (res.headersSent) {
-                        return;
-                    }
+                        const office = await prisma.realEstateOffice.findUnique({
+                            where: { Office_ID: officeID },
+                            select: {
+                                Office_ID: true,
+                                Commercial_Register: true,
+                                Owner_ID: true,
+                                Office_Name: true,
+                                Office_Phone: true,
+                                Other: true,
+                                Office_Image: true,
+                                Office_Banner_Image: true,
+                                FalLicense: true,
+                                City: true,
+                                District: true,
+                                Latitude: true,
+                                Longitude: true,
+                                Status: true,
+                                Contracts: true,
+                                Visitors: true,
+                                Notifications: true,
+                                Rating: true,
+                                Real_Estate_Units: {
+                                    select: {
+                                        Unit_ID: true,
+                                        RE_Name: true,
+                                        Unit_Type: true,
+                                        City: true,
+                                        District: true,
+                                        Outdoor_Unit_Images: true,
+                                    }
+                                },
+                                
 
-                    const Office_ID = parseInt(req.body.My_Office_ID);
-                    const parsedSelection = JSON.parse(selection);
-                    if (isNaN(Office_ID)) return res.status(400).send({ 'message': "Invalid or missing Office_ID." });
+                            }
+                        });
 
-                    if (Object.keys(parsedSelection).length === 0) {
-                        return res.status(400).send({ 'message': "No selection parameter, it is an empty object." });
-                    }
-
-                    const office = await prisma.realEstateOffice.findFirst({
-                        where: { Office_ID },
-                        select:
-                            (parsedSelection || {})
-
+                        if (!office) {
+                            return res.status(404).send({ 'message': 'Real Estate Office not found.' });
+                        }
+                        office.real_Estate_Units = office.Real_Estate_Units.map(unit => ({
+                            ...unit,
+                            Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
+                        }));
+                        return res.status(200).send([office]);
                     });
-
-                    if (!office) {
-                        return res.status(404).send({ 'message': 'Real Estate Office not found.' });
-                    }
-                    office['RealEstate_Units'] = office['RealEstate_Units'].map(unit => ({
-                        ...unit,
-                        Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
-                    }));
-                    return res.status(200).send([office]);
                 });
 
             }
 
             case SearchType.OFFICE_LIST_VIEW: {
-                officeAuthentication(req, res);
-                if (res.headersSent) {
-                    return;
-                }
+
+
             }
 
             case SearchType.OFFICE_MAP_PINS_VIEW: {
-                officeAuthentication(req, res);
-                if (res.headersSent) {
-                    return;
-                }
+                return officeAuthentication(req, res, async () => { });
             }
 
             case SearchType.OFFICE_CUSTOM_FILTER_QUERY: {
-                officeAuthentication(req, res);
-                if (res.headersSent) {
-                    return;
-                }
+                return officeAuthentication(req, res, async () => { });
             }
 
             default:
