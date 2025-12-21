@@ -317,8 +317,7 @@ model RealEstateAD {
     Office_ID        Int
     Initiator_Office RealEstateOffice @relation(fields: [Office_ID], references: [Office_ID])
     Initiator        Json //{"Created_By":{ "User_ID", "Full_Name"}, "Edited_By":[{"User_ID", "Full_Name", "Edited_At"}]}
-    Created_At       DateTime         @default(now())
-    Updated_At       DateTime         @updatedAt
+    
     Unit_ID          Int
     Unit             RealEstateUnit   @relation(fields: [Unit_ID], references: [Unit_ID])
 
@@ -330,6 +329,8 @@ model RealEstateAD {
     Unit_Price         Decimal               @default(0.0) @db.Decimal(11, 2)
     Visable_Zoom       Decimal?               
     Hedden             Boolean               @default(false)
+    Created_At       DateTime         @default(now())
+    Updated_At       DateTime         @updatedAt
 }
 
 model Contract {

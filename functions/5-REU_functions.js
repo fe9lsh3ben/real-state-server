@@ -109,7 +109,6 @@ const generate_REU = (prisma) => async (req, res) => {
 const get_REU = (prisma) => async (req, res) => {
     try {
         const { Search_Type } = req.body;
-        console.log(Search_Type);
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
                 const Unit_ID = parseInt(req.body.Unit_ID);
@@ -236,7 +235,6 @@ const get_REU = (prisma) => async (req, res) => {
             }
 
             case SearchType.OFFICE_LIST_VIEW: {
-                console.log('am here')
                 //Office_ID is required
                 // return await tokenMiddlewere(
                 //     req,
@@ -275,48 +273,48 @@ const get_REU = (prisma) => async (req, res) => {
             }
             case SearchType.OFFICE_DETAIL_VIEW: {
                 // Office_ID is required
-                return await officeAuthentication(
-                    req,
-                    res,
-                    () => REUAuthentication(req, res, async () => {
-                        const Unit_ID = parseInt(req.body.Unit_ID);
-                        if (isNaN(Unit_ID)) return res.status(400).send({ 'message': "Invalid or missing Unit ID." });
+                return await tokenMiddlewere(req, res,
+                    () => officeAuthentication(req, res,
+                        () => REUAuthentication(req, res, async () => {
+                            const Unit_ID = parseInt(req.body.Unit_ID);
+                            if (isNaN(Unit_ID)) return res.status(400).send({ 'message': "Invalid or missing Unit ID." });
 
-                        const unit = await prisma.realEstateUnit.findFirst({
-                            where: { Unit_ID },
-                            select: {
-                                Deed_Number: true,
-                                Deed_Date: true,
-                                Deed_Owners: true,
-                                Initiator: true,
-                                Direction: true,
-                                Latitude: true,
-                                Longitude: true,
-                                Outdoor_Unit_Images: true,
-                                Created_At: true,
-                                Updated_At: true,
-                                Unit_ADs: {
-                                    select: {
-                                        AD_ID: true,
-                                        AD_Type: true,
-                                        AD_Unit_Type: true,
-                                        Indoor_Unit_Images: true,
-                                        Unit_Price: true,
-                                        Hedden: true
+                            const unit = await prisma.realEstateUnit.findFirst({
+                                where: { Unit_ID },
+                                select: {
+                                    Deed_Number: true,
+                                    Deed_Date: true,
+                                    Deed_Owners: true,
+                                    Initiator: true,
+                                    Direction: true,
+                                    Latitude: true,
+                                    Longitude: true,
+                                    Outdoor_Unit_Images: true,
+                                    Created_At: true,
+                                    Updated_At: true,
+                                    Unit_ADs: {
+                                        select: {
+                                            AD_ID: true,
+                                            AD_Type: true,
+                                            AD_Unit_Type: true,
+                                            Office_ID: true,
+                                            Indoor_Unit_Images: true,
+                                            Unit_Price: true,
+                                            Hedden: true
+                                        }
                                     }
                                 }
-                            }
-                        });
+                            });
 
-                        if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
+                            if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
 
-                        unit.Unit_ADs = unit.Unit_ADs.map(ad => ({
-                            ...ad,
-                            Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
-                        }));
+                            unit.Unit_ADs = unit.Unit_ADs.map(ad => ({
+                                ...ad,
+                                Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
+                            }));
 
-                        return res.status(200).send([unit]);
-                    }));
+                            return res.status(200).send([unit]);
+                        })));
 
 
 

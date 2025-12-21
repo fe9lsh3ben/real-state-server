@@ -280,14 +280,20 @@ const get_REO = (prisma) => async (req, res) => {
                                 Real_Estate_Units: {
                                     select: {
                                         Unit_ID: true,
+                                        Affiliated_Office_ID: true,
                                         RE_Name: true,
                                         Unit_Type: true,
                                         City: true,
                                         District: true,
                                         Outdoor_Unit_Images: true,
+                                        _count: {
+                                            select: {
+                                                Unit_ADs: true
+                                            }
+                                        }
                                     }
                                 },
-                                
+
 
                             }
                         });
@@ -295,10 +301,11 @@ const get_REO = (prisma) => async (req, res) => {
                         if (!office) {
                             return res.status(404).send({ 'message': 'Real Estate Office not found.' });
                         }
-                        office.real_Estate_Units = office.Real_Estate_Units.map(unit => ({
+                        office.Real_Estate_Units = office.Real_Estate_Units.map((unit) => ({
                             ...unit,
                             Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
                         }));
+
                         return res.status(200).send([office]);
                     });
                 });
