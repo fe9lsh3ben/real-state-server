@@ -122,8 +122,28 @@ const get_READ = (prisma) => async (req, res) => {
                         Hedden: false,
                     },
                     select: {
-
-                    }
+                        AD_ID: true,
+                        Office_ID: true,
+                        AD_Type: true,
+                        AD_Unit_Type: true,
+                        AD_Title: true,
+                        Indoor_Unit_Images: true,
+                        AD_Specifications: true,
+                        Unit_Price: true,
+                        Unit_ID: true,
+                        Hedden: true,
+                        Unit: {
+                            select: {
+                                City: true,
+                                District: true,
+                                Direction: true,
+                                Latitude: true,
+                                Longitude: true,
+                                Outdoor_Unit_Images: true,
+                            }
+                        },
+                        
+                    },
                 });
 
                 if (!ad) return res.status(404).send({ 'message': 'Real Estate ad not found.' });
