@@ -152,7 +152,8 @@ const get_READ = (prisma) => async (req, res) => {
                 //     delete ad.Initiator;
                 //     delete ad.Visable_Zoom;
                 //     delete ad.Hedden;
-                // };
+                // };   
+                console.log(ad)
 
                 return res.status(200).send([ad]);
             }
