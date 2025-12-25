@@ -102,6 +102,8 @@ const get_READ = (prisma) => async (req, res) => {
         // Ensure body exists before merging
         req.body = req.body || {};
         Object.assign(req.body, req.query);
+                console.log(req.body)
+
         const { Search_Type } = req.body;
 
         switch (Search_Type) {
@@ -132,6 +134,11 @@ const get_READ = (prisma) => async (req, res) => {
                         Unit_Price: true,
                         Unit_ID: true,
                         Hedden: true,
+                        Initiator_Office: {
+                            select: {
+                                Office_Phone: true,
+                            }
+                        },
                         Unit: {
                             select: {
                                 City: true,
@@ -145,7 +152,7 @@ const get_READ = (prisma) => async (req, res) => {
                         
                     },
                 });
-
+                console.log(ad)
                 if (!ad) return res.status(404).send({ 'message': 'Real Estate ad not found.' });
 
                 // if (!req.body.Office_ID || ad.Office_ID !== parseInt(req.body.Office_ID)) {
