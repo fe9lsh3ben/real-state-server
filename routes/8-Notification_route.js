@@ -24,17 +24,19 @@ const Notification = express.Router();
 
 Notification.route('/')
 
-.post(tokenMiddlewere, createNotification(prisma))
+    .post(tokenMiddlewere, createNotification(prisma))
 
-// query parameters : 'http://127.0.0.1:3050/notification?Office_ID=1
-// query parameters : 'http://127.0.0.1:3050/notification?Office_ID=1&Curser10
+    // query parameters : 'http://127.0.0.1:3050/notification?Office_ID=1
+    // query parameters : 'http://127.0.0.1:3050/notification?Office_ID=1&Curser10
 
 
-.get(tokenMiddlewere, officeAuthentication, async (req, res, next) => {
+    .get(tokenMiddlewere, officeAuthentication, async (req, res, next) => {
         try {
-            const notes = await getCachedNotifications(req.body.Office_ID);
-            if (notes.length > 0) {
-                return res.status(200).json(notes); // send cached response
+            if (!req.body.Curser) {
+                const notes = await getCachedNotifications(req.body.Office_ID);
+                if (notes && notes.length > 0) {
+                    return res.status(200).json(notes);
+                }
             }
             next(); // cache miss → go to DB middleware
         } catch (error) {
@@ -43,10 +45,10 @@ Notification.route('/')
     }, getNotifications(prisma)) // middleware that fetches from DB
 
 
-/** Request's body example: {"Office_ID" : 1, "Note_ID" : 1}
-    **/
+    /** Request's body example: {"Office_ID" : 1, "Note_ID" : 1}
+        **/
 
-.put(tokenMiddlewere, officeAuthentication, markNotificationRead(prisma));
+    .put(tokenMiddlewere, officeAuthentication, markNotificationRead(prisma));
 
 // query parameters : 'http://127.0.0.1:3050/notification/count-unread?Office_ID=3
 Notification.route('/count-unread')

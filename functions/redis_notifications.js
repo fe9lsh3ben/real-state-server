@@ -13,7 +13,17 @@ const cacheNotification = async (Office_ID, Note) => {
 const getCachedNotifications = async (Office_ID) => {
     const key = `office:${Office_ID}:notifications`;
     const items = await redis.lrange(key, 0, 19);
+    
     return items.map(JSON.parse);
+}
+
+const setFullNotificationCache = async (Office_ID, notes) => {
+    const key = `office:${Office_ID}:notifications`;
+    const pipeline = redis.pipeline();
+    pipeline.del(key); // Clear old cache
+    notes.forEach(note => pipeline.rpush(key, JSON.stringify(note)));
+    pipeline.expire(key, 86400);
+    await pipeline.exec();
 }
 
 // Remove notifications from cache (optional, e.g., if deleted)
@@ -32,6 +42,7 @@ const removeCachedNotification = async (Office_ID, Note_ID) => {
 module.exports = {
     cacheNotification,
     getCachedNotifications,
+    setFullNotificationCache,
     removeCachedNotification
 }
 

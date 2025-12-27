@@ -1,5 +1,5 @@
 
-const { cacheNotification, removeCachedNotification } = require("../functions/redis_notifications");
+const { cacheNotification, setFullNotificationCache, removeCachedNotification } = require("../functions/redis_notifications");
 const { dbErrorHandler } = require('../libraries/utilities');
 // 1. Create a new notification
 
@@ -10,12 +10,13 @@ const Note_Type = ['REQUEST', 'QUERY'];
 const createNotification = (prisma) => async (req, res) => {
 
     try {
-        const { Office_ID, User_ID, Note_Type, Content } = req.body;
-        if (!Office_ID || !User_ID || !Note_Type || !Content) return res.status(400).send({'message': 'Office ID, Sender ID, Note Type, and Content are required!'});
-        if (!Note_Type.includes(Note_Type)) return res.status(400).send({'message': 'Note Type must be one of the following: REQUEST, QUERY'});
 
+        const { Office_ID, Sender_ID, Note_Type, Content } = req.body;
+        if (!Office_ID || !Sender_ID || !Note_Type || !Content) return res.status(400).send({ 'message': 'Office ID, Sender ID, Note Type, and Content are required!' });
+        if (!Note_Type.includes(Note_Type)) return res.status(400).send({ 'message': 'Note Type must be one of the following: REQUEST, QUERY' });
+        console.log(Note_Type)
         const note = await prisma.notification.create({
-            data: { Sender_ID: User_ID, Note_Type, Content, Office_ID }
+            data: { Sender_ID, Note_Type, Content, Office_ID }
         });
 
         await cacheNotification(Office_ID, note); // cache the latest 20
@@ -30,20 +31,24 @@ const createNotification = (prisma) => async (req, res) => {
 // 2. Get latest N notifications for an office (paginated)
 const getNotifications = (prisma) => async (req, res, next) => {
     try {
-        const { Office_ID, Curser = null } = req.body; // or use req.Office_ID
+        const { Office_ID, Curser = null } = req.body;
         const notes = await prisma.notification.findMany({
             where: { Office_ID },
             orderBy: { Created_At: "desc" },
             take: 20,
             cursor: Curser ? { Note_ID: Curser } : undefined,
             skip: Curser ? 1 : 0,
-
         });
+
+        // FIX: Save to cache if this is the first page
+        if (!Curser && notes.length > 0) {
+            // We use a helper to overwrite the full list for this office
+            await setFullNotificationCache(Office_ID, notes);
+        }
 
         return res.status(200).json(notes);
     } catch (error) {
         dbErrorHandler(res, error, 'getNotifications');
-        console.log(error.message)
     }
 };
 

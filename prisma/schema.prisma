@@ -110,6 +110,7 @@ enum AD_Type {
 enum Note_Type {
     REQUEST
     QUERY
+    COMPLAINT
 }
 
 //________ Models Module__________//

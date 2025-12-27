@@ -102,7 +102,6 @@ const get_READ = (prisma) => async (req, res) => {
         // Ensure body exists before merging
         req.body = req.body || {};
         Object.assign(req.body, req.query);
-                console.log(req.body)
 
         const { Search_Type } = req.body;
 
@@ -149,18 +148,32 @@ const get_READ = (prisma) => async (req, res) => {
                                 Outdoor_Unit_Images: true,
                             }
                         },
-                        
+
                     },
                 });
-                console.log(ad)
-                if (!ad) return res.status(404).send({ 'message': 'Real Estate ad not found.' });
+                if (!ad) {
+                    const lastAd = await prisma.realEstateAD.findFirst({
+                        orderBy: {
+                            AD_ID: 'desc',
+                        },
+                        select: {
+                            AD_ID: true,
+                        },
+
+                    });
+                    if (lastAd.AD_ID >= AD_ID) {
+                        return res.status(400).send({ 'message': 'Real Estate ad was deleted.' });
+                    }
+                    else {
+                        return res.status(404).send({ 'message': 'Real Estate ad not found.' });
+                    }
+                }
 
                 // if (!req.body.Office_ID || ad.Office_ID !== parseInt(req.body.Office_ID)) {
                 //     delete ad.Initiator;
                 //     delete ad.Visable_Zoom;
                 //     delete ad.Hedden;
                 // };   
-                console.log(ad)
 
                 return res.status(200).send([ad]);
             }
