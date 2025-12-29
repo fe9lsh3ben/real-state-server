@@ -32,14 +32,18 @@ Notification.route('/')
 
     .get(tokenMiddlewere, officeAuthentication, async (req, res, next) => {
         try {
+           
             if (!req.body.Curser) {
-                const notes = await getCachedNotifications(req.body.Office_ID);
+                console.log(req.body.My_Office_ID);
+                const notes = await getCachedNotifications(req.body.My_Office_ID);
                 if (notes && notes.length > 0) {
                     return res.status(200).json(notes);
                 }
             }
+             
             next(); // cache miss → go to DB middleware
         } catch (error) {
+            console.log(error);
             dbErrorHandler(res, error, 'createNotification');
         }
     }, getNotifications(prisma)) // middleware that fetches from DB

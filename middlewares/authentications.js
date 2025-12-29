@@ -10,7 +10,6 @@ const Contract_Query_Type = Object.freeze({
 });
 
 async function officeAuthentication(req, res, next) {
-
     try {
         if (!req.body.My_Office_ID) {
             return res.status(400).send({ 'message': 'Your Office ID is required.' });
@@ -28,14 +27,13 @@ async function officeAuthentication(req, res, next) {
                 Staff: true
             }
         });
-
+        
         if (!office) return res.status(404).send({ 'message': 'Real Estate Office not found.' });
         // console.log(office.Staff.find(staff => staff.User_ID === req.body.User_ID) )
         if (office.Owner_ID !== req.body.User_ID && !office.Staff.find(staff => staff.User_ID === req.body.User_ID)) {
             return res.status(403).send({ 'message': 'You are not authorized to access this office, no relationship found.' });
         }
         req.body.My_Office_ID = office.Office_ID;
-
         next();
 
     } catch (error) {

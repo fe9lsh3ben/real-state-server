@@ -1,4 +1,4 @@
-const {Redis} = require("ioredis");
+const { Redis } = require("ioredis");
 const redis = new Redis(); // connect to default localhost:6379
 
 // Push latest notification to Redis cache
@@ -11,10 +11,14 @@ const cacheNotification = async (Office_ID, Note) => {
 
 // Get cached notifications
 const getCachedNotifications = async (Office_ID) => {
-    const key = `office:${Office_ID}:notifications`;
-    const items = await redis.lrange(key, 0, 19);
-    
-    return items.map(JSON.parse);
+    try {
+        const key = `office:${Office_ID}:notifications`;
+        const items = await redis.lrange(key, 0, 19);
+        return items.map(JSON.parse);
+    }
+    catch (error) {
+        console.log(error);
+    }
 }
 
 const setFullNotificationCache = async (Office_ID, notes) => {

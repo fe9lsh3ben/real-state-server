@@ -31,23 +31,26 @@ const createNotification = (prisma) => async (req, res) => {
 // 2. Get latest N notifications for an office (paginated)
 const getNotifications = (prisma) => async (req, res, next) => {
     try {
-        const { Office_ID, Curser = null } = req.body;
+        const { My_Office_ID, Curser = null } = req.body;
+        console.log('llll')
         const notes = await prisma.notification.findMany({
-            where: { Office_ID },
+            where: { 
+                Office_ID:My_Office_ID },
             orderBy: { Created_At: "desc" },
             take: 20,
             cursor: Curser ? { Note_ID: Curser } : undefined,
             skip: Curser ? 1 : 0,
         });
-
+        console.log('S notifications');
         // FIX: Save to cache if this is the first page
         if (!Curser && notes.length > 0) {
             // We use a helper to overwrite the full list for this office
-            await setFullNotificationCache(Office_ID, notes);
+            await setFullNotificationCache(My_Office_ID, notes);
         }
-
+        console.log('sending notifications');
         return res.status(200).json(notes);
     } catch (error) {
+        console.log(error);
         dbErrorHandler(res, error, 'getNotifications');
     }
 };
@@ -56,7 +59,7 @@ const getNotifications = (prisma) => async (req, res, next) => {
 // 3. Mark a notification as read
 const markNotificationRead = (prisma) => async (req, res) => {
     try {
-        const { Note_ID, Office_ID } = req.body;
+        const { Note_ID, My_Office_ID } = req.body;
 
         // mark as read
         await prisma.notification.update({
@@ -65,7 +68,7 @@ const markNotificationRead = (prisma) => async (req, res) => {
         });
 
         // remove from Redis cache if exists
-        removeCachedNotification(Office_ID, Note_ID);
+        removeCachedNotification(My_Office_ID, Note_ID);
 
         // send minimal response to avoid hanging
         res.sendStatus(204); // 204 = No Content
@@ -78,18 +81,19 @@ const markNotificationRead = (prisma) => async (req, res) => {
 // 4. Count unread notifications
 const countUnread = (prisma) => async (req, res) => {
     try {
-        const { Office_ID } = req.body;
-
+        const { My_Office_ID } = req.body;
         const count = await prisma.notification.count({
-            where: { Office_ID, Read: false }
+            where: {
+                Office_ID: My_Office_ID,
+                Read: false
+            }
         });
-
-        res.status(200).json({ unreadCount: count });
+        res.status(200).json({ 'Unread': count });
     } catch (error) {
+        console.log(error)
         dbErrorHandler(res, error, 'countUnread');
     }
 };
-
 
 
 
