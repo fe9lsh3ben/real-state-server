@@ -1,4 +1,4 @@
-
+const { logAdDeletion } = require('./deletion_log');
 const { tokenMiddlewere } = require('./token_functions');
 const { dbErrorHandler, SearchType } = require('../libraries/utilities');
 const { officeAuthentication, REUAuthentication, READAuthentication } = require('../middlewares/authentications');
@@ -827,7 +827,7 @@ const delete_READ = (prisma) => async (req, res) => {
             where: { AD_ID: parseInt(AD_ID) },
         });
 
-        deleteAd(deletedAD.AD_ID, 'realEstateAD', req.body.User_ID);
+        logAdDeletion(deletedAD.AD_ID, 'realEstateAD', req.body.User_ID);
 
         return res.status(200).json({
             message: "Real Estate AD was successfully deleted.",

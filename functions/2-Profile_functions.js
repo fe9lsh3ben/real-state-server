@@ -190,6 +190,7 @@ const login = (prisma) => async (req, res) => {
                 Full_Name: true,
                 Profile_Image: true,
                 User_Phone: true,
+                City: true,
                 Session: {
                     select: {
                         Token: true,
