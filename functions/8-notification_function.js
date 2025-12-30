@@ -14,7 +14,6 @@ const createNotification = (prisma) => async (req, res) => {
         const { Office_ID, Sender_ID, Note_Type, Content } = req.body;
         if (!Office_ID || !Sender_ID || !Note_Type || !Content) return res.status(400).send({ 'message': 'Office ID, Sender ID, Note Type, and Content are required!' });
         if (!Note_Type.includes(Note_Type)) return res.status(400).send({ 'message': 'Note Type must be one of the following: REQUEST, QUERY' });
-        console.log(Note_Type)
         const note = await prisma.notification.create({
             data: { Sender_ID, Note_Type, Content, Office_ID }
         });
@@ -32,7 +31,6 @@ const createNotification = (prisma) => async (req, res) => {
 const getNotifications = (prisma) => async (req, res, next) => {
     try {
         const { My_Office_ID, Curser = null } = req.body;
-        console.log('llll')
         const notes = await prisma.notification.findMany({
             where: { 
                 Office_ID:My_Office_ID },
@@ -41,13 +39,11 @@ const getNotifications = (prisma) => async (req, res, next) => {
             cursor: Curser ? { Note_ID: Curser } : undefined,
             skip: Curser ? 1 : 0,
         });
-        console.log('S notifications');
         // FIX: Save to cache if this is the first page
         if (!Curser && notes.length > 0) {
             // We use a helper to overwrite the full list for this office
             await setFullNotificationCache(My_Office_ID, notes);
         }
-        console.log('sending notifications');
         return res.status(200).json(notes);
     } catch (error) {
         console.log(error);

@@ -723,7 +723,7 @@ const edit_READ = (prisma) => async (req, res) => {
             Hedden,
             Unit_Price,
             Indoor_Unit_Images,
-            Full_Name,
+            Editor_Name,
 
         } = req.body;
 
@@ -731,6 +731,9 @@ const edit_READ = (prisma) => async (req, res) => {
             return res.status(400).send({ 'message': "Ad ID is required to update the unit." });
         }
 
+        if (!Editor_Name) {
+            return res.status(400).send({ 'message': "Your Name is required to update the unit." });
+        }
         if (!(AD_Type || AD_Unit_Type || AD_Specifications || Indoor_Unit_Images || Unit_Price || Hedden)) {
             return res.status(400).send({ 'message': "Nothing to update." });
         }
@@ -755,7 +758,7 @@ const edit_READ = (prisma) => async (req, res) => {
         if (Array.isArray(ad.Initiator.Edited_By)) {
             ad.Initiator.Edited_By.push({
                 User_ID: req.body.User_ID,
-                Full_Name,
+                Editor_Name,
                 Edited_At: new Date().toISOString(),
                 Changed: {
                     ...(AD_Type && { AD_Type }),
@@ -769,7 +772,7 @@ const edit_READ = (prisma) => async (req, res) => {
         } else {
             ad.Initiator.Edited_By = [{
                 User_ID: req.body.User_ID,
-                Full_Name,
+                Editor_Name,
                 Edited_At: new Date().toISOString(),
                 Changed: {
                     ...(AD_Type && { AD_Type }),
@@ -790,7 +793,7 @@ const edit_READ = (prisma) => async (req, res) => {
             ...(AD_Specifications && { AD_Specifications }),
             ...(Indoor_Unit_Images && { Indoor_Unit_Images }),
             ...(Unit_Price && { Unit_Price }),
-            ...(Hedden !== undefined && { Hedden }),
+            ...(Hedden && { Hedden: Hedden === 'true' }),
             Initiator: ad.Initiator
         };
 
@@ -806,7 +809,7 @@ const edit_READ = (prisma) => async (req, res) => {
         });
 
     } catch (error) {
-        dbErrorHandler(res, error, 'edit real estate unit');
+        dbErrorHandler(res, error, 'edit real estate ad');
         console.log('Error:', error.message);
     }
 };
