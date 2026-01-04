@@ -315,20 +315,66 @@ const get_REU = (prisma) => async (req, res) => {
 
                             return res.status(200).send([unit]);
                         })));
-
-
-
             }
 
 
 
             case SearchType.OFFICE_MAP_PINS_VIEW: {
-                //Office_ID is required
-                // return await officeAuthentication(
-                //     req,
-                //     res,
-                //     async () => REUAuthentication(req, res, async () => {
-                //     }));
+                return await tokenMiddlewere(req, res,
+                    () => officeAuthentication(req, res,
+                        () => REUAuthentication(req, res, async () => {
+                            const { My_Office_ID, Unit_Type, minLatitude, maxLatitude, minLongitude, maxLongitude } = req.body;
+
+                            const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
+                            const allValid = allCoords.every(coord => coord !== undefined && !isNaN(coord));
+
+                            if (!allValid) {
+                                return res.status(400).send({ 'message': "Invalid or incomplete map bounds. All four bounds must be valid." });
+                            }
+
+                            const filterWhere = {
+                                Affiliated_Office_ID: My_Office_ID,
+                                Latitude: {
+                                    gte: parseFloat(minLatitude),
+                                    lte: parseFloat(maxLatitude),
+                                },
+                                Longitude: {
+                                    gte: parseFloat(minLongitude),
+                                    lte: parseFloat(maxLongitude),
+                                },
+                                ...(Unit_Type && { Unit_Type }),
+                            }
+                            const unit = await prisma.realEstateUnit.findMany({
+                                where: {
+                                    ...filterWhere,
+                                    Unit_ADs: {
+                                        some: { // where or some
+                                            Hedden: false
+                                        }
+                                    }
+                                },
+                                select: {
+                                    Unit_ID: true,
+                                    Unit_Type: true,
+                                    Unit_ADs: {
+                                        where: { Hedden: false },
+                                        select: {
+                                            AD_ID: true,
+                                            Hedden: true
+                                        }
+                                    }
+                                }
+                            });
+
+                            if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
+
+                            unit.Unit_ADs = unit.Unit_ADs.map(ad => ({
+                                ...ad,
+                                Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
+                            }));
+
+                            return res.status(200).send([unit]);
+                        })));
 
             }
 
