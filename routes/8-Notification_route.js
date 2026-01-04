@@ -34,7 +34,6 @@ Notification.route('/')
         try {
            
             if (!req.body.Curser) {
-                console.log(req.body.My_Office_ID);
                 const notes = await getCachedNotifications(req.body.My_Office_ID);
                 if (notes && notes.length > 0) {
                     return res.status(200).json(notes);
@@ -49,7 +48,7 @@ Notification.route('/')
     }, getNotifications(prisma)) // middleware that fetches from DB
 
 
-    /** Request's body example: {"Office_ID" : 1, "Note_ID" : 1}
+    /** Request's body example: {"My_Office_ID" : 12, "Note_ID" : 1}
         **/
 
     .put(tokenMiddlewere, officeAuthentication, markNotificationRead(prisma));

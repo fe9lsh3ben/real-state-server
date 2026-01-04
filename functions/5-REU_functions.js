@@ -3,7 +3,7 @@ const { parse } = require('dotenv');
 const { tokenMiddlewere } = require('./token_functions');
 const { dbErrorHandler, SearchType, } = require('../libraries/utilities');
 const { officeAuthentication, REUAuthentication, } = require('../middlewares/authentications');
-
+const { logAdDeletion } = require('./deletion_log');
 
 
 
@@ -456,7 +456,7 @@ const delete_REU = (prisma) => async (req, res) => {
         // Merge body params into body if provided (for flexibility)
 
 
-        const unitId = parseInt(req.body.Unit_ID);
+        const unitId = req.body.Unit_ID;
 
         if (!unitId) {
             return res.status(400).send({ 'message': "Real estate unit ID is required!" });
@@ -468,7 +468,7 @@ const delete_REU = (prisma) => async (req, res) => {
             return res.status(404).send({ 'message': "Real estate unit not found!" });
         }
 
-        deleteAd(deletedUnit.Unit_ID, 'realEstateUnit', req.body.User_ID);
+        logAdDeletion(deletedUnit.Unit_ID, 'realEstateUnit', req.body.User_ID, prisma);
 
         return res.status(200).json({
             message: "Real estate unit was deleted successfully!",

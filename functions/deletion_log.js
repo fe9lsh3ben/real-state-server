@@ -1,6 +1,6 @@
 
 
-const logAdDeletion = (adId, tableName, userId) => {
+const logAdDeletion = (adId, tableName, userId, prisma) => {
     prisma.deletionLog.create({
         data: {
             Record_ID: adId,
@@ -11,5 +11,5 @@ const logAdDeletion = (adId, tableName, userId) => {
 };
 
 module.exports = {
-  logAdDeletion
+    logAdDeletion
 }

@@ -13,8 +13,17 @@ const cacheNotification = async (Office_ID, Note) => {
 const getCachedNotifications = async (Office_ID) => {
     try {
         const key = `office:${Office_ID}:notifications`;
-        const items = await redis.lrange(key, 0, 19);
-        return items.map(JSON.parse);
+        const [items, delResult] = await redis.multi()
+            .lrange(key, 0, 19)
+            .ltrim(key, 20, -1)
+            .exec();
+
+        if (items[1].length > 0) {
+            return items[1].map(JSON.parse)
+        }else{
+            return []
+        }
+        
     }
     catch (error) {
         console.log(error);

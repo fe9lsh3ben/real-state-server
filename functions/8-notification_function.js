@@ -32,8 +32,9 @@ const getNotifications = (prisma) => async (req, res, next) => {
     try {
         const { My_Office_ID, Curser = null } = req.body;
         const notes = await prisma.notification.findMany({
-            where: { 
-                Office_ID:My_Office_ID },
+            where: {
+                Office_ID: My_Office_ID
+            },
             orderBy: { Created_At: "desc" },
             take: 20,
             cursor: Curser ? { Note_ID: Curser } : undefined,
@@ -56,19 +57,25 @@ const getNotifications = (prisma) => async (req, res, next) => {
 const markNotificationRead = (prisma) => async (req, res) => {
     try {
         const { Note_ID, My_Office_ID } = req.body;
+        if (!Note_ID) {
+            return res.status(400).send({ 'message': 'Notification ID is required!' });
+        }
 
         // mark as read
         await prisma.notification.update({
-            where: { Note_ID },
+            where: {
+                Note_ID: (typeof Note_ID !== 'number' ? parseInt(Note_ID) : Note_ID),
+                Office_ID: My_Office_ID
+            },
             data: { Read: true }
         });
-
         // remove from Redis cache if exists
         removeCachedNotification(My_Office_ID, Note_ID);
 
         // send minimal response to avoid hanging
         res.sendStatus(204); // 204 = No Content
     } catch (error) {
+        console.log(error);
         dbErrorHandler(res, error, 'markNotificationRead');
     }
 };

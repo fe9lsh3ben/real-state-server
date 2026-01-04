@@ -827,7 +827,7 @@ const delete_READ = (prisma) => async (req, res) => {
             where: { AD_ID: parseInt(AD_ID) },
         });
 
-        logAdDeletion(deletedAD.AD_ID, 'realEstateAD', req.body.User_ID);
+        logAdDeletion(deletedAD.AD_ID, 'realEstateAD', req.body.User_ID, prisma);
 
         return res.status(200).json({
             message: "Real Estate AD was successfully deleted.",
@@ -835,6 +835,7 @@ const delete_READ = (prisma) => async (req, res) => {
         });
 
     } catch (error) {
+        console.log('Error:', error.message);
         dbErrorHandler(res, error, 'delete real estate ad');
     }
 };
