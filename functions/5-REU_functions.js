@@ -322,7 +322,7 @@ const get_REU = (prisma) => async (req, res) => {
             case SearchType.OFFICE_MAP_PINS_VIEW: {
                 return await tokenMiddlewere(req, res,
                     () => officeAuthentication(req, res,
-                        () => REUAuthentication(req, res, async () => {
+                        async () => {
                             const { My_Office_ID, Unit_Type, minLatitude, maxLatitude, minLongitude, maxLongitude } = req.body;
 
                             const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
@@ -368,13 +368,10 @@ const get_REU = (prisma) => async (req, res) => {
 
                             if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
 
-                            unit.Unit_ADs = unit.Unit_ADs.map(ad => ({
-                                ...ad,
-                                Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
-                            }));
+                            
 
                             return res.status(200).send([unit]);
-                        })));
+                        }));
 
             }
 
