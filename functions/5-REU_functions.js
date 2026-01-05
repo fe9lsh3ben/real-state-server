@@ -327,7 +327,6 @@ const get_REU = (prisma) => async (req, res) => {
 
                             const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
                             const allValid = allCoords.every(coord => coord !== undefined && !isNaN(coord));
-
                             if (!allValid) {
                                 return res.status(400).send({ 'message': "Invalid or incomplete map bounds. All four bounds must be valid." });
                             }
@@ -370,7 +369,7 @@ const get_REU = (prisma) => async (req, res) => {
 
                             
 
-                            return res.status(200).send([unit]);
+                            return res.status(200).send(unit);
                         }));
 
             }
