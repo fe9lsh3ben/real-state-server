@@ -323,77 +323,71 @@ const get_REU = (prisma) => async (req, res) => {
                 return await tokenMiddlewere(req, res,
                     () => officeAuthentication(req, res,
                         async () => {
-                            const { My_Office_ID, Unit_Type, Geo_Segments } = req.body;
+                            const { My_Office_ID, Unit_Type, Geo_Segments, Zoom } = req.body;
+                            //DO:NOW
+                            // cheaper -> 1. The "Zoom Gate" Strategy(Simplest)Instead of trying to fetch everything everywhere, only fetch individual pins when the user is zoomed in enough to actually see them.Zoom < 12: Fetch nothing(or show "heatmaps/clusters").Zoom 12 - 15: Fetch pins using a larger cacheStep (e.g., $0.05$).Zoom 15 +: Fetch pins using your fine cacheStep($0.005$).To keep the cache working, you simply use a different prefix for the cache keys based on the "tier": "city_15_25" vs "detail_600_1000". 
+                            // proficient -> 2.The "Clustering" Strategy(Professional Way)This is how Zillow or Airbnb handle it.You create an API endpoint that returns different data based on the zoom level.On the Server(Node.js / Prisma):When the client sends the request, it also sends the zoom.If Zoom is Low: Your Prisma query uses groupBy to return a list of "Clusters"(e.g., "This neighborhood has 50 houses") instead of every house object.If Zoom is High: Your Prisma query returns the full realEstateUnit objects.
+                                if(!Zoom) return res.status(400).send({ 'message': "Zoom is required." });
+                const uniqueSegments = Array.from(new Set(JSON.parse(Geo_Segments).map(JSON.stringify))).map(JSON.parse);
+                const geoFilters = uniqueSegments.map((segment) => ({
+                    AND: [
+                        { Latitude: { gte: segment.south, lte: segment.north } },
+                        { Longitude: { gte: segment.west, lte: segment.east } },
+                    ],
+                }));
 
-                            console.log(req.body);
+                let filterWhere = {
+                    Affiliated_Office_ID: My_Office_ID,
+                    ...(Unit_Type && { Unit_Type }),
+                    OR: geoFilters,
 
-                            return res.status(400).send();
-                            const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
-                            const allValid = allCoords.every(coord => coord !== undefined && !isNaN(coord));
-                            if (!allValid) {
-                                return res.status(400).send({ 'message': "Invalid or incomplete map bounds. All four bounds must be valid." });
+                };
+
+
+                const unit = await prisma.realEstateUnit.findMany({
+                    where: {
+                        ...filterWhere,
+                        Unit_ADs: {
+                            some: { // where or some
+                                Hedden: false
                             }
+                        }
+                    },
+                    select: {
+                        Unit_ID: true,
+                        Unit_Type: true,
+                        Latitude: true,
+                        Longitude: true,
+                    }
+                });
+                console.log(unit);
 
-                            const filterWhere = {
-                                Affiliated_Office_ID: My_Office_ID,
-                                Latitude: {
-                                    gte: parseFloat(minLatitude),
-                                    lte: parseFloat(maxLatitude),
-                                },
-                                Longitude: {
-                                    gte: parseFloat(minLongitude),
-                                    lte: parseFloat(maxLongitude),
-                                },
-                                ...(Unit_Type && { Unit_Type }),
-                            }
-                            const unit = await prisma.realEstateUnit.findMany({
-                                where: {
-                                    ...filterWhere,
-                                    Unit_ADs: {
-                                        some: { // where or some
-                                            Hedden: false
-                                        }
-                                    }
-                                },
-                                select: {
-                                    Unit_ID: true,
-                                    Unit_Type: true,
-                                    Unit_ADs: {
-                                        where: { Hedden: false },
-                                        select: {
-                                            AD_ID: true,
-                                            Hedden: true
-                                        }
-                                    }
-                                }
-                            });
+                if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
 
-                            if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
 
-                            
 
-                            return res.status(200).send(unit);
-                        }));
+                return res.status(200).send(unit);
+            }));
 
-            }
+        }
 
             case SearchType.OFFICE_CUSTOM_FILTER_QUERY: {
-                // Object.assign(req.body, req.query);
-                // return officeAuthentication(req, res,()=>{
+    // Object.assign(req.body, req.query);
+    // return officeAuthentication(req, res,()=>{
 
-                // });
+    // });
 
-            }
+}
 
 
             default:
-                return res.status(400).send({ 'message': 'Invalid Search_Type.' });
+return res.status(400).send({ 'message': 'Invalid Search_Type.' });
         }
 
     } catch (error) {
-        console.log('Error:', error.message);
-        return dbErrorHandler(res, error, 'get REO');
-    }
+    console.log('Error:', error.message);
+    return dbErrorHandler(res, error, 'get REO');
+}
 };
 
 
