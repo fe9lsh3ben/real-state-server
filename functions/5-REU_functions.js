@@ -323,8 +323,11 @@ const get_REU = (prisma) => async (req, res) => {
                 return await tokenMiddlewere(req, res,
                     () => officeAuthentication(req, res,
                         async () => {
-                            const { My_Office_ID, Unit_Type, minLatitude, maxLatitude, minLongitude, maxLongitude } = req.body;
+                            const { My_Office_ID, Unit_Type, Geo_Segments } = req.body;
 
+                            console.log(req.body);
+
+                            return res.status(400).send();
                             const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
                             const allValid = allCoords.every(coord => coord !== undefined && !isNaN(coord));
                             if (!allValid) {
