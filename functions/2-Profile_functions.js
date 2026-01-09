@@ -191,6 +191,7 @@ const login = (prisma) => async (req, res) => {
                 Profile_Image: true,
                 User_Phone: true,
                 City: true,
+                Fal_Licenses: true,
                 Session: {
                     select: {
                         Token: true,
