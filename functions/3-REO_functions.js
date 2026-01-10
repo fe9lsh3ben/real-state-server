@@ -267,7 +267,7 @@ const get_REO = (prisma) => async (req, res) => {
                                 Other: true,
                                 Office_Image: true,
                                 Office_Banner_Image: true,
-                                FalLicense: true,
+                                Fal_Licenses: true,
                                 City: true,
                                 District: true,
                                 Latitude: true,

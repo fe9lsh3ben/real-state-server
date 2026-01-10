@@ -253,7 +253,7 @@ model RealEstateOffice {
     Status    Office_Or_User_Status
 
     //Fall License is list becuase fall license has many types
-    FalLicense FalLicense[] @relation("OfficeAndLicense")
+    Fal_Licenses FalLicense[] @relation("OfficeAndLicense")
 
     Staff User[] @relation("OfficeStaff")
 

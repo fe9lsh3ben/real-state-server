@@ -13,7 +13,7 @@ const generate_FalLicense = (prisma) => async (req, res) => {
         const {
             Fal_License_Number,
             License_Type,
-            User_ID,
+            Office_Owner_ID,
             Issue_Date,
             Expiry_Date,
         } = req.body;
@@ -37,7 +37,7 @@ const generate_FalLicense = (prisma) => async (req, res) => {
             data: {
                 Fal_License_Number,
                 License_Type,
-                Owner_ID: User_ID,
+                Owner_ID: Office_Owner_ID,
                 Issue_Date: new Date(Issue_Date),
                 Expiry_Date: new Date(Expiry_Date),
                 Offices: {
@@ -81,7 +81,7 @@ const get_FalLicense = (prisma) => async (req, res) => {
         } else if (Office_ID) {
             let licenses = await prisma.realEstateOffice.findMany({
                 where: { Office_ID: parseInt(Office_ID) },
-                select: { FalLicense: true }
+                select: { Fal_Licenses: true }
             });
 
             if (licenses.length === 0) {

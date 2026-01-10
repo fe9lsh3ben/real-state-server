@@ -34,6 +34,7 @@ async function officeAuthentication(req, res, next) {
             return res.status(403).send({ 'message': 'You are not authorized to access this office, no relationship found.' });
         }
         req.body.My_Office_ID = office.Office_ID;
+        req.body.Office_Owner_ID = office.Owner_ID;
         next();
 
     } catch (error) {
@@ -53,19 +54,19 @@ async function markitingFalLicenseAuthentication(req, res, next) {
         const office = await prisma.realEstateOffice.findFirst({
             where: {
                 Office_ID: req.body.My_Office_ID,
-                FalLicense: {
+                Fal_Licenses: {
                     some: {
                         License_Type: "BROKERING_AND_MARKITING_FOR_VIRTUAL_PLATFORM"
                     }
                 }
             },
             include: {
-                FalLicense: true
+                Fal_Licenses: true
             }
 
         });
 
-        let License = office.FalLicense[0];
+        let License = office.Fal_Licenses[0];
         if (!License) return res.status(404).send({ 'message': 'No Marketing Fal License found.' });
 
         if (Date.now() > new Date(License.Expiry_Date).getTime())
