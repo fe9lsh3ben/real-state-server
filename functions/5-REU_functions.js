@@ -349,11 +349,11 @@ const get_REU = (prisma) => async (req, res) => {
                             const unit = await prisma.realEstateUnit.findMany({
                                 where: {
                                     ...filterWhere,
-                                    Unit_ADs: {
-                                        some: { // where or some
-                                            Hedden: false
-                                        }
-                                    }
+                                    // Unit_ADs: {
+                                    //     some: { // where or some
+                                    //         Hedden: false
+                                    //     }
+                                    // }
                                 },
                                 select: {
                                     Unit_ID: true,
