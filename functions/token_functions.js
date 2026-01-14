@@ -293,7 +293,6 @@ async function tokenVerifier(req) {
 async function tokenMiddlewere(req, res, next) {
 
     try {
-
         if (!req.headers['x-mobile-app']) {
             
             if (!req.cookies.refreshToken || !req.cookies.session) {
@@ -327,6 +326,7 @@ async function tokenMiddlewere(req, res, next) {
         if (req.query) {
             Object.assign(req.body, req.query);
         }
+        console.log('nexting')
         next();
 
     } catch (error) {
