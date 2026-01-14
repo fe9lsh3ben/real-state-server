@@ -323,13 +323,11 @@ const get_REU = (prisma) => async (req, res) => {
                 return await tokenMiddlewere(req, res,
                     () => officeAuthentication(req, res,
                         async () => {
-                            console.log('fetching...');
                             const { My_Office_ID, Unit_Type, Geo_Segments, Count, Zoom } = req.body;
                             //DO:NOW
                             // cheaper -> 1. The "Zoom Gate" Strategy(Simplest)Instead of trying to fetch everything everywhere, only fetch individual pins when the user is zoomed in enough to actually see them.Zoom < 12: Fetch nothing(or show "heatmaps/clusters").Zoom 12 - 15: Fetch pins using a larger cacheStep (e.g., $0.05$).Zoom 15 +: Fetch pins using your fine cacheStep($0.005$).To keep the cache working, you simply use a different prefix for the cache keys based on the "tier": "city_15_25" vs "detail_600_1000". 
                             // proficient -> 2.The "Clustering" Strategy(Professional Way)This is how Zillow or Airbnb handle it.You create an API endpoint that returns different data based on the zoom level.On the Server(Node.js / Prisma):When the client sends the request, it also sends the zoom.If Zoom is Low: Your Prisma query uses groupBy to return a list of "Clusters"(e.g., "This neighborhood has 50 houses") instead of every house object.If Zoom is High: Your Prisma query returns the full realEstateUnit objects.
                             if (!Zoom) return res.status(400).send({ 'message': "Zoom is required." });
-console.log(Count);
                             if (!Count) {
                                 const uniqueSegments = Array.from(new Set(JSON.parse(Geo_Segments).map(JSON.stringify))).map(JSON.parse);
                                 const geoFilters = uniqueSegments.map((segment) => ({
@@ -367,44 +365,46 @@ console.log(Count);
                                 if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
 
 
-                                console.log('fetched');
+                                console.log('this is:', unit);
                                 return res.status(200).send(unit);
                             } else {
-                                console.log('count');
+                                console.log(Count);
                                 const uniqueSegments = Array.from(new Set(JSON.parse(Geo_Segments).map(JSON.stringify))).map(JSON.parse);
-                                const geoFilters = uniqueSegments.map((segment) => ({
-                                    AND: [
-                                        { Latitude: { gte: segment.south, lte: segment.north } },
-                                        { Longitude: { gte: segment.west, lte: segment.east } },
-                                    ],
-                                }));
+                                // const geoFilters = uniqueSegments.map((segment) => ({
+                                //     AND: [
+                                //         { Latitude: { gte: segment.south, lte: segment.north } },
+                                //         { Longitude: { gte: segment.west, lte: segment.east } },
+                                //     ],
+                                // }));
 
                                 let filterWhere = {
                                     Affiliated_Office_ID: My_Office_ID,
                                     ...(Unit_Type && { Unit_Type }),
-                                    OR: geoFilters,
-
+                                    // OR: geoFilters,
                                 };
+                                let segmentsCount = [];
 
-
-                                const unit = await prisma.realEstateUnit.findMany({
-                                    _count: {
+                                // Use for...of to correctly await each iteration
+                                for (const segment of uniqueSegments) {
+                                    const unitCount = await prisma.realEstateUnit.count({
                                         where: {
                                             ...filterWhere,
-                                            // Unit_ADs: {
-                                            //     some: { // where or some
-                                            //         Hedden: false
-                                            //     }
-                                            // }
-                                        }
-                                    },
-                                });
+                                            AND: [
+                                                { Latitude: { gte: segment.south, lte: segment.north } },
+                                                { Longitude: { gte: segment.west, lte: segment.east } },
+                                            ],
+                                        },
+                                    });
 
-                                console.log(unit);
-                                // if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
+                                    if (unitCount > 0) {
+                                        segmentsCount.push({
+                                            ...segment,
+                                            count: unitCount
+                                        });
+                                    }
+                                }
 
-
-                                return res.status(200).send([]);
+                                return res.status(200).send(segmentsCount);
                             }
                         }));
 
