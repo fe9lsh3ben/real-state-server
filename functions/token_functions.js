@@ -326,7 +326,6 @@ async function tokenMiddlewere(req, res, next) {
         if (req.query) {
             Object.assign(req.body, req.query);
         }
-        console.log('nexting')
         next();
 
     } catch (error) {

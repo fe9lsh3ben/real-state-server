@@ -287,6 +287,8 @@ const get_REU = (prisma) => async (req, res) => {
                                     Deed_Owners: true,
                                     Initiator: true,
                                     Direction: true,
+                                    City: true,
+                                    District: true,
                                     Latitude: true,
                                     Longitude: true,
                                     Outdoor_Unit_Images: true,
