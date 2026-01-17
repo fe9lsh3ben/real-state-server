@@ -34,7 +34,7 @@ REU.route('/')
 // query parameters : 'http://127.0.0.1:3050/REU?Search_Type=custom_search&City=Rabigh&Unit_Type=LAND'
  
  
-.get(tokenMiddlewere, get_REU(prisma))
+// .get(tokenMiddlewere, get_REU(prisma))
 
 /*{"Unit_Type":"LAND", "RE_Name": "Al-asiri",
     "Deed_Owners":[{"Owner_Phone_Number": "0546737456", "Owner_GovID":"1089089089", "Owner_Name":"Sultan shabin"}],
@@ -58,6 +58,8 @@ REU.route('/')
  "Polygon": [[32.323,34.2322],[32.445,32.545],[32.897,32.123],[32.323,34.2322]]],
 }
  */
+REU.route('/get_REUs')
 
+.post(tokenMiddlewere, get_REU(prisma))
 
 module.exports = { REU }

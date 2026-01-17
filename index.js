@@ -10,19 +10,20 @@ const {
 
 var app = express()
 app.use(cors({
-  origin: 'http://localhost:51727',
-  credentials: true,
-  allowedHeaders: [
-    "x-csrf-token",
-    "x-mobile-app",
-    "Origin",
-    "Content-Type",
-    "X-Amz-Date",
-    "Authorization",
-    "X-Api-Key",
-    "X-Amz-Security-Token",
-    "locale"
-  ]
+    origin: 'http://localhost:51727',
+    credentials: true,
+    allowedHeaders: [
+        "x-csrf-token",
+        "x-mobile-app",
+        "Origin",
+        "Content-Type",
+        "X-Amz-Date",
+        "Authorization",
+        "X-Api-Key",
+        "X-Amz-Security-Token",
+        "locale"
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));
 
 
@@ -84,7 +85,7 @@ app.use('/contract', Contract);
 app.use('/notification', Notification);
 
 app.get('/', (req, res) => {
-    res.status(200).send({'message': 'Server is running!'});
+    res.status(200).send({ 'message': 'Server is running!' });
 })
 
 
@@ -94,7 +95,7 @@ app.get('/', (req, res) => {
 const port = 3050;
 const host = '127.0.0.1'
 var server = http.createServer(options, app);
- 
+
 server.listen(port, host, () => {
     console.log(`server listining at ${host}:${port}`)
 });
