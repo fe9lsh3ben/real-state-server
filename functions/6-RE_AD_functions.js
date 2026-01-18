@@ -578,7 +578,7 @@ const get_READ = (prisma) => async (req, res) => {
 
             case SearchType.OFFICE_MAP_PINS_VIEW: {
                 //Office_ID is required
-                Object.assign(req.body, req.query);
+                // Object.assign(req.body, req.query);
                 return officeAuthentication(req, res, async () => {
                     const {
                         Office_ID,
