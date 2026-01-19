@@ -422,7 +422,6 @@ const get_REU = (prisma) => async (req, res) => {
                                         Longitude: true,
                                     }
                                 });
-
                                 if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
 
 
