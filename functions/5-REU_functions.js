@@ -166,8 +166,9 @@ const generate_REU = (prisma) => async (req, res) => {
 }
 const get_REU = (prisma) => async (req, res) => {
     try {
-        console.log('A Point')
+        
         const { Search_Type } = req.body;
+        console.log(Search_Type)
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
                 const Unit_ID = parseInt(req.body.Unit_ID);
@@ -366,7 +367,7 @@ const get_REU = (prisma) => async (req, res) => {
                                     }
                                 }
                             });
-
+                            console.log(unit)
                             if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
 
                             unit.Unit_ADs = unit.Unit_ADs.map(ad => ({
