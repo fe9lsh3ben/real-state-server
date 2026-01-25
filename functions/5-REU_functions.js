@@ -122,7 +122,6 @@ const generate_REU = (prisma) => async (req, res) => {
 
         for (var c = 1; c < 10000; c++) {
             try {
-                console.log(c)
                 const point = randomPointInQuadrilateral();
                 dataEntry.Latitude = point.lat;
                 dataEntry.Longitude = point.lng;
@@ -168,7 +167,7 @@ const get_REU = (prisma) => async (req, res) => {
     try {
         
         const { Search_Type } = req.body;
-        console.log(Search_Type)
+        console.log(req.body)
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
                 const Unit_ID = parseInt(req.body.Unit_ID);
@@ -245,7 +244,7 @@ const get_REU = (prisma) => async (req, res) => {
             }
 
             case SearchType.MAP_PINS_VIEW: {
-                const { minLatitude, maxLatitude, minLongitude, maxLongitude } = req.body;
+                const { minLatitude, maxLatitude, minLongitude, maxLongitude, selection } = req.body;
 
                 const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
                 const allValid = allCoords.every(coord => coord !== undefined && !isNaN(coord));
@@ -253,15 +252,23 @@ const get_REU = (prisma) => async (req, res) => {
                 if (!allValid) {
                     return res.status(400).send({ 'message': "Invalid or incomplete map bounds. All four bounds must be valid." });
                 }
-
+                const whereFilters = {
+                    Latitude: {
+                        gte: parseFloat(minLatitude),
+                        lte: parseFloat(maxLatitude),
+                    },
+                    Longitude: {
+                        gte: parseFloat(minLongitude),
+                        lte: parseFloat(maxLongitude),
+                    },
+                    ...selection
+                };
                 const units = await prisma.realEstateUnit.findMany({
                     where: {
-
                         Latitude: {
                             gte: parseFloat(minLatitude),
                             lte: parseFloat(maxLatitude),
                         },
-
                         Longitude: {
                             gte: parseFloat(minLongitude),
                             lte: parseFloat(maxLongitude),
