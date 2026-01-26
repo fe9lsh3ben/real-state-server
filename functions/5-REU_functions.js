@@ -167,7 +167,6 @@ const get_REU = (prisma) => async (req, res) => {
     try {
         
         const { Search_Type } = req.body;
-        console.log(req.body)
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
                 const Unit_ID = parseInt(req.body.Unit_ID);
@@ -374,7 +373,6 @@ const get_REU = (prisma) => async (req, res) => {
                                     }
                                 }
                             });
-                            console.log(unit)
                             if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
 
                             unit.Unit_ADs = unit.Unit_ADs.map(ad => ({
@@ -435,7 +433,6 @@ const get_REU = (prisma) => async (req, res) => {
 
                                 return res.status(200).send(unit);
                             } else {
-                                console.log(Count);
                                 const uniqueSegments = Array.from(new Set(JSON.parse(Geo_Segments).map(JSON.stringify))).map(JSON.parse);
                                 // const geoFilters = uniqueSegments.map((segment) => ({
                                 //     AND: [
@@ -555,7 +552,6 @@ const update_REU = (prisma) => async (req, res) => {
                 return res.status(400).send({ 'message': 'At least one Deed owner is required.' });
             }
             updatedOwners = existingUnit.Deed_Owners.filter((owner) => {
-                console.log(owner.Owner_Name !== Deed_Owner_Delete.Owner_Name);
                 return owner.Owner_Name !== Deed_Owner_Delete.Owner_Name
             });
         }
