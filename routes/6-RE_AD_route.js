@@ -46,7 +46,7 @@ RE_AD.route('/')
   // query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&City=Rabigh&Unit_Type=LAND&Lower_Price=0&Upper_Price=10000&AD_Specifications=%7B%22Area%22%3A%22300%22%2C%22Ready%22%3A%22yes%22%7D'
 
 
-  .get(get_READ(prisma))
+  // .get(get_READ(prisma))
 
 
   .put(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, edit_READ(prisma))
@@ -54,5 +54,7 @@ RE_AD.route('/')
 
   .delete(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, delete_READ(prisma));
 
+RE_AD.route('/get_RE_ADs')
 
+.post(get_READ(prisma))
 module.exports = { RE_AD }

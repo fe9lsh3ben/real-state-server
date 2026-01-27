@@ -88,65 +88,65 @@ const generate_REU = (prisma) => async (req, res) => {
         }
  
         // start deletion
-        const A = { lat: 21.678748992186584, lng: 39.102817841913975 };
-        const B = { lat: 21.520355493220848, lng: 39.152973133236486 };
-        const C = { lat: 21.54241467033947, lng: 39.238689437049146 };
-        const D = { lat: 21.718387778028443, lng: 39.233110040129475 };
+        // const A = { lat: 21.678748992186584, lng: 39.102817841913975 };
+        // const B = { lat: 21.520355493220848, lng: 39.152973133236486 };
+        // const C = { lat: 21.54241467033947, lng: 39.238689437049146 };
+        // const D = { lat: 21.718387778028443, lng: 39.233110040129475 };
 
-        function randomPointInTriangle(p1, p2, p3) {
-            let r1 = Math.random();
-            let r2 = Math.random();
+        // function randomPointInTriangle(p1, p2, p3) {
+        //     let r1 = Math.random();
+        //     let r2 = Math.random();
 
-            // Ensure uniform distribution
-            if (r1 + r2 > 1) {
-                r1 = 1 - r1;
-                r2 = 1 - r2;
-            }
+        //     // Ensure uniform distribution
+        //     if (r1 + r2 > 1) {
+        //         r1 = 1 - r1;
+        //         r2 = 1 - r2;
+        //     }
 
-            return {
-                lat: p1.lat + r1 * (p2.lat - p1.lat) + r2 * (p3.lat - p1.lat),
-                lng: p1.lng + r1 * (p2.lng - p1.lng) + r2 * (p3.lng - p1.lng),
-            };
-        }
+        //     return {
+        //         lat: p1.lat + r1 * (p2.lat - p1.lat) + r2 * (p3.lat - p1.lat),
+        //         lng: p1.lng + r1 * (p2.lng - p1.lng) + r2 * (p3.lng - p1.lng),
+        //     };
+        // }
 
-        function randomPointInQuadrilateral() {
-            // Randomly pick one of the two triangles
-            if (Math.random() < 0.5) {
-                return randomPointInTriangle(A, B, C);
-            } else {
-                return randomPointInTriangle(A, C, D);
-            }
-        }
+        // function randomPointInQuadrilateral() {
+        //     // Randomly pick one of the two triangles
+        //     if (Math.random() < 0.5) {
+        //         return randomPointInTriangle(A, B, C);
+        //     } else {
+        //         return randomPointInTriangle(A, C, D);
+        //     }
+        // }
 
 
 
-        for (var c = 1; c < 10000; c++) {
-            try {
-                const point = randomPointInQuadrilateral();
-                dataEntry.Latitude = point.lat;
-                dataEntry.Longitude = point.lng;
-                dataEntry.Deed_Number = (Number(Deed_Number) + c).toString();
-                dataEntry.Unit_Type =
-                    validUnitTypes[Math.floor(Math.random() * validUnitTypes.length)];
+        // for (var c = 1; c < 10000; c++) {
+        //     try {
+        //         const point = randomPointInQuadrilateral();
+        //         dataEntry.Latitude = point.lat;
+        //         dataEntry.Longitude = point.lng;
+        //         dataEntry.Deed_Number = (Number(Deed_Number) + c).toString();
+        //         dataEntry.Unit_Type =
+        //             validUnitTypes[Math.floor(Math.random() * validUnitTypes.length)];
 
-                createdREUnit = await prisma.realEstateUnit.create({
-                    data: dataEntry
-                });
-            } catch (error) {
-                console.log(error.message);
-                if (error.code === 'P2002') {
-                    await prisma.realEstateUnit.delete({ where: { Unit_ID: createdREUnit.Unit_ID } });
-                    console.log('Error occurred and unit was deleted!');
-                }
-                break;
-            }
-        }
+        //         createdREUnit = await prisma.realEstateUnit.create({
+        //             data: dataEntry
+        //         });
+        //     } catch (error) {
+        //         console.log(error.message);
+        //         if (error.code === 'P2002') {
+        //             await prisma.realEstateUnit.delete({ where: { Unit_ID: createdREUnit.Unit_ID } });
+        //             console.log('Error occurred and unit was deleted!');
+        //         }
+        //         break;
+        //     }
+        // }
 
         // enf of deletion 
         //---
-        // createdREUnit = await prisma.realEstateUnit.create({
-        //     data: dataEntry
-        // });
+        createdREUnit = await prisma.realEstateUnit.create({
+            data: dataEntry
+        });
         //---
         res.status(201).json({
             message: "Real Estate Unit was successfully created!",
@@ -403,7 +403,6 @@ const get_REU = (prisma) => async (req, res) => {
                                         { Longitude: { gte: segment.west, lte: segment.east } },
                                     ],
                                 }));
-
                                 let filterWhere = {
                                     Affiliated_Office_ID: My_Office_ID,
                                     ...(Unit_Type && { Unit_Type }),

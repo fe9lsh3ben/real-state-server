@@ -60,6 +60,6 @@ REU.route('/')
  */
 REU.route('/get_REUs')
 
-.post(tokenMiddlewere, get_REU(prisma))
+.post( get_REU(prisma))
 
 module.exports = { REU }

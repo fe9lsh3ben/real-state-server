@@ -107,7 +107,6 @@ const get_READ = (prisma) => async (req, res) => {
 
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
-                Object.assign(req.body, req.query);
                 let AD_ID;
                 if (!req.body.AD_ID) {
                     return res.status(400).send({ 'message': "Ad ID is required." });
@@ -132,7 +131,6 @@ const get_READ = (prisma) => async (req, res) => {
                         AD_Specifications: true,
                         Unit_Price: true,
                         Unit_ID: true,
-                        Hedden: true,
                         Initiator_Office: {
                             select: {
                                 Office_Phone: true,
@@ -145,7 +143,7 @@ const get_READ = (prisma) => async (req, res) => {
                                 Direction: true,
                                 Latitude: true,
                                 Longitude: true,
-                                Outdoor_Unit_Images: true,
+                                ...(req.body.OutImages && { Outdoor_Unit_Images: true }),
                             }
                         },
 
@@ -169,130 +167,92 @@ const get_READ = (prisma) => async (req, res) => {
                     }
                 }
 
-                // if (!req.body.Office_ID || ad.Office_ID !== parseInt(req.body.Office_ID)) {
-                //     delete ad.Initiator;
-                //     delete ad.Visable_Zoom;
-                //     delete ad.Hedden;
-                // };   
-
                 return res.status(200).send([ad]);
             }
 
             case SearchType.MAP_PINS_VIEW: {
-                const {
-                    Office_ID,
-                    AD_Type,
-                    AD_Unit_Type,
-                    AD_Specifications,
-                    Lower_Price,
-                    Upper_Price,
+                const { My_Office_ID, Unit_Type, Geo_Segments, Count, Zoom } = req.body;
+                //DO:NOW
+                // cheaper -> 1. The "Zoom Gate" Strategy(Simplest)Instead of trying to fetch everything everywhere, only fetch individual pins when the user is zoomed in enough to actually see them.Zoom < 12: Fetch nothing(or show "heatmaps/clusters").Zoom 12 - 15: Fetch pins using a larger cacheStep (e.g., $0.05$).Zoom 15 +: Fetch pins using your fine cacheStep($0.005$).To keep the cache working, you simply use a different prefix for the cache keys based on the "tier": "city_15_25" vs "detail_600_1000". 
+                // proficient -> 2.The "Clustering" Strategy(Professional Way)This is how Zillow or Airbnb handle it.You create an API endpoint that returns different data based on the zoom level.On the Server(Node.js / Prisma):When the client sends the request, it also sends the zoom.If Zoom is Low: Your Prisma query uses groupBy to return a list of "Clusters"(e.g., "This neighborhood has 50 houses") instead of every house object.If Zoom is High: Your Prisma query returns the full realEstateUnit objects.
+                // if (!Zoom) return res.status(400).send({ 'message': "Zoom is required." });
+                if (!Count) {
+                    const uniqueSegments = Array.from(new Set(JSON.parse(Geo_Segments).map(JSON.stringify))).map(JSON.parse);
+                    console.log(uniqueSegments);
+                    return res.status(200).send();
+                    // const uniqueSegments = Array.from(new Set(JSON.parse(Geo_Segments).map(JSON.stringify))).map(JSON.parse);
+                    const geoFilters = uniqueSegments.map((segment) => ({
+                        AND: [
+                            { Latitude: { gte: segment.south, lte: segment.north } },
+                            { Longitude: { gte: segment.west, lte: segment.east } },
+                        ],
+                    }));
+                    let filterWhere = {
+                        Affiliated_Office_ID: My_Office_ID,
+                        ...(Unit_Type && { Unit_Type }),
+                        OR: geoFilters,
 
-                    Region,
-                    City,
-                    District,
-                    Direction,
-                    minLatitude,
-                    maxLatitude,
-                    minLongitude,
-                    maxLongitude
-                } = req.body;
-
-                if (!AD_Type || !AD_Unit_Type) return res.status(400).send({ 'message': "Missing AD type and AD unit type are required." });
-
-                if (!validAdTypes.includes(AD_Type)) {
-                    return res.status(400).send({ 'message': "Invalid AD_Type value." });
-                }
-
-                if (!validUnitTypes.includes(AD_Unit_Type)) {
-                    return res.status(400).send({ 'message': "Invalid AD_Unit_Type value." });
-                }
-
-                const where = {};
-                where.AND = [{
-                    Hedden: false,
-                    Unit: {
-                        is: {}
-                    }
-                }];
-
-                if (Office_ID) {
-                    if (isNaN(Office_ID)) return res.status(400).send({ 'message': "Invalid or missing Office ID." });
-                    where.AND.push({ Office_ID: Office_ID });
-                }
+                    };
 
 
-                if (Lower_Price) {
-                    if (isNaN(Lower_Price) || Lower_Price < 0) return res.status(400).send({ 'message': "Invalid or missing Lower Price." });
-                    where.AND.push({ Unit_Price: { gte: Lower_Price } });
-
-                }
-
-                if (Upper_Price) {
-                    if (isNaN(Upper_Price) || Upper_Price < 0) return res.status(400).send({ 'message': "Invalid or missing Upper Price." });
-                    where.AND.push({ Unit_Price: { lte: Upper_Price } });
-
-                }
-
-
-                if (AD_Specifications) {
-                    try {
-                        const parsedSpecs = JSON.parse(AD_Specifications);
-
-                        const specFilters = Object.entries(parsedSpecs).map(([key, value]) => ({
-                            AD_Specifications: {
-                                path: [key],
-                                equals: value
-                            }
-                        }));
-
-                        // Add to existing AND clause if present
-
-                        where.AND.push(...specFilters);
-
-
-                    } catch (err) {
-                        return res.status(400).send({ 'message': "Invalid AD Content JSON format." });
-                    }
-                }
-
-                // Location filters
-                const unitWhere = where.AND[0].Unit.is;
-                if (Region) unitWhere.Region = Region;
-                if (City) unitWhere.City = City;
-                if (District) unitWhere.District = District;
-                if (Direction) unitWhere.Direction = Direction;
-
-                // Geo box
-                const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
-                const allValid = allCoords.every(coord => coord !== undefined && !isNaN(coord));
-
-                if (!allValid) {
-                    return res.status(400).send({ 'message': "Invalid or incomplete map bounds. All four bounds must be valid." });
-                }
-
-                unitWhere.Latitude = { gte: Number(minLatitude), lte: Number(maxLatitude) };
-                unitWhere.Longitude = { gte: Number(minLongitude), lte: Number(maxLongitude) };
-
-
-
-                forMapSelections = {
-                    AD_Title: true,
-                    Unit_Price: true,
-                    Visable_Zoom: true,
-                    Unit: {
+                    const unit = await prisma.realEstateUnit.findMany({
+                        where: {
+                            ...filterWhere,
+                            // Unit_ADs: {
+                            //     some: { // where or some
+                            //         Hedden: false
+                            //     }
+                            // }
+                        },
                         select: {
+                            Unit_ID: true,
+                            Unit_Type: true,
                             Latitude: true,
                             Longitude: true,
                         }
+                    });
+                    if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
+
+
+                    return res.status(200).send(unit);
+                } else {
+                    const uniqueSegments = Array.from(new Set(JSON.parse(Geo_Segments).map(JSON.stringify))).map(JSON.parse);
+                    // const geoFilters = uniqueSegments.map((segment) => ({
+                    //     AND: [
+                    //         { Latitude: { gte: segment.south, lte: segment.north } },
+                    //         { Longitude: { gte: segment.west, lte: segment.east } },
+                    //     ],
+                    // }));
+
+                    let filterWhere = {
+                        Affiliated_Office_ID: My_Office_ID,
+                        ...(Unit_Type && { Unit_Type }),
+                        // OR: geoFilters,
+                    };
+                    let segmentsCount = [];
+
+                    // Use for...of to correctly await each iteration
+                    for (const segment of uniqueSegments) {
+                        const unitCount = await prisma.realEstateUnit.count({
+                            where: {
+                                ...filterWhere,
+                                AND: [
+                                    { Latitude: { gte: segment.south, lte: segment.north } },
+                                    { Longitude: { gte: segment.west, lte: segment.east } },
+                                ],
+                            },
+                        });
+
+                        if (unitCount > 0) {
+                            segmentsCount.push({
+                                ...segment,
+                                count: unitCount
+                            });
+                        }
                     }
+
+                    return res.status(200).send(segmentsCount);
                 }
-
-                const ads = await prisma.realEstateAD.findMany({
-                    where,
-                    select: forMapSelections
-                });
-
-                return res.status(200).send(ads);
 
             }
 
