@@ -99,21 +99,22 @@ const generate_READ = (prisma) => async (req, res) => {
 const get_READ = (prisma) => async (req, res) => {
 
     try {
+
         // Ensure body exists before merging
         req.body = req.body || {};
-        Object.assign(req.body, req.query);
 
         const { Search_Type } = req.body;
 
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
-                let AD_ID;
+                let AD_ID = req.body.AD_ID;
                 if (!req.body.AD_ID) {
                     return res.status(400).send({ 'message': "Ad ID is required." });
                 }
                 if (typeof req.body.AD_ID === 'string') {
                     AD_ID = parseInt(req.body.AD_ID);
                 }
+                
                 if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid Ad ID." });
 
                 const ad = await prisma.realEstateAD.findFirst({
@@ -157,7 +158,6 @@ const get_READ = (prisma) => async (req, res) => {
                         select: {
                             AD_ID: true,
                         },
-
                     });
                     if (lastAd.AD_ID >= AD_ID) {
                         return res.status(400).send({ 'message': 'Real Estate ad was deleted.' });
@@ -166,21 +166,24 @@ const get_READ = (prisma) => async (req, res) => {
                         return res.status(404).send({ 'message': 'Real Estate ad not found.' });
                     }
                 }
-
                 return res.status(200).send([ad]);
             }
 
             case SearchType.MAP_PINS_VIEW: {
-                const { My_Office_ID, Unit_Type, Geo_Segments, Count, Zoom } = req.body;
+
+                const {
+                    // My_Office_ID, for office only
+                    Unit_Type,
+                    AD_Type,
+                    Geo_Segments,
+                    Count,
+                    Zoom } = req.body;
                 //DO:NOW
                 // cheaper -> 1. The "Zoom Gate" Strategy(Simplest)Instead of trying to fetch everything everywhere, only fetch individual pins when the user is zoomed in enough to actually see them.Zoom < 12: Fetch nothing(or show "heatmaps/clusters").Zoom 12 - 15: Fetch pins using a larger cacheStep (e.g., $0.05$).Zoom 15 +: Fetch pins using your fine cacheStep($0.005$).To keep the cache working, you simply use a different prefix for the cache keys based on the "tier": "city_15_25" vs "detail_600_1000". 
                 // proficient -> 2.The "Clustering" Strategy(Professional Way)This is how Zillow or Airbnb handle it.You create an API endpoint that returns different data based on the zoom level.On the Server(Node.js / Prisma):When the client sends the request, it also sends the zoom.If Zoom is Low: Your Prisma query uses groupBy to return a list of "Clusters"(e.g., "This neighborhood has 50 houses") instead of every house object.If Zoom is High: Your Prisma query returns the full realEstateUnit objects.
                 // if (!Zoom) return res.status(400).send({ 'message': "Zoom is required." });
                 if (!Count) {
-                    const uniqueSegments = Array.from(new Set(JSON.parse(Geo_Segments).map(JSON.stringify))).map(JSON.parse);
-                    console.log(uniqueSegments);
-                    return res.status(200).send();
-                    // const uniqueSegments = Array.from(new Set(JSON.parse(Geo_Segments).map(JSON.stringify))).map(JSON.parse);
+                    const uniqueSegments = Array.from(new Set(Geo_Segments));
                     const geoFilters = uniqueSegments.map((segment) => ({
                         AND: [
                             { Latitude: { gte: segment.south, lte: segment.north } },
@@ -188,33 +191,36 @@ const get_READ = (prisma) => async (req, res) => {
                         ],
                     }));
                     let filterWhere = {
-                        Affiliated_Office_ID: My_Office_ID,
-                        ...(Unit_Type && { Unit_Type }),
+                        // Affiliated_Office_ID: My_Office_ID,
                         OR: geoFilters,
 
                     };
 
 
-                    const unit = await prisma.realEstateUnit.findMany({
+                    const ads = await prisma.realEstateAD.findMany({
                         where: {
-                            ...filterWhere,
-                            // Unit_ADs: {
-                            //     some: { // where or some
-                            //         Hedden: false
-                            //     }
-                            // }
+                            ...(AD_Type && { AD_Type }),
+                            ...(Unit_Type && { Unit_Type }),
+                            Unit: {
+                                ...filterWhere,
+                            }
                         },
                         select: {
-                            Unit_ID: true,
-                            Unit_Type: true,
-                            Latitude: true,
-                            Longitude: true,
+                            AD_ID: true,
+                            AD_Type: true,
+                            AD_Unit_Type: true,
+                            Unit: {
+                                select: {
+                                    Latitude: true,
+                                    Longitude: true,
+                                }
+                            },
                         }
                     });
-                    if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
+                    if (!ads) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
+                    console.log(ads);
 
-
-                    return res.status(200).send(unit);
+                    return res.status(200).send(ads);
                 } else {
                     const uniqueSegments = Array.from(new Set(JSON.parse(Geo_Segments).map(JSON.stringify))).map(JSON.parse);
                     // const geoFilters = uniqueSegments.map((segment) => ({
