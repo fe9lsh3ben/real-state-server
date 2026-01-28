@@ -144,7 +144,7 @@ const get_READ = (prisma) => async (req, res) => {
                                 Direction: true,
                                 Latitude: true,
                                 Longitude: true,
-                                ...(req.body.OutImages && { Outdoor_Unit_Images: true }),
+                                ...(req.body.Out_Images && { Outdoor_Unit_Images: true }),
                             }
                         },
 
