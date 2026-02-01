@@ -2,6 +2,7 @@ const { logAdDeletion } = require('./deletion_log');
 const { tokenMiddlewere } = require('./token_functions');
 const { dbErrorHandler, SearchType } = require('../libraries/utilities');
 const { officeAuthentication, REUAuthentication, READAuthentication } = require('../middlewares/authentications');
+const { equals } = require('validator');
 
 
 
@@ -114,7 +115,7 @@ const get_READ = (prisma) => async (req, res) => {
                 if (typeof req.body.AD_ID === 'string') {
                     AD_ID = parseInt(req.body.AD_ID);
                 }
-                
+
                 if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid Ad ID." });
 
                 const ad = await prisma.realEstateAD.findFirst({
@@ -170,18 +171,30 @@ const get_READ = (prisma) => async (req, res) => {
             }
 
             case SearchType.MAP_PINS_VIEW: {
-
                 const {
-                    // My_Office_ID, for office only
-                    Unit_Type,
-                    AD_Type,
                     Geo_Segments,
                     Count,
-                    Zoom } = req.body;
-                //DO:NOW
-                // cheaper -> 1. The "Zoom Gate" Strategy(Simplest)Instead of trying to fetch everything everywhere, only fetch individual pins when the user is zoomed in enough to actually see them.Zoom < 12: Fetch nothing(or show "heatmaps/clusters").Zoom 12 - 15: Fetch pins using a larger cacheStep (e.g., $0.05$).Zoom 15 +: Fetch pins using your fine cacheStep($0.005$).To keep the cache working, you simply use a different prefix for the cache keys based on the "tier": "city_15_25" vs "detail_600_1000". 
-                // proficient -> 2.The "Clustering" Strategy(Professional Way)This is how Zillow or Airbnb handle it.You create an API endpoint that returns different data based on the zoom level.On the Server(Node.js / Prisma):When the client sends the request, it also sends the zoom.If Zoom is Low: Your Prisma query uses groupBy to return a list of "Clusters"(e.g., "This neighborhood has 50 houses") instead of every house object.If Zoom is High: Your Prisma query returns the full realEstateUnit objects.
-                // if (!Zoom) return res.status(400).send({ 'message': "Zoom is required." });
+                    AD_Unit_Type,
+                    AD_Type,
+                    Unit_Price,
+                    AD_Specifications, // e.g., { Land_Area: 4500, Rooms: 3, Balcony: true }
+                    City,
+                    District,
+                } = req.body;
+                
+
+                if (AD_Type){
+                    if (!validAdTypes.includes(AD_Type)) {
+                        return res.status(400).send({ 'message': "Invalid AD_Type value."});
+                    }
+                }
+                console.log(req.body)
+                if (AD_Unit_Type){
+                    if (!validUnitTypes.includes(AD_Unit_Type)) {
+                        return res.status(400).send({ 'message': "Invalid AD_Unit_Type value." });
+                    }
+                }
+
                 if (!Count) {
                     const uniqueSegments = Array.from(new Set(Geo_Segments));
                     const geoFilters = uniqueSegments.map((segment) => ({
@@ -190,35 +203,74 @@ const get_READ = (prisma) => async (req, res) => {
                             { Longitude: { gte: segment.west, lte: segment.east } },
                         ],
                     }));
-                    let filterWhere = {
-                        // Affiliated_Office_ID: My_Office_ID,
-                        OR: geoFilters,
-
-                    };
 
 
+                    let refinedSpecFilters = [];
+                    if (AD_Specifications) {
+                        refinedSpecFilters = Object.keys(AD_Specifications).map((key) => {
+                            const value = AD_Specifications[key];
+
+                            if (key.includes('Area')) {
+                                // Range logic for Area
+                                return {
+                                    AD_Specifications: {
+                                        path: [key],
+                                        gte: value - 25,
+                                        lte: value + 25,
+                                    }
+                                };
+                            } else {
+                                // Exact match for Rooms, Parking, etc.
+                                return {
+                                    AD_Specifications: {
+                                        path: [key],
+                                        equals: value,
+                                    }
+                                };
+                            }
+                        });
+                    }
+                    
                     const ads = await prisma.realEstateAD.findMany({
                         where: {
                             ...(AD_Type && { AD_Type }),
-                            ...(Unit_Type && { Unit_Type }),
+                            ...(AD_Unit_Type && { AD_Unit_Type }),
+                            ...(Unit_Price && {
+                                Unit_Price: {
+                                    gte: Unit_Price - 5000,
+                                    lte: Unit_Price + 5000
+                                }
+                            }),
+
+                            // 2. Combine the JSON filters using AND
+                            AND: refinedSpecFilters.length > 0 ? refinedSpecFilters : undefined,
+
                             Unit: {
-                                ...filterWhere,
+                                OR: (geoFilters.length > 0) ? geoFilters : undefined,
+                                ...(City && { City }),
+                                ...(District && { District }),
                             }
                         },
                         select: {
                             AD_ID: true,
                             AD_Type: true,
                             AD_Unit_Type: true,
+                            AD_Title: true,
+                            Unit_Price: true,
                             Unit: {
                                 select: {
                                     Latitude: true,
                                     Longitude: true,
+                                    Unit_ID: true
                                 }
                             },
                         }
                     });
-                    if (!ads) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
+                    console.log('=============')
                     console.log(ads);
+                    if (!ads || ads.length === 0) {
+                        return res.status(404).send({ 'message': 'Real Estate unit not found.' });
+                    }
 
                     return res.status(200).send(ads);
                 } else {
@@ -232,7 +284,7 @@ const get_READ = (prisma) => async (req, res) => {
 
                     let filterWhere = {
                         Affiliated_Office_ID: My_Office_ID,
-                        ...(Unit_Type && { Unit_Type }),
+                        ...(AD_Unit_Type && { AD_Unit_Type }),
                         // OR: geoFilters,
                     };
                     let segmentsCount = [];

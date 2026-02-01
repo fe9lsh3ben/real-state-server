@@ -11,7 +11,6 @@ const Contract_Query_Type = Object.freeze({
 
 async function officeAuthentication(req, res, next) {
     try {
-        console.log(req.body)
         if (!req.body.My_Office_ID) {
             return res.status(400).send({ 'message': 'Your Office ID is required.' });
         }
