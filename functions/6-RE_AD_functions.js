@@ -103,7 +103,6 @@ const get_READ = (prisma) => async (req, res) => {
 
         // Ensure body exists before merging
         req.body = req.body || {};
-
         const { Search_Type } = req.body;
 
         switch (Search_Type) {
@@ -182,13 +181,13 @@ const get_READ = (prisma) => async (req, res) => {
                     District,
                 } = req.body;
                 
-
+                console.log(Object.keys(req.body))
                 if (AD_Type){
                     if (!validAdTypes.includes(AD_Type)) {
                         return res.status(400).send({ 'message': "Invalid AD_Type value."});
                     }
                 }
-                console.log(req.body)
+                console.log(Unit_Price)
                 if (AD_Unit_Type){
                     if (!validUnitTypes.includes(AD_Unit_Type)) {
                         return res.status(400).send({ 'message': "Invalid AD_Unit_Type value." });
@@ -196,13 +195,13 @@ const get_READ = (prisma) => async (req, res) => {
                 }
 
                 if (!Count) {
-                    const uniqueSegments = Array.from(new Set(Geo_Segments));
-                    const geoFilters = uniqueSegments.map((segment) => ({
-                        AND: [
-                            { Latitude: { gte: segment.south, lte: segment.north } },
-                            { Longitude: { gte: segment.west, lte: segment.east } },
-                        ],
-                    }));
+                    // const uniqueSegments = Array.from(new Set(Geo_Segments));
+                    // const geoFilters = uniqueSegments.map((segment) => ({
+                    //     AND: [
+                    //         { Latitude: { gte: segment.south, lte: segment.north } },
+                    //         { Longitude: { gte: segment.west, lte: segment.east } },
+                    //     ],
+                    // }));
 
 
                     let refinedSpecFilters = [];
@@ -230,7 +229,7 @@ const get_READ = (prisma) => async (req, res) => {
                             }
                         });
                     }
-                    
+                    console.log(AD_Unit_Type)
                     const ads = await prisma.realEstateAD.findMany({
                         where: {
                             ...(AD_Type && { AD_Type }),
@@ -245,11 +244,11 @@ const get_READ = (prisma) => async (req, res) => {
                             // 2. Combine the JSON filters using AND
                             AND: refinedSpecFilters.length > 0 ? refinedSpecFilters : undefined,
 
-                            Unit: {
-                                OR: (geoFilters.length > 0) ? geoFilters : undefined,
-                                ...(City && { City }),
-                                ...(District && { District }),
-                            }
+                            // Unit: {
+                            //     OR: (geoFilters.length > 0) ? geoFilters : undefined,
+                            //     ...(City && { City }),
+                            //     ...(District && { District }),
+                            // }
                         },
                         select: {
                             AD_ID: true,
