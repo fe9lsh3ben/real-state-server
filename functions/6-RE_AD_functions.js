@@ -3,6 +3,7 @@ const { tokenMiddlewere } = require('./token_functions');
 const { dbErrorHandler, SearchType } = require('../libraries/utilities');
 const { officeAuthentication, REUAuthentication, READAuthentication } = require('../middlewares/authentications');
 const { equals } = require('validator');
+const { DOUBLE } = require('sequelize');
 
 
 
@@ -116,7 +117,6 @@ const get_READ = (prisma) => async (req, res) => {
                 }
 
                 if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid Ad ID." });
-
                 const ad = await prisma.realEstateAD.findFirst({
                     where: {
                         AD_ID,
@@ -180,42 +180,64 @@ const get_READ = (prisma) => async (req, res) => {
                     City,
                     District,
                 } = req.body;
-                
-                console.log(Object.keys(req.body))
-                if (AD_Type){
+
+                if (AD_Type) {
                     if (!validAdTypes.includes(AD_Type)) {
-                        return res.status(400).send({ 'message': "Invalid AD_Type value."});
+                        return res.status(400).send({ 'message': "Invalid AD_Type value." });
                     }
                 }
-                console.log(Unit_Price)
-                if (AD_Unit_Type){
+                if (AD_Unit_Type) {
                     if (!validUnitTypes.includes(AD_Unit_Type)) {
                         return res.status(400).send({ 'message': "Invalid AD_Unit_Type value." });
                     }
                 }
 
                 if (!Count) {
-                    // const uniqueSegments = Array.from(new Set(Geo_Segments));
-                    // const geoFilters = uniqueSegments.map((segment) => ({
-                    //     AND: [
-                    //         { Latitude: { gte: segment.south, lte: segment.north } },
-                    //         { Longitude: { gte: segment.west, lte: segment.east } },
-                    //     ],
-                    // }));
+                    let geoFilters = [];
+                    if (Geo_Segments) {
+                        const uniqueSegments = Array.from(new Set(Geo_Segments));
+                        geoFilters = uniqueSegments.map((segment) => ({
+                            AND: [
+                                { Latitude: { gte: segment.south, lte: segment.north } },
+                                { Longitude: { gte: segment.west, lte: segment.east } },
+                            ],
+                        }));
+                    }
 
 
                     let refinedSpecFilters = [];
                     if (AD_Specifications) {
+                        let tolerance;
+                        switch (AD_Unit_Type) {
+                            case "LAND":
+                                tolerance = 200;
+                                break;
+                            case "BUILDING":
+                                tolerance = 200;
+                                break;
+                            case "VILLA":
+                                console.log(AD_Specifications)
+                                tolerance = 200;
+                                break;
+                            case "WEDDING_HALL":
+                                tolerance = 500;
+                                break;
+                            case "OTHER":
+                                break;
+                            default:
+                                tolerance = 100;
+                                break;
+                        }
+
                         refinedSpecFilters = Object.keys(AD_Specifications).map((key) => {
                             const value = AD_Specifications[key];
-
+                            //Fix
                             if (key.includes('Area')) {
-                                // Range logic for Area
                                 return {
                                     AD_Specifications: {
                                         path: [key],
-                                        gte: value - 25,
-                                        lte: value + 25,
+                                        gte: parseFloat(value) - tolerance,
+                                        lte: parseFloat(value) + tolerance,
                                     }
                                 };
                             } else {
@@ -244,11 +266,11 @@ const get_READ = (prisma) => async (req, res) => {
                             // 2. Combine the JSON filters using AND
                             AND: refinedSpecFilters.length > 0 ? refinedSpecFilters : undefined,
 
-                            // Unit: {
-                            //     OR: (geoFilters.length > 0) ? geoFilters : undefined,
-                            //     ...(City && { City }),
-                            //     ...(District && { District }),
-                            // }
+                            Unit: {
+                                OR: (geoFilters.length > 0) ? geoFilters : undefined,
+                                ...(City && { City }),
+                                ...(District && { District }),
+                            }
                         },
                         select: {
                             AD_ID: true,
@@ -265,8 +287,7 @@ const get_READ = (prisma) => async (req, res) => {
                             },
                         }
                     });
-                    console.log('=============')
-                    console.log(ads);
+
                     if (!ads || ads.length === 0) {
                         return res.status(404).send({ 'message': 'Real Estate unit not found.' });
                     }
