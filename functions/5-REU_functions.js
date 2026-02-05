@@ -9,7 +9,7 @@ const { logAdDeletion } = require('./deletion_log');
 
 const validUnitTypes = [
     "LAND", "BUILDING", "APARTMENT", "VILLA", "STORE", "FARM",
-    "CORRAL", "STORAGE", "OFFICE", "SHOWROOM", "WEDDING_HALL", "OTHER"
+    "CORRAL", "STORAGE", "OFFICE", "SHOWROOM", "WEDDING_HALL", "FACTORY", "OTHER"
 ];
 
 const generate_REU = (prisma) => async (req, res) => {
@@ -86,7 +86,7 @@ const generate_REU = (prisma) => async (req, res) => {
         if (req.body.Polygon) {
             dataEntry.Polygon = await prisma.realEstateUnit.create_WKT_Polygon(req.body.Polygon)
         }
- 
+
         // start deletion
         // const A = { lat: 21.678748992186584, lng: 39.102817841913975 };
         // const B = { lat: 21.520355493220848, lng: 39.152973133236486 };
@@ -165,7 +165,7 @@ const generate_REU = (prisma) => async (req, res) => {
 }
 const get_REU = (prisma) => async (req, res) => {
     try {
-        
+
         const { Search_Type } = req.body;
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {

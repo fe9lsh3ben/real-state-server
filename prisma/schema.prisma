@@ -69,6 +69,7 @@ enum Real_Estate_Unit_Type {
     OFFICE
     SHOWROOM
     WEDDING_HALL
+    FACTORY
     OTHER
 
     @@map("RealEstateType")

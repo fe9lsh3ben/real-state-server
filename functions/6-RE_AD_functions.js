@@ -10,7 +10,7 @@ const { DOUBLE } = require('sequelize');
 const validAdTypes = ["RENT", "SELL", "INVESTMENT", "SERVICE"];
 const validUnitTypes = [
     "LAND", "BUILDING", "APARTMENT", "VILLA", "STORE", "FARM",
-    "CORRAL", "STORAGE", "OFFICE", "SHOWROOM", "WEDDING_HALL", "OTHER"
+    "CORRAL", "STORAGE", "OFFICE", "SHOWROOM", "WEDDING_HALL","FACTORY", "OTHER"
 ];
 
 
