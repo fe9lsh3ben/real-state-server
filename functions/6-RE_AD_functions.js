@@ -10,7 +10,7 @@ const { DOUBLE } = require('sequelize');
 const validAdTypes = ["RENT", "SELL", "INVESTMENT", "SERVICE"];
 const validUnitTypes = [
     "LAND", "BUILDING", "APARTMENT", "VILLA", "STORE", "FARM",
-    "CORRAL", "STORAGE", "OFFICE", "SHOWROOM", "WEDDING_HALL","FACTORY", "OTHER"
+    "CORRAL", "STORAGE", "OFFICE", "SHOWROOM", "WEDDING_HALL", "FACTORY", "OTHER"
 ];
 
 
@@ -180,7 +180,7 @@ const get_READ = (prisma) => async (req, res) => {
                     City,
                     District,
                 } = req.body;
-
+                console.log(AD_Type)
                 if (AD_Type) {
                     if (!validAdTypes.includes(AD_Type)) {
                         return res.status(400).send({ 'message': "Invalid AD_Type value." });
@@ -205,29 +205,11 @@ const get_READ = (prisma) => async (req, res) => {
                     }
 
 
-                    let refinedSpecFilters = [];
+                     
+                    
                     if (AD_Specifications) {
-                        let tolerance;
-                        switch (AD_Unit_Type) {
-                            case "LAND":
-                                tolerance = 200;
-                                break;
-                            case "BUILDING":
-                                tolerance = 200;
-                                break;
-                            case "VILLA":
-                                console.log(AD_Specifications)
-                                tolerance = 200;
-                                break;
-                            case "WEDDING_HALL":
-                                tolerance = 500;
-                                break;
-                            case "OTHER":
-                                break;
-                            default:
-                                tolerance = 100;
-                                break;
-                        }
+
+
 
                         refinedSpecFilters = Object.keys(AD_Specifications).map((key) => {
                             const value = AD_Specifications[key];
@@ -236,8 +218,8 @@ const get_READ = (prisma) => async (req, res) => {
                                 return {
                                     AD_Specifications: {
                                         path: [key],
-                                        gte: parseFloat(value) - tolerance,
-                                        lte: parseFloat(value) + tolerance,
+                                        gte: parseFloat(value) - areaTolerance ?? 0,
+                                        lte: parseFloat(value) + areaTolerance ?? 0,
                                     }
                                 };
                             } else {
@@ -251,15 +233,15 @@ const get_READ = (prisma) => async (req, res) => {
                             }
                         });
                     }
-                    console.log(AD_Unit_Type)
+
                     const ads = await prisma.realEstateAD.findMany({
                         where: {
                             ...(AD_Type && { AD_Type }),
                             ...(AD_Unit_Type && { AD_Unit_Type }),
                             ...(Unit_Price && {
                                 Unit_Price: {
-                                    gte: Unit_Price - 5000,
-                                    lte: Unit_Price + 5000
+                                    gte: Unit_Price - priceTolarence ?? 0,
+                                    lte: Unit_Price + priceTolarence ?? 0
                                 }
                             }),
 
@@ -287,7 +269,7 @@ const get_READ = (prisma) => async (req, res) => {
                             },
                         }
                     });
-
+                    console.log(ads)
                     if (!ads || ads.length === 0) {
                         return res.status(404).send({ 'message': 'Real Estate unit not found.' });
                     }
