@@ -176,11 +176,13 @@ const get_READ = (prisma) => async (req, res) => {
                     AD_Unit_Type,
                     AD_Type,
                     Unit_Price,
+                    Price_Tolerance,
                     AD_Specifications, // e.g., { Land_Area: 4500, Rooms: 3, Balcony: true }
+                    Area_Tolerance,
                     City,
                     District,
                 } = req.body;
-                console.log(AD_Type)
+                console.log(Area_Tolerance);
                 if (AD_Type) {
                     if (!validAdTypes.includes(AD_Type)) {
                         return res.status(400).send({ 'message': "Invalid AD_Type value." });
@@ -205,11 +207,9 @@ const get_READ = (prisma) => async (req, res) => {
                     }
 
 
-                     
-                    
+
+                    let refinedSpecFilters = [];
                     if (AD_Specifications) {
-
-
 
                         refinedSpecFilters = Object.keys(AD_Specifications).map((key) => {
                             const value = AD_Specifications[key];
@@ -218,8 +218,8 @@ const get_READ = (prisma) => async (req, res) => {
                                 return {
                                     AD_Specifications: {
                                         path: [key],
-                                        gte: parseFloat(value) - areaTolerance ?? 0,
-                                        lte: parseFloat(value) + areaTolerance ?? 0,
+                                        gte: parseFloat(value) - Area_Tolerance ?? 0,
+                                        lte: parseFloat(value) + Area_Tolerance ?? 0,
                                     }
                                 };
                             } else {
@@ -240,8 +240,8 @@ const get_READ = (prisma) => async (req, res) => {
                             ...(AD_Unit_Type && { AD_Unit_Type }),
                             ...(Unit_Price && {
                                 Unit_Price: {
-                                    gte: Unit_Price - priceTolarence ?? 0,
-                                    lte: Unit_Price + priceTolarence ?? 0
+                                    gte: Unit_Price - Price_Tolerance ?? 0,
+                                    lte: Unit_Price + Price_Tolerance ?? 0
                                 }
                             }),
 
