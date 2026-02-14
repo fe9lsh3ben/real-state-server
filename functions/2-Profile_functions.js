@@ -140,7 +140,7 @@ const signup = (prisma) => async (req, res) => {
 const login = (prisma) => async (req, res) => {
     try {
         const { Username, Password } = req.body;
-
+        
         // Find user by username
         const user = await prisma.user.findUnique({
             where: { Username },
@@ -222,6 +222,7 @@ const login = (prisma) => async (req, res) => {
                 },
             }
         });
+        
         updatedUser.RE_Offices = updatedUser.RE_Offices.map((office) => {
             office.My_Office_ID = office.Office_ID;
             delete office.Office_ID;
@@ -264,6 +265,7 @@ const login = (prisma) => async (req, res) => {
             maxAge: 1000 * 60 * 60 * 4,
         });
         // Send response
+        console.log('sending');
         return res.status(201).send({
             message: 'Login successful',
             csrfToken,

@@ -93,7 +93,7 @@ app.get('/', (req, res) => {
 
 
 const port = 3050;
-const host = '127.0.0.1'
+const host = '0.0.0.0';
 var server = http.createServer(options, app);
 
 server.listen(port, host, () => {

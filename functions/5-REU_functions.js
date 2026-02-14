@@ -165,7 +165,7 @@ const generate_REU = (prisma) => async (req, res) => {
 }
 const get_REU = (prisma) => async (req, res) => {
     try {
-
+        console.log(req.body);
         const { Search_Type } = req.body;
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
@@ -301,6 +301,7 @@ const get_REU = (prisma) => async (req, res) => {
             }
 
             case SearchType.OFFICE_LIST_VIEW: {
+                console.log('fff')
                 //Office_ID is required
                 // return await tokenMiddlewere(
                 //     req,
