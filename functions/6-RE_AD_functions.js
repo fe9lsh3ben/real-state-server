@@ -320,6 +320,15 @@ const get_READ = (prisma) => async (req, res) => {
             case SearchType.LIST_VIEW: {
 
                 const {
+                    // check necicity:-
+                    Geo_Segments,
+                    Count,
+                
+                    Unit_Price,
+                    Price_Tolerance,
+                    Area_Tolerance,
+                    //______________
+                    
                     Office_ID,
                     AD_Type,
                     AD_Unit_Type,
