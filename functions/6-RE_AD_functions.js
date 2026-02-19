@@ -182,7 +182,7 @@ const get_READ = (prisma) => async (req, res) => {
                     City,
                     District,
                 } = req.body;
-                console.log(Area_Tolerance);
+                console.log(req.body);
                 if (AD_Type) {
                     if (!validAdTypes.includes(AD_Type)) {
                         return res.status(400).send({ 'message': "Invalid AD_Type value." });
@@ -204,8 +204,10 @@ const get_READ = (prisma) => async (req, res) => {
                                 { Longitude: { gte: segment.west, lte: segment.east } },
                             ],
                         }));
+                        console.log(uniqueSegments);
                     }
 
+                    
 
 
                     let refinedSpecFilters = [];
