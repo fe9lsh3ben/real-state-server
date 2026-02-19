@@ -160,7 +160,6 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 
 const get_REO = (prisma) => async (req, res) => {
     try {
-        console.log(req.query);
         const { Search_Type, selection } = req.query;
 
         switch (Search_Type) {
@@ -252,10 +251,7 @@ const get_REO = (prisma) => async (req, res) => {
             }
 
             case SearchType.OFFICE_DETAIL_VIEW: {
-                console.log(
-                    
-                    'PPPPPPPPP'
-                )
+                
                 return tokenMiddlewere(req, res, async () => {
                     return officeAuthentication(req, res, async () => {
 
