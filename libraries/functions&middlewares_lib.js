@@ -13,7 +13,7 @@ const { createNewTandC, getLastTerms } = require('../functions/1-Ts&Cs_functions
 
 //profile functions
 const { signup, login, becomeOfficeStaff,
-    get_Profile, get_Custom_Profile, edit_Profile, logout
+    get_Profile, get_Custom_Profile, edit_Profile, passwordReset, logout
 } = require('../functions/2-Profile_functions');
 
 //Real Estate office functions
@@ -54,9 +54,11 @@ const {
     countUnread,
 } = require('../functions/8-notification_function');
 //________________Middlewares___________________
-const { signupValidator, signupVerifier } = require('../middlewares/validators');
-
 const { 
+    // signupValidator,
+     signupVerifier } = require('../middlewares/validators');
+
+const {
     officeAuthentication,
     markitingFalLicenseAuthentication,
     REUAuthentication,
@@ -76,6 +78,7 @@ module.exports = {
     edit_Profile,
     get_Custom_Profile,
     becomeOfficeStaff,
+    passwordReset,
     logout,
 
     //Real Estate office functions
@@ -115,7 +118,7 @@ module.exports = {
 
     //middlewares
     signupVerifier,
-    signupValidator,
+    // signupValidator,
     tokenMiddlewere, generateTokenByRefreshToken, checkToken,
     bodyCleaner,
 

@@ -17,110 +17,215 @@ require('dotenv').config();
 const TokenType = Object.freeze({
     ACCESS_TOKEN: 'access_token',
     REFRESH_TOKEN: 'refresh_token',
+    RESET_PASSWORD_TOKEN: 'reset_password_token',
 });
-async function generateTokenByPrivate_key(body, period, tokenType = TokenType.ACCESS_TOKEN) {
+async function generateTokenByPrivate_key(entityType, entity, period, tokenType = TokenType.ACCESS_TOKEN) {
 
     try {
 
 
         if (tokenType === TokenType.ACCESS_TOKEN) {
 
-            return jwt.sign(
-                {
-                    User_ID: body.User_ID,
-                    Username: body.Username,
-                    tokenType: TokenType.ACCESS_TOKEN,
-                    Role: body.Role,
-                    iat: Math.floor(Date.now() / 1000),
-                },
-                PRIVATE_KEY,
-                {
-                    algorithm: 'RS256',
-                    expiresIn: period,
-                }
-            );
+            if (entityType === 'User') {
+                return jwt.sign(
+                    {
+                        User_ID: entity.User_ID,
+                        tokenType: TokenType.ACCESS_TOKEN,
+                        Role: entity.Role,
+                        iat: Math.floor(Date.now() / 1000),
+                    },
+                    PRIVATE_KEY,
+                    {
+                        algorithm: 'RS256',
+                        expiresIn: period,
+                    }
+                );
+            } else if (entityType === 'Office') {
+                return jwt.sign(
+                    {
+                        My_Office_ID: entity.My_Office_ID,
+                        tokenType: TokenType.ACCESS_TOKEN,
+                        iat: Math.floor(Date.now() / 1000),
+                    },
+                    PRIVATE_KEY,
+                    {
+                        algorithm: 'RS256',
+                        expiresIn: period,
+                    }
+                );
+            }
 
         } else if (tokenType === TokenType.REFRESH_TOKEN) {
 
-            return jwt.sign(
-                {
-                    User_ID: body.User_ID,
-                    Username: body.Username,
-                    tokenType: TokenType.REFRESH_TOKEN,
-                    Role: body.Role,
-                    iat: Math.floor(Date.now() / 1000),
-                },
-                PRIVATE_KEY,
-                {
-                    algorithm: 'RS256',
-                    expiresIn: period,
-                }
-            );
+            if (entityType === 'User') {
+                return jwt.sign(
+                    {
+                        User_ID: entity.User_ID,
+                        tokenType: TokenType.REFRESH_TOKEN,
+                        Role: entity.Role,
+                        iat: Math.floor(Date.now() / 1000),
+                    },
+                    PRIVATE_KEY,
+                    {
+                        algorithm: 'RS256',
+                        expiresIn: period,
+                    }
+                );
+            } else if (entityType === 'Office') {
+                return jwt.sign(
+                    {
+                        My_Office_ID: entity.My_Office_ID,
+                        tokenType: TokenType.REFRESH_TOKEN,
+                        iat: Math.floor(Date.now() / 1000),
+                    },
+                    PRIVATE_KEY,
+                    {
+                        algorithm: 'RS256',
+                        expiresIn: period,
+                    }
+                );
+            }
+        } else if (tokenType === TokenType.RESET_PASSWORD_TOKEN) {
+
+            if (entityType === 'User') {
+                return jwt.sign(
+                    {
+                        User_ID: entity.User_ID,
+                        tokenType: TokenType.RESET_PASSWORD_TOKEN,
+                        Role: entity.Role,
+                        iat: Math.floor(Date.now() / 1000),
+                    },
+                    PRIVATE_KEY,
+                    {
+                        algorithm: 'RS256',
+                        expiresIn: period,
+                    }
+                );
+            } else if (entityType === 'Office') {
+                return jwt.sign(
+                    {
+                        My_Office_ID: entity.My_Office_ID,
+                        tokenType: TokenType.RESET_PASSWORD_TOKEN,
+                        iat: Math.floor(Date.now() / 1000),
+                    },
+                    PRIVATE_KEY,
+                    {
+                        algorithm: 'RS256',
+                        expiresIn: period,
+                    }
+                );
+            }
         }
     } catch (error) {
 
     }
 }
 
-async function syncTokens(req, user, content, res) {
+async function syncTokens(
+    req,
+    res,
+    entityType,
+    entity,
+    content,
+) {
+
+
     try {
-        const accessToken = await generateTokenByPrivate_key(user, '4h');
-        const refreshToken = await generateTokenByPrivate_key(user, '14d', TokenType.REFRESH_TOKEN);
+        const accessToken = await generateTokenByPrivate_key(entityType, entity, '4h');
+        const refreshToken = await generateTokenByPrivate_key(entityType, entity, '14d', TokenType.REFRESH_TOKEN);
 
         const accessDecoded = jwt.decode(accessToken);
         const refreshDecoded = jwt.decode(refreshToken);
 
         const accessExpiry = new Date(accessDecoded.exp * 1000);
         const refreshExpiry = new Date(refreshDecoded.exp * 1000);
-        const updatedUser = await prisma.user.update({
-            where: { User_ID: user.User_ID },
-            data: {
-                Refresh_Token: {
-                    update: {
-                        data: {
-                            Refresh_Token: refreshToken,
-                            Expires_At: refreshExpiry,
+
+        let updatedEntity;
+
+        if (entityType === 'User') {
+            updatedEntity = await prisma.user.update({
+                where: { User_ID: user.User_ID },
+                data: {
+                    Refresh_Token: {
+                        update: {
+                            data: {
+                                Refresh_Token: refreshToken,
+                                Expires_At: refreshExpiry,
+                            },
+                        },
+                    },
+                    Session: {
+                        update: {
+                            data: {
+                                Token: accessToken,
+                                Expires_At: accessExpiry,
+                            },
                         },
                     },
                 },
-                Session: {
-                    update: {
-                        data: {
-                            Token: accessToken,
-                            Expires_At: accessExpiry,
+                select: {
+                    User_ID: true,
+                    Role: true,
+                    // Employer_REO_ID: true,// no need
+                    Session: {
+                        select: { Token: true },
+                    },
+                    Refresh_Token: {
+                        select: { Refresh_Token: true },
+                    },
+                },
+            });
+        } else if (entityType === 'Office') {
+            updatedEntity = await prisma.office.update({
+                where: { Office_ID: entity.My_Office_ID },
+                data: {
+                    Refresh_Token: {
+                        update: {
+                            data: {
+                                Refresh_Token: refreshToken,
+                                Expires_At: refreshExpiry,
+                            },
+                        },
+                    },
+                    Session: {
+                        update: {
+                            data: {
+                                Token: accessToken,
+                                Expires_At: accessExpiry,
+                            },
                         },
                     },
                 },
-            },
-            select: {
-                User_ID: true,
-                Role: true,
-                Employer_REO_ID: true,
-                Session: {
-                    select: { Token: true },
+                select: {
+                    Office_ID: true,
+                    Role: true,
+                    // Employer_REO_ID: true,// no need
+                    Session: {
+                        select: { Token: true },
+                    },
+                    Refresh_Token: {
+                        select: { Refresh_Token: true },
+                    },
                 },
-                Refresh_Token: {
-                    select: { Refresh_Token: true },
-                },
-            },
-        });
+            });
+        }
 
         if (req.headers['x-mobile-app']) {
             return res.status(201).send({
-                user_data: updatedUser,
+                entity_data: updatedEntity,
                 message: content.message
             });
 
         }
 
-        res.cookie("session", updatedUser.Session.Token, {
+        res.cookie("session", updatedEntity.Session.Token, {
             httpOnly: false,
             sameSite: "none", // none, lax or strict
             secure: true,     // set to true in prod with https
             maxAge: 1000 * 60 * 60 * 4,
         });
 
-        res.cookie("refreshToken", updatedUser.Refresh_Token.Refresh_Token, {
+        res.cookie("refreshToken", updatedEntity.Refresh_Token.Refresh_Token, {
             httpOnly: false,
             sameSite: "none", // none, lax or strict
             secure: true,
@@ -140,15 +245,14 @@ async function syncTokens(req, user, content, res) {
             maxAge: 1000 * 60 * 60 * 4,
         });
 
+        delete updatedEntity.Session;
+        delete updatedEntity.Refresh_Token;
 
-        delete updatedUser.Session;
-        delete updatedUser.Refresh_Token;
         return res.status(201).json({
             csrfToken: csrfToken,
-            user_data: updatedUser,
-            office_content: content.office_content,
+            entity_data: updatedEntity,
+            entity_content: content.entity_content,
             message: content.message,
-            note: content.note
         });
 
     } catch (error) {
@@ -190,16 +294,29 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
             return res.status(401).send({ 'message': 'Invalid token type!' });
         }
 
-        const resourceToken = await prisma.user.findUnique({
-            where: { User_ID: data.User_ID },
-            select: {
-                Refresh_Token: { select: { Refresh_Token: true } },
-            },
-        });
+        let resourceToken;
+
+        if (Object.hasOwn(data, 'User_ID')) {
+            resourceToken = await prisma.user.findUnique({
+                where: { User_ID: data.User_ID },
+                select: {
+                    Refresh_Token: { select: { Refresh_Token: true } },
+                },
+            });
+        } else if (Object.hasOwn(data, 'My_Office_ID')) {
+            resourceToken = await prisma.office.findUnique({
+                where: { Office_ID: data.My_Office_ID },
+                select: {
+                    Refresh_Token: { select: { Refresh_Token: true } },
+                },
+            });
+        }
+
         if (resourceToken.Refresh_Token?.Refresh_Token !== token) {
             return res.status(401).send({ 'message': 'Invalid refresh token!' });
 
         }
+
         syncTokens(req, data, 'Token was refreshed', res);
 
     } catch (error) {
@@ -212,7 +329,6 @@ const generateTokenByRefreshToken = (prisma) => async (req, res) => {
 async function tokenVerifier(req) {
 
     try {
-
         let token;
         if (req.cookies.session) {
             token = req.cookies.session;
@@ -224,10 +340,9 @@ async function tokenVerifier(req) {
         if (!token) {
             return { 'verified': false, 'message': 'no token' };
         }
-
+        
         var resutl = jwt.verify(token, PUBLIC_KEY, async (err, data) => {
-
-            try {
+             try {
                 if (err) {
                     if (err.name === 'TokenExpiredError') {
 
@@ -246,36 +361,64 @@ async function tokenVerifier(req) {
                     return { 'verified': false, 'message': 'Access token is required!' };
                 }
 
-                var user = await prisma.user.findUnique({
-                    where: { User_ID: data.User_ID },
-                    select: {
-                        User_ID: true,
-                        Role: true,
-                        Full_Name: true,
-                        Employer_REO_ID: true,
-                        Session: { select: { Token: true } }
+                if (Object.hasOwn(data, 'User_ID')) {
+                    var user = await prisma.user.findUnique({
+                        where: { User_ID: data.User_ID },
+                        select: {
+                            User_ID: true,
+                            Role: true,
+                            Full_Name: true,
+                            // Employer_REO_ID: true, //no need
+                            Session: { select: { Token: true } }
+                        }
+                    });
+
+                    if (!user) {
+                        return { 'verified': false, 'message': 'User not found!' };
                     }
-                });
 
-                if (!user) {
-                    return { 'verified': false, 'message': 'User not found!' };
+                    if (user.Session.Token !== token) {
+                        return { 'verified': false, 'message': 'Token is disposed!' };
+                    }
+                    
+                    if (req.body === undefined) {
+                        req.body = {};
+                    }
+
+                    req.body.Role = user.Role;
+                    req.body.User_ID = user.User_ID;
+                    req.body.Full_Name = user.Full_Name;
+                    // (user.Employer_REO_ID && (req.body.Employer_REO_ID = user.Employer_REO_ID)); // no need
+
+                    return { 'verified': true, 'message': "Token is valid" };
+
+                } else if (Object.hasOwn(data, 'My_Office_ID')) {
+                    var office = await prisma.realEstateOffice.findUnique({
+                        where: { Office_ID: data.My_Office_ID },
+                        select: {
+                            Office_ID: true,
+                            Session: { select: { Token: true } }
+                        }
+                    });
+
+                    if (!office) {
+                        return { 'verified': false, 'message': 'Office not found!' };
+                    }
+
+                    if (office.Session.Token !== token) {
+                        return { 'verified': false, 'message': 'Token is disposed!' };
+                    }
+                    if (req.body === undefined) {
+                        req.body = {};
+                    }
+                    req.body.My_Office_ID = office.Office_ID;
+                    // (user.Employer_REO_ID && (req.body.Employer_REO_ID = user.Employer_REO_ID)); // no need
+
+                    return { 'verified': true, 'message': "Token is valid" };
                 }
 
-                if (user.Session.Token !== token) {
-                    return { 'verified': false, 'message': 'Token is disposed!' };
-                }
-                if (req.body === undefined) {
-                    req.body = {};
-                }
-                req.body.Role = user.Role;
-                req.body.User_ID = user.User_ID;
-                req.body.Full_Name = user.Full_Name;
-                (user.Employer_REO_ID && (req.body.Employer_REO_ID = user.Employer_REO_ID));
-
-                return { 'verified': true, 'message': "Token is valid" };
             } catch (error) {
                 console.log(error.message);
-                console.log('jwt verifier');
                 return { 'verified': false, 'message': error.message };
             }
 
@@ -284,7 +427,6 @@ async function tokenVerifier(req) {
         return resutl;
 
     } catch (error) {
-        console.log('tooken verifier')
         return { 'verified': false, 'message': error.message };
     }
 }
@@ -294,7 +436,7 @@ async function tokenMiddlewere(req, res, next) {
 
     try {
         if (!req.headers['x-mobile-app']) {
-            
+
             if (!req.cookies.refreshToken || !req.cookies.session) {
                 return res.status(401).send({ message: "No session or refresh tokens found" });
             }
@@ -315,6 +457,7 @@ async function tokenMiddlewere(req, res, next) {
         }
 
         const result = await tokenVerifier(req);
+        
         if (result instanceof Error) {
             res.status(401).send(result.message);
             return;

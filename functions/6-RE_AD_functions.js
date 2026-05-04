@@ -182,7 +182,6 @@ const get_READ = (prisma) => async (req, res) => {
                     City,
                     District,
                 } = req.body;
-                console.log(req.body);
                 if (AD_Type) {
                     if (!validAdTypes.includes(AD_Type)) {
                         return res.status(400).send({ 'message': "Invalid AD_Type value." });
@@ -204,7 +203,6 @@ const get_READ = (prisma) => async (req, res) => {
                                 { Longitude: { gte: segment.west, lte: segment.east } },
                             ],
                         }));
-                        console.log(uniqueSegments);
                     }
 
                     
@@ -271,7 +269,6 @@ const get_READ = (prisma) => async (req, res) => {
                             },
                         }
                     });
-                    console.log(ads)
                     if (!ads || ads.length === 0) {
                         return res.status(404).send({ 'message': 'Real Estate unit not found.' });
                     }

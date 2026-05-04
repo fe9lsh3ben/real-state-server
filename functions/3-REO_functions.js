@@ -67,9 +67,9 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             Latitude,
             Longitude,
             Status: Office_Or_User_Status.ACTIVE,
-            Owner: {
-                connect: { User_ID: User_ID }
-            }
+            // Owner: {
+            //     connect: { User_ID: User_ID }
+            // }
         };
 
         try {
@@ -125,7 +125,6 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
             {
                 message: "Real Estate Office was successfully created!",
                 office_content: createdOffice,
-                note: "Your role became Real Estate Office owner",
             },
             res
         );
@@ -254,7 +253,7 @@ const get_REO = (prisma) => async (req, res) => {
                 
                 return tokenMiddlewere(req, res, async () => {
                     return officeAuthentication(req, res, async () => {
-
+                        
                         const officeID = req.body.My_Office_ID;
 
                         const office = await prisma.realEstateOffice.findUnique({
@@ -262,7 +261,6 @@ const get_REO = (prisma) => async (req, res) => {
                             select: {
                                 Office_ID: true,
                                 Commercial_Register: true,
-                                Owner_ID: true,
                                 Office_Name: true,
                                 Office_Phone: true,
                                 Other: true,
@@ -298,6 +296,8 @@ const get_REO = (prisma) => async (req, res) => {
 
                             }
                         });
+                        
+                        
 
                         if (!office) {
                             return res.status(404).send({ 'message': 'Real Estate Office not found.' });
@@ -306,7 +306,7 @@ const get_REO = (prisma) => async (req, res) => {
                             ...unit,
                             Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
                         }));
-
+                        console.log('qqqqqqqq');
                         return res.status(200).send([office]);
                     });
                 });

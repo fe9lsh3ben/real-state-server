@@ -15,143 +15,112 @@ function validatePassword(password) {
 const signupVerifier = (req, res, next) => {
 
 
-    const body = req.body;
 
-    if (body == undefined) {
-
-        res.status(400).send({'message': 'No details entered'});
-        return
-
-    } else if (!(body.Username && body.Password && body.Email && body.Gov_ID && body.Address && body.Full_Name && body.User_Phone)) {
-
-        res.status(400).send({'message': 'Your details are not complete'});
-        return;
-
-    } else if (!body.TC_ID) {
-
-        res.status(400).send({'message': 'You must accept the terms and conditions'});
-        return
-
-    } else {
-        try {
-
-            const { Username, Password, Email, Gov_ID, Address, Full_Name, User_Phone } = body;
-
-
-            if (!validator.isAlphanumeric(Username)) {
-
-                res.status(400).send({'message': 'Username entry should be letters and numaric only!'});
-                return
-            }
-
-            var validatedPassword = validatePassword(Password);
-
-            if (!validatedPassword.isValidLength) {
-                res.status(400).send({'message': 'Password should be at least 8 characters long!'});
-                return
-            }
-
-            if (!validatedPassword.hasUpperCaseAndLowerCase) {
-                res.status(400).send({'message': 'Password should contain both uppercase and lowercase letters!'});
-                return
-            }
-
-
-            if (!validator.isEmail(Email)) {
-
-                res.status(400).send({'message': 'enter valid email'})
-                return
-            }
-
-            if (!validator.isNumeric(Gov_ID)) {
-
-                res.status(400).send({'message': 'GovID should be numaric entry'})
-                return
-            }
-
-            if (Address === undefined || Object.keys(Address) === 0 || Address === null) {
-
-                res.status(400).send({'message': 'Address should be entered'})
-                return
-            }
-
-
-            for (var namePart of Full_Name) {
-                if (!validator.isAlpha(namePart)) {
-                    res.status(400).send({'message': 'name should be letters only!'});
-                    return;
-                }
-            }
+    try {
+        
+        const {
+            //  User_Phone,
+            Password,
+            // Email,
+            // Username,
+            // Full_Name,
+        } = req.body;
 
 
 
-            if (!validator.isNumeric(User_Phone)) {
 
-                res.status(400).send({'message': 'User Phone should be numaric entry'})
-                return
-            }
-
-            next();
-
-        } catch (e) {
-            // Rcord Error
+        var validatedPassword = validatePassword(Password);
+            
+        if (!validatedPassword.isValidLength) {
+            res.status(400).send({ 'message': 'Password should be at least 8 characters long!' });
+            return
         }
 
+        // if (!validatedPassword.hasUpperCaseAndLowerCase) {
+        //     res.status(400).send({ 'message': 'Password should contain both uppercase and lowercase letters!' });
+        //     return
+        // }
+
+
+        // if (!validator.isEmail(Email)) {
+
+        //     res.status(400).send({ 'message': 'enter valid email' })
+        //     return
+        // }
+
+        // if (!validator.isNumeric(Gov_ID)) {
+
+        //     res.status(400).send({ 'message': 'GovID should be numaric entry' })
+        //     return
+        // }
+
+        console.log('next')
+
+        next();
+
+    } catch (e) {
+        console.log(e)
+        return res.status(400).send({ 'message': 'validator error' });
+        // Rcord Error
     }
+
+
 
 }
 
-function signupValidator(prisma) {
+// function signupValidator(prisma) {
 
-    return async (req, res, next) => {
+//     return async (req, res, next) => {
 
-        const { Username, Email, Gov_ID, User_Phone } = req.body;
-
-
-        try {
-
-            const matchedUser = await prisma.user.findFirst({
-                where: {
-                    OR: [
-                        { Username: Username },
-                        { Email: Email },
-                        { Gov_ID: Gov_ID },
-                        { User_Phone: User_Phone }
-                    ]
-                },
-                select: {
-                    Username: true,
-                    Email: true,
-                    Gov_ID: true,
-                    User_Phone: true
-                }
-            });
-
-            if (matchedUser) {
-                if (matchedUser.Username == Username) {
-                    res.status(400).send({ 'message': 'Username is already taken' });
-                    return;
-                } else if (matchedUser.Email == Email) {
-                    res.status(400).send({ 'message': 'Email is already taken' });
-                    return;
-                } else if (matchedUser.Gov_ID == Gov_ID) {
-                    res.status(400).send({ 'message': 'Goverment ID is already taken' });
-                    return;
-                } else if (matchedUser.User_Phone == User_Phone) {
-                    res.status(400).send({ 'message': 'User phone is already taken' });
-                    return;
-                } 
-                
-            }
+//         const { Username, Email, Gov_ID, User_Phone } = req.body;
 
 
-            next()
-        } catch (error) {
-            res.status(400).send(error.message)
-        }
-    }
-}
+//         try {
+
+//             const matchedUser = await prisma.user.findFirst({
+//                 where: {
+//                     OR: [
+//                         { Username: Username },
+//                         { Email: Email },
+//                         { Gov_ID: Gov_ID },
+//                         { User_Phone: User_Phone }
+//                     ]
+//                 },
+//                 select: {
+//                     Username: true,
+//                     Email: true,
+//                     Gov_ID: true,
+//                     User_Phone: true
+//                 }
+//             });
+
+//             if (matchedUser) {
+//                 if (matchedUser.Username == Username) {
+//                     res.status(400).send({ 'message': 'Username is already taken' });
+//                     return;
+//                 } else if (matchedUser.Email == Email) {
+//                     res.status(400).send({ 'message': 'Email is already taken' });
+//                     return;
+//                 } else if (matchedUser.Gov_ID == Gov_ID) {
+//                     res.status(400).send({ 'message': 'Goverment ID is already taken' });
+//                     return;
+//                 } else if (matchedUser.User_Phone == User_Phone) {
+//                     res.status(400).send({ 'message': 'User phone is already taken' });
+//                     return;
+//                 }
+
+//             }
+
+
+//             next()
+//         } catch (error) {
+//             res.status(400).send(error.message)
+//         }
+//     }
+// }
 
 
 
-module.exports = { signupValidator, signupVerifier }
+module.exports = { 
+    // signupValidator,
+     signupVerifier }

@@ -94,6 +94,13 @@ enum Committed_By {
     BUSINESS_BENEFICIARY
 }
 
+enum Office_Bundle_Name {
+  FREE_BUNDLE
+  ESSENTIAL_BUNDLE
+  ADVANCED_BUNDLE
+  PROFESSIONAL_BUNDLE
+}
+
 enum Fal_Type {
     BROKERING_AND_MARKITING
     BROKERING_AND_MARKITING_FOR_VIRTUAL_PLATFORM
@@ -158,7 +165,7 @@ model AdministrationUser {
 }
 
 model TermsAndCondition {
-    //INSERT INTO "TermsAndCondition" ("TC_ID", "Content", "Other", "Committed_By", "Admin_ID") VALUES ('BB_000001', '{"ar": "الشروط والأحكام للمستفيد", "en":"terms and conditions for BENEFICIARY"}', ARRAY['{"type": "legal_disclaimer"}', '{"source": "external_link"}']::JSONB[], 'BENEFICIARY', 1);
+    //INSERT INTO "TermsAndCondition" ("TC_ID", "Content", "Other", "Committed_By", "Admin_ID") VALUES ('B_000001', '{"ar": "الشروط والأحكام للمستفيد", "en":"terms and conditions for BENEFICIARY"}', ARRAY['{"type": "legal_disclaimer"}', '{"source": "external_link"}']::JSONB[], 'BENEFICIARY', 1);
     TC_ID        String             @id
     Created_At   DateTime           @default(now())
     Content      Json
@@ -172,21 +179,52 @@ model TermsAndCondition {
 
 // Define the Session table
 model Session {
-    SToken_ID  Int       @id @default(autoincrement())
-    Token      String?   @unique
-    User_ID    Int       @unique
-    User       User      @relation(fields: [User_ID], references: [User_ID])
+    SToken_ID Int     @id @default(autoincrement())
+    Token     String? @unique
+
+    // Optional relations to both
+    User_ID Int?  @unique
+    User    User? @relation(fields: [User_ID], references: [User_ID])
+
+    Office_ID Int?              @unique
+    Office    RealEstateOffice? @relation(fields: [Office_ID], references: [Office_ID])
+
     Expires_At DateTime?
     Revoked_At DateTime?
 }
 
 model RefreshToken {
-    RToken_ID     Int       @id @default(autoincrement())
-    Refresh_Token String?   @unique
-    User_ID       Int       @unique
-    User          User      @relation(fields: [User_ID], references: [User_ID])
-    Expires_At    DateTime?
-    Revoked_At    DateTime?
+    RToken_ID     Int     @id @default(autoincrement())
+    Refresh_Token String? @unique
+
+    User_ID Int?  @unique
+    User    User? @relation(fields: [User_ID], references: [User_ID])
+
+    Office_ID Int?              @unique
+    Office    RealEstateOffice? @relation(fields: [Office_ID], references: [Office_ID])
+
+    Expires_At DateTime?
+    Revoked_At DateTime?
+}
+
+//INSERT INTO "OfficeSubscriptionBundle" ("BundleName", "BundleDetails") VALUES ("FREE_BUNDLE", "Free Bundle");
+    
+model OfficeSubscriptionBundle {
+    BundleID    Int                @id @default(autoincrement())
+    BundleName  Office_Bundle_Name @unique
+    
+    BundleDetails String           
+
+    // Quantitative limits (Example)
+    Max_Properties_Limit Int       @default(7)
+    Max_Properties_Ads   Int       @default(2)
+    Price_Per_Month      Decimal   @default(49.0) @db.Decimal(10, 2)
+
+    // Relation (Ensure this matches the RealEstateOffice model)
+    RealEstateOffice RealEstateOffice[] @relation("Subscription Bundle")
+
+    Created_At  DateTime           @default(now())
+    Updated_At  DateTime           @updatedAt
 }
 
 // Define the User table
@@ -200,49 +238,61 @@ model User {
 
     Refresh_Token RefreshToken?
     Session       Session?
+    Reset_Token   String?
 
     //___
 
-    Username      String @unique
-    Email         String @unique
+    Username      String? @unique // is there any problem
+    Email         String  @unique
     Password      String
     Profile_Image Bytes?
-    Gov_ID        String @unique
+    User_Phone    String  @unique
+    // Gov_ID        String @unique
 
     //Address      
     Region String
     City   String
 
-    Full_Name  String[]
-    User_Phone String
+    Full_Name String[]
+
     //___
 
     Other1 Json[] // Admin={Log_records}, Beneficiary={Beneficiary_class}, Govermental={Other}, Office_Staff{BelongToOffice}
 
-    RE_Offices RealEstateOffice[] @relation(name: "Office Owner")
+    // RE_Offices RealEstateOffice[] @relation(name: "Office Owner")
 
-    Employer_REO_ID Int?
-    Employer_REO    RealEstateOffice? @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [Office_ID])
+    // Employer_REO_ID Int?
+    // Employer_REO    RealEstateOffice? @relation(name: "OfficeStaff", fields: [Employer_REO_ID], references: [Office_ID])
 
-    Fal_Licenses FalLicense[] @relation(name: "License Owner")
+    // Fal_Licenses FalLicense[] @relation(name: "License Owner")
 
-    Contracts   Int[]
-    Balance     Decimal                @default(0.0)
+    // Contracts   Int[]
     User_Status Office_Or_User_Status? @default(ACTIVE)
 }
 
 model RealEstateOffice {
-    Office_ID           Int               @id @default(autoincrement())
-    Commercial_Register String
-    Owner_ID            Int
-    Owner               User              @relation(name: "Office Owner", fields: [Owner_ID], references: [User_ID])
-    Office_Name         String            @unique
+    Office_ID           Int    @id @default(autoincrement())
+    Commercial_Register String @unique
+    Password            String
+
+    Refresh_Token RefreshToken?
+    Session       Session?
+    Reset_Token   String?
+
+    Office_Name         String @unique
     Office_Phone        String
+    Email               String? @unique
     Office_Image        Bytes
     Office_Banner_Image Bytes?
     Other               Json?
-    TermsCondetion_ID   String
-    TermsAndCondition   TermsAndCondition @relation(fields: [TermsCondetion_ID], references: [TC_ID])
+
+    //Terms
+    TermsCondetion_ID String
+    TermsAndCondition TermsAndCondition @relation(fields: [TermsCondetion_ID], references: [TC_ID])
+
+    // Subscription
+    BundleID Int
+    Bundle   OfficeSubscriptionBundle @relation("Subscription Bundle", fields: [BundleID], references: [BundleID])
 
     //Address      
     Region    String
@@ -254,35 +304,33 @@ model RealEstateOffice {
     Status    Office_Or_User_Status
 
     //Fall License is list becuase fall license has many types
-    Fal_Licenses FalLicense[] @relation("OfficeAndLicense")
-
-    Staff User[] @relation("OfficeStaff")
+    Fal_Licenses FalLicense[] @relation("OfficeLicenses")
 
     Real_Estate_Units RealEstateUnit[] @relation("OfficeAndREUnit")
-    Contracts        Contract[]
-    ADs              RealEstateAD[]
-    Visitors         Json? //{date : number of visitors}
+    Contracts         Contract[]
+    ADs               RealEstateAD[]
+
+    Visitors Json? //{date : number of visitors}
 
     Notifications Notification[]
+    Comments      Json? //{date, phone number of the comentator, content}
     Rating        Decimal        @default(0.0)
-    Balance       Decimal        @default(0.0)
-    Created_At    DateTime       @default(now())
-    Updated_At    DateTime       @updatedAt
+
+    Created_At DateTime @default(now())
+    Updated_At DateTime @updatedAt
 }
 
 model FalLicense {
     License_ID         Int      @id @default(autoincrement())
     Fal_License_Number String   @unique
     License_Type       Fal_Type
-    Owner_ID           Int
-    Owner              User     @relation("License Owner", fields: [Owner_ID], references: [User_ID])
     Issue_Date         DateTime
     Expiry_Date        DateTime
 
     //Oficeses is list becuse the owner may have many offices and one fal license
-    Offices RealEstateOffice[] @relation("OfficeAndLicense")
+    Offcie_ID Int
+    Office RealEstateOffice @relation("OfficeLicenses", fields: [Offcie_ID], references: [Office_ID])
 
-    @@index([Owner_ID])
     @@index([License_Type])
 }
 
@@ -315,24 +363,24 @@ model RealEstateUnit {
 }
 
 model RealEstateAD {
-    AD_ID              Int              @id @default(autoincrement())
-    Office_ID          Int
-    Initiator_Office   RealEstateOffice @relation(fields: [Office_ID], references: [Office_ID])
-    Initiator          Json //{"Created_By":{ "User_ID", "Full_Name"}, "Edited_By":[{"User_ID", "Full_Name", "Edited_At"}]}
-    
-    Unit_ID            Int
-    Unit               RealEstateUnit   @relation(fields: [Unit_ID], references: [Unit_ID], onDelete: Cascade)
+    AD_ID            Int              @id @default(autoincrement())
+    Office_ID        Int
+    Initiator_Office RealEstateOffice @relation(fields: [Office_ID], references: [Office_ID])
+    Initiator        Json //{"Created_By":{ "User_ID", "Full_Name"}, "Edited_By":[{"User_ID", "Full_Name", "Edited_At"}]}
+
+    Unit_ID Int
+    Unit    RealEstateUnit @relation(fields: [Unit_ID], references: [Unit_ID], onDelete: Cascade)
 
     AD_Type            AD_Type
     AD_Unit_Type       Real_Estate_Unit_Type
     AD_Title           String
     Indoor_Unit_Images Bytes[]
     AD_Specifications  Json //{Description , Price, Other} 
-    Unit_Price         Decimal          @default(0.0) @db.Decimal(11, 2)
-    Visable_Zoom       Decimal?               
-    Hedden             Boolean          @default(false)
-    Created_At         DateTime         @default(now())
-    Updated_At         DateTime         @updatedAt
+    Unit_Price         Decimal               @default(0.0) @db.Decimal(11, 2)
+    Visable_Zoom       Decimal?
+    Hedden             Boolean               @default(false)
+    Created_At         DateTime              @default(now())
+    Updated_At         DateTime              @updatedAt
 }
 
 model Contract {

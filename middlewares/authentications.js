@@ -23,24 +23,25 @@ async function officeAuthentication(req, res, next) {
             },
             select: {
                 Office_ID: true,
-                Owner_ID: true,
-                Staff: true
             }
         });
         
-        if (!office) return res.status(404).send({ 'message': 'Real Estate Office not found.' });
+        
+        if (!office) return res.status(404).send({ 'message': 'Real Estate Office not found.'});
         // console.log(office.Staff.find(staff => staff.User_ID === req.body.User_ID) )
+
         if (office.Owner_ID !== req.body.User_ID && !office.Staff.find(staff => staff.User_ID === req.body.User_ID)) {
             return res.status(403).send({ 'message': 'You are not authorized to access this office, no relationship found.' });
         }
         req.body.My_Office_ID = office.Office_ID;
         req.body.Office_Owner_ID = office.Owner_ID;
+      
         next();
 
     } catch (error) {
-
-        dbErrorHandler(res, error, 'office authentication');
         console.error('ffff', error);
+        dbErrorHandler(res, error, 'office authentication');
+        
     }
 }
 
