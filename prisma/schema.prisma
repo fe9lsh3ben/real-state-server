@@ -166,6 +166,8 @@ model AdministrationUser {
 
 model TermsAndCondition {
     //INSERT INTO "TermsAndCondition" ("TC_ID", "Content", "Other", "Committed_By", "Admin_ID") VALUES ('B_000001', '{"ar": "الشروط والأحكام للمستفيد", "en":"terms and conditions for BENEFICIARY"}', ARRAY['{"type": "legal_disclaimer"}', '{"source": "external_link"}']::JSONB[], 'BENEFICIARY', 1);
+    // INSERT INTO "TermsAndCondition" ("TC_ID", "Content", "Other", "Committed_By", "Admin_ID") VALUES ('OO_000001', '{"ar": "الشروط والأحكام للمستفيد", "en":"terms and conditions for BENEFICIARY"}', ARRAY['{"type": "legal_disclaimer"}', '{"source": "external_link"}']::JSONB[], 'OFFICE_OWNER', 1);
+    
     TC_ID        String             @id
     Created_At   DateTime           @default(now())
     Content      Json
@@ -207,8 +209,8 @@ model RefreshToken {
     Revoked_At DateTime?
 }
 
-//INSERT INTO "OfficeSubscriptionBundle" ("BundleName", "BundleDetails") VALUES ("FREE_BUNDLE", "Free Bundle");
-    
+//INSERT INTO "OfficeSubscriptionBundle"  ("BundleName", "BundleDetails", "Updated_At") VALUES ('FREE_BUNDLE', 'Free Bundle', NOW());
+
 model OfficeSubscriptionBundle {
     BundleID    Int                @id @default(autoincrement())
     BundleName  Office_Bundle_Name @unique

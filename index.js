@@ -4,7 +4,28 @@ const {
     express, https, http, cors, fs } = require('./libraries/utilities')
 
 
+/**
+ * --registry=https://registry.npmmirror.com  For error : -
+ * 
+ * node:internal/modules/cjs/loader:1479
+  throw err;
+  ^
 
+Error: Cannot find module 'nodemailer'
+
+
+ at Module._resolveFilename (node:internal/modules/cjs/loader:1476:15)
+    at wrapResolveFilename (node:internal/modules/cjs/loader:1049:27)
+    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1073:10)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1094:12)
+    at Module._load (node:internal/modules/cjs/loader:1262:25)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+    at Module.require (node:internal/modules/cjs/loader:1576:12)
+    at require (node:internal/modules/helpers:153:16)
+    at Object.<anonymous> (C:\Users\sora\Develop\Projects\Backend\real-state-server\functions\2-Profile_functions.js:7:20)
+    at Module._compile (node:internal/modules/cjs/loader:1830:14) {
+  code: 'MODULE_NOT_FOUND',
+ */
 
 //___________SERVER SETTINGS______________
 
