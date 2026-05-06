@@ -270,7 +270,6 @@ const signup = (prisma) => async (req, res) => {
                 Office_Phone,
                 Password: hashedPass,
                 Bundle: { connect: { BundleName: Office_Bundle_Name.FREE_BUNDLE } },
-                ... (Other && { Other }),
                 Region,
                 City,
                 District,
@@ -278,6 +277,7 @@ const signup = (prisma) => async (req, res) => {
                 Latitude,
                 Longitude,
                 Status: Office_Or_User_Status.ACTIVE,
+                Other:{'Services':''},
             };
 
             try {
