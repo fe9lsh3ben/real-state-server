@@ -250,10 +250,10 @@ const get_REO = (prisma) => async (req, res) => {
             }
 
             case SearchType.OFFICE_DETAIL_VIEW: {
-                
+
                 return tokenMiddlewere(req, res, async () => {
                     return officeAuthentication(req, res, async () => {
-                        
+
                         const officeID = req.body.My_Office_ID;
 
                         const office = await prisma.realEstateOffice.findUnique({
@@ -296,8 +296,8 @@ const get_REO = (prisma) => async (req, res) => {
 
                             }
                         });
-                        
-                        
+
+
 
                         if (!office) {
                             return res.status(404).send({ 'message': 'Real Estate Office not found.' });
@@ -306,7 +306,6 @@ const get_REO = (prisma) => async (req, res) => {
                             ...unit,
                             Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
                         }));
-                        console.log('qqqqqqqq');
                         return res.status(200).send([office]);
                     });
                 });
@@ -386,12 +385,16 @@ const update_REO = (prisma) => async (req, res) => {
 
 
         if (Office_Image) {
-            updateData.Office_Image = Office_Image;
+            // updateData.Office_Image = Office_Image;
+            const buffer = Buffer.from(Office_Image, 'base64');
+            updateData.Office_Image = buffer;
             selection.Office_Image = true;
         }
 
         if (Office_Banner_Image) {
-            updateData.Office_Banner_Image = Office_Banner_Image;
+            // updateData.Office_Banner_Image = Office_Banner_Image;
+            const buffer = Buffer.from(Office_Banner_Image, 'base64');
+            updateData.Office_Banner_Image = buffer;
             selection.Office_Banner_Image = true;
         }
 
@@ -421,12 +424,22 @@ const update_REO = (prisma) => async (req, res) => {
             selection.Longitude = true;
         }
 
+        if (Office_Banner_Image) {
+            updateData.Office_Banner_Image = Office_Banner_Image;
+            selection.Office_Banner_Image = true;
+        }
+
+        // console.log(Office_Banner_Image); //.....F8s3nRru9sCuSo+ZQT7Af//Z
+        console.log('this selection', selection) //this selection { Office_Banner_Image: true }
 
         const updatedOffice = await prisma.realEstateOffice.update({
             where: { Office_ID: parseInt(Office_ID) },
             data: updateData,
             select: selection
         });
+
+        console.log(updatedOffice); //{ Office_Banner_Image: null }
+        console.log(Object.keys(updatedOffice));//[ 'Office_Banner_Image' ]
 
         return res.status(202).json({
             message: 'Real Estate Office updated successfully.',

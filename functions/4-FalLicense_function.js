@@ -13,11 +13,11 @@ const generate_FalLicense = (prisma) => async (req, res) => {
         const {
             Fal_License_Number,
             License_Type,
-            Office_Owner_ID,
+            My_Office_ID,
             Issue_Date,
             Expiry_Date,
         } = req.body;
-
+        console.log(req.body);
         // Validate required fields
         if (!Fal_License_Number || !License_Type || !Issue_Date || !Expiry_Date) {
             return res.status(400).send({
@@ -30,19 +30,20 @@ const generate_FalLicense = (prisma) => async (req, res) => {
             });
         }
         var license = await prisma.falLicense.findUnique({ where: { Fal_License_Number } });
+        
         if (license) {
             return res.status(400).send({ 'message': "This license already exists." });
         }
+
         createdLicense = await prisma.falLicense.create({
             data: {
                 Fal_License_Number,
                 License_Type,
-                Owner_ID: Office_Owner_ID,
                 Issue_Date: new Date(Issue_Date),
                 Expiry_Date: new Date(Expiry_Date),
-                Offices: {
+                Office: {
                     connect: {
-                        Office_ID: req.body.My_Office_ID
+                        Office_ID: My_Office_ID
                     }
                 }
             }
