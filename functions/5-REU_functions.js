@@ -56,17 +56,18 @@ const generate_REU = (prisma) => async (req, res) => {
         }
         const { Region, City, District, Direction, Latitude, Longitude } = Address;
 
-        const user = await prisma.user.findUnique({
-            where: {
-                User_ID: req.body.User_ID
-            },
-            select: {
-                Full_Name: true
-            }
-        })
+        //Delete if you don't need it: -
+        // const user = await prisma.user.findUnique({
+        //     where: {
+        //         User_ID: req.body.User_ID
+        //     },
+        //     select: {
+        //         Full_Name: true
+        //     }
+        // })
+        // const Initiator = { Created_By: { User_ID: req.body.User_ID, Full_Name: user.Full_Name }, Edited_By: [] };
 
-        const Initiator = { Created_By: { User_ID: req.body.User_ID, Full_Name: user.Full_Name }, Edited_By: [] };
-
+        const Initiator = {};
         const dataEntry = {
             Unit_Type,
             RE_Name,
@@ -507,9 +508,9 @@ const update_REU = (prisma) => async (req, res) => {
             return res.status(400).send({ 'message': 'Unit_ID is required.' });
         }
 
-        if (!Full_Name) {
-            return res.status(400).send({ 'message': 'Full_Name is required.' });
-        }
+        // if (!Full_Name) {
+        //     return res.status(400).send({ 'message': 'Full_Name is required.' });
+        // }
 
         // Ensure at least one field to update is present
         if (!(Unit_Type || Deed_Owners || Outdoor_Unit_Images || Deed_Owner_Delete)) {
@@ -517,7 +518,7 @@ const update_REU = (prisma) => async (req, res) => {
         }
 
 
-
+;
         const existingUnit = await prisma.realEstateUnit.findUnique({
             where: { Unit_ID: parseInt(Unit_ID) },
             select: {
@@ -529,7 +530,7 @@ const update_REU = (prisma) => async (req, res) => {
         if (!existingUnit) {
             return res.status(404).send({ 'message': 'Real Estate Unit not found.' });
         }
-
+            console.log('fff');
         if (Array.isArray(existingUnit.Initiator.Edited_By)) {
             existingUnit.Initiator.Edited_By.push({
                 User_ID: req.body.User_ID,
@@ -543,7 +544,7 @@ const update_REU = (prisma) => async (req, res) => {
                 Edited_At: new Date().toISOString()
             }];
         }
-
+console.log('444');
         var updatedOwners;
         if (Deed_Owner_Delete) {
             if (existingUnit.Deed_Owners.length <= 1) {
@@ -555,7 +556,7 @@ const update_REU = (prisma) => async (req, res) => {
         }
 
 
-
+console.log('fdd');
 
 
         const updateData = {
@@ -565,6 +566,7 @@ const update_REU = (prisma) => async (req, res) => {
             ...(Outdoor_Unit_Images && { Outdoor_Unit_Images }),
             Initiator: existingUnit.Initiator
         };
+        console.log(updateData);
         const selection = {
             ...(Deed_Owner_Delete && { Deed_Owners: true }),
             ...(Unit_Type && { Unit_Type: true }),

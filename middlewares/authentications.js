@@ -17,6 +17,7 @@ async function officeAuthentication(req, res, next) {
         if (typeof req.body.My_Office_ID === 'string') {
             req.body.My_Office_ID = parseInt(req.body.My_Office_ID);
         }
+
         const office = await prisma.realEstateOffice.findUnique({
             where: {
                 Office_ID: req.body.My_Office_ID,
@@ -35,7 +36,7 @@ async function officeAuthentication(req, res, next) {
         }
         req.body.My_Office_ID = office.Office_ID;
         req.body.Office_Owner_ID = office.Owner_ID;
-      
+ 
         next();
 
     } catch (error) {
