@@ -498,53 +498,58 @@ const update_REU = (prisma) => async (req, res) => {
         const {
             Unit_ID,
             Unit_Type,
+            RE_Name,
             Deed_Owners,
-            Outdoor_Unit_Images,
-            Full_Name,
+            New_Images,
+            Images_Delete,
             Deed_Owner_Delete
         } = req.body;
 
         if (!Unit_ID) {
             return res.status(400).send({ 'message': 'Unit_ID is required.' });
         }
-
         // if (!Full_Name) {
         //     return res.status(400).send({ 'message': 'Full_Name is required.' });
         // }
 
         // Ensure at least one field to update is present
-        if (!(Unit_Type || Deed_Owners || Outdoor_Unit_Images || Deed_Owner_Delete)) {
+        if (!(Unit_Type || RE_Name || Deed_Owners || New_Images || Deed_Owner_Delete)) {
             return res.status(400).send({ 'message': 'Nothing to change?!...' });
         }
 
 
-;
         const existingUnit = await prisma.realEstateUnit.findUnique({
             where: { Unit_ID: parseInt(Unit_ID) },
             select: {
                 Initiator: true,
-                Deed_Owners: true
+                Deed_Owners: true,
+                ...((Images_Delete || New_Images)
+                    ? { Outdoor_Unit_Images: true }
+                    : {})
             }
         });
 
         if (!existingUnit) {
             return res.status(404).send({ 'message': 'Real Estate Unit not found.' });
         }
-            console.log('fff');
-        if (Array.isArray(existingUnit.Initiator.Edited_By)) {
-            existingUnit.Initiator.Edited_By.push({
-                User_ID: req.body.User_ID,
-                Full_Name,
-                Edited_At: new Date().toISOString()
-            });
-        } else {
-            existingUnit.Initiator.Edited_By = [{
-                User_ID: req.body.User_ID,
-                Full_Name,
-                Edited_At: new Date().toISOString()
-            }];
-        }
-console.log('444');
+
+
+        // if (Array.isArray(existingUnit.Initiator.Edited_By)) {
+        //     existingUnit.Initiator.Edited_By.push({
+        //         User_ID: req.body.User_ID,
+        //         // Full_Name,
+        //         Edited_At: new Date().toISOString()
+        //     });
+        // } else {
+        //     existingUnit.Initiator.Edited_By = [{
+        //         User_ID: req.body.User_ID,
+        //         // Full_Name,
+        //         Edited_At: new Date().toISOString()
+        //     }];
+        // }
+
+
+
         var updatedOwners;
         if (Deed_Owner_Delete) {
             if (existingUnit.Deed_Owners.length <= 1) {
@@ -556,23 +561,45 @@ console.log('444');
         }
 
 
-console.log('fdd');
+        if (Images_Delete) {
+            existingUnit.Outdoor_Unit_Images = existingUnit.Outdoor_Unit_Images.filter((image) => {
+                return image !== Images_Delete
+            })
+        }
 
+        if (New_Images && Array.isArray(New_Images)) {
+            existingUnit.Outdoor_Unit_Images.push(...New_Images); //New_Images is an array is push the right way
+        }
+
+        if (Images_Delete && Array.isArray(Images_Delete)) {
+            existingUnit.Outdoor_Unit_Images = existingUnit.Outdoor_Unit_Images.filter(
+                (img) => !Images_Delete.includes(img)
+            );
+        }
 
         const updateData = {
-            ...(Deed_Owner_Delete && { Deed_Owners: updatedOwners }),
             ...(Unit_Type && { Unit_Type }),
+            ...(RE_Name && { RE_Name }),
             ...(Deed_Owners && { Deed_Owners }),
-            ...(Outdoor_Unit_Images && { Outdoor_Unit_Images }),
+            ...(Deed_Owner_Delete && { Deed_Owners: updatedOwners }),
+            ...((Images_Delete || New_Images)
+                ? { Outdoor_Unit_Images: existingUnit.Outdoor_Unit_Images }
+                : {}),
             Initiator: existingUnit.Initiator
         };
-        console.log(updateData);
+
+
         const selection = {
-            ...(Deed_Owner_Delete && { Deed_Owners: true }),
             ...(Unit_Type && { Unit_Type: true }),
+            ...(RE_Name && { RE_Name: true }),
             ...(Deed_Owners && { Deed_Owners: true }),
-            ...(Outdoor_Unit_Images && { Outdoor_Unit_Images: true }),
+            ...(Deed_Owner_Delete && { Deed_Owners: true }),
+            ...((Images_Delete || New_Images)
+                ? { Outdoor_Unit_Images: true }
+                : {})
+
         }
+
         const updatedUnit = await prisma.realEstateUnit.update({
             where: { Unit_ID: parseInt(Unit_ID) },
             data: updateData,
