@@ -571,9 +571,15 @@ const update_REU = (prisma) => async (req, res) => {
             existingUnit.Outdoor_Unit_Images.push(...New_Images); //New_Images is an array is push the right way
         }
 
+
         if (Images_Delete && Array.isArray(Images_Delete)) {
             existingUnit.Outdoor_Unit_Images = existingUnit.Outdoor_Unit_Images.filter(
-                (img) => !Images_Delete.includes(img)
+                (img) => {
+                    const imgArray = Array.from(img);
+                    return !Images_Delete.some((image) =>{
+                        return JSON.stringify(image) === JSON.stringify(imgArray)
+                    });
+                }
             );
         }
 
@@ -599,7 +605,6 @@ const update_REU = (prisma) => async (req, res) => {
                 : {})
 
         }
-
         const updatedUnit = await prisma.realEstateUnit.update({
             where: { Unit_ID: parseInt(Unit_ID) },
             data: updateData,
@@ -607,7 +612,7 @@ const update_REU = (prisma) => async (req, res) => {
                 ...selection
             }
         });
-
+        
         return res.status(202).json({
             message: 'Data was updated',
             data: updatedUnit
