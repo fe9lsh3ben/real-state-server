@@ -513,7 +513,7 @@ const update_REU = (prisma) => async (req, res) => {
         // }
 
         // Ensure at least one field to update is present
-        if (!(Unit_Type || RE_Name || Deed_Owners || New_Images || Deed_Owner_Delete)) {
+        if (!(Unit_Type || RE_Name || Deed_Owners || Deed_Owner_Delete || New_Images || Images_Delete)) {
             return res.status(400).send({ 'message': 'Nothing to change?!...' });
         }
 
@@ -561,27 +561,22 @@ const update_REU = (prisma) => async (req, res) => {
         }
 
 
-        if (Images_Delete) {
-            existingUnit.Outdoor_Unit_Images = existingUnit.Outdoor_Unit_Images.filter((image) => {
-                return image !== Images_Delete
-            })
-        }
+
 
         if (New_Images && Array.isArray(New_Images)) {
-            existingUnit.Outdoor_Unit_Images.push(...New_Images); //New_Images is an array is push the right way
+            existingUnit.Outdoor_Unit_Images.push(...New_Images); // New_Images is an array is push the right way
         }
-
 
         if (Images_Delete && Array.isArray(Images_Delete)) {
             existingUnit.Outdoor_Unit_Images = existingUnit.Outdoor_Unit_Images.filter(
                 (img) => {
-                    const imgArray = Array.from(img);
-                    return !Images_Delete.some((image) =>{
-                        return JSON.stringify(image) === JSON.stringify(imgArray)
-                    });
+                    const dbImageAsBase64 = Buffer.from(img).toString('base64');
+
+                    return !Images_Delete.includes(dbImageAsBase64);
                 }
             );
         }
+
 
         const updateData = {
             ...(Unit_Type && { Unit_Type }),
@@ -603,7 +598,6 @@ const update_REU = (prisma) => async (req, res) => {
             ...((Images_Delete || New_Images)
                 ? { Outdoor_Unit_Images: true }
                 : {})
-
         }
         const updatedUnit = await prisma.realEstateUnit.update({
             where: { Unit_ID: parseInt(Unit_ID) },
@@ -612,7 +606,7 @@ const update_REU = (prisma) => async (req, res) => {
                 ...selection
             }
         });
-        
+
         return res.status(202).json({
             message: 'Data was updated',
             data: updatedUnit
