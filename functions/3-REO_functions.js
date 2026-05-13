@@ -429,8 +429,6 @@ const update_REO = (prisma) => async (req, res) => {
             selection.Office_Banner_Image = true;
         }
 
-        // console.log(Office_Banner_Image); //.....F8s3nRru9sCuSo+ZQT7Af//Z
-        console.log('this selection', selection) //this selection { Office_Banner_Image: true }
 
         const updatedOffice = await prisma.realEstateOffice.update({
             where: { Office_ID: parseInt(Office_ID) },
@@ -438,8 +436,6 @@ const update_REO = (prisma) => async (req, res) => {
             select: selection
         });
 
-        console.log(updatedOffice); //{ Office_Banner_Image: null }
-        console.log(Object.keys(updatedOffice));//[ 'Office_Banner_Image' ]
 
         return res.status(202).json({
             message: 'Real Estate Office updated successfully.',

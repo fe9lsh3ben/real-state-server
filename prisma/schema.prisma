@@ -343,11 +343,13 @@ model RealEstateUnit {
     Deed_Number String                @unique
     Deed_Date   DateTime
     Deed_Owners Json[] //{Owner_Name, Owner_GovID, Owner_Phone_Number}
+    AD_License  Json? //{Licens_Number, License_Exp}
 
     Affiliated_Office_ID Int?
     Affiliated_Office    RealEstateOffice? @relation("OfficeAndREUnit", fields: [Affiliated_Office_ID], references: [Office_ID])
 
     Initiator Json //{"Created_By":{ "User_ID", "Full_Name"}, "Edited_By":[{"User_ID", "Full_Name"}]}
+
 
     //Address      
     Region    String

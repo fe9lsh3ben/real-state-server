@@ -339,6 +339,7 @@ const get_REU = (prisma) => async (req, res) => {
             }
             case SearchType.OFFICE_DETAIL_VIEW: {
                 // Office_ID is required
+                 
                 return await tokenMiddlewere(req, res,
                     () => officeAuthentication(req, res,
                         () => REUAuthentication(req, res, async () => {
@@ -351,6 +352,7 @@ const get_REU = (prisma) => async (req, res) => {
                                     Deed_Number: true,
                                     Deed_Date: true,
                                     Deed_Owners: true,
+                                    AD_License: true,
                                     Initiator: true,
                                     Direction: true,
                                     City: true,
@@ -500,6 +502,7 @@ const update_REU = (prisma) => async (req, res) => {
             Unit_Type,
             RE_Name,
             Deed_Owners,
+            AD_License,
             New_Images,
             Images_Delete,
             Deed_Owner_Delete
@@ -513,7 +516,7 @@ const update_REU = (prisma) => async (req, res) => {
         // }
 
         // Ensure at least one field to update is present
-        if (!(Unit_Type || RE_Name || Deed_Owners || Deed_Owner_Delete || New_Images || Images_Delete)) {
+        if (!(Unit_Type || RE_Name || Deed_Owners || Deed_Owner_Delete || New_Images || Images_Delete || AD_License)) {
             return res.status(400).send({ 'message': 'Nothing to change?!...' });
         }
 
@@ -561,8 +564,6 @@ const update_REU = (prisma) => async (req, res) => {
         }
 
 
-
-
         if (New_Images && Array.isArray(New_Images)) {
             existingUnit.Outdoor_Unit_Images.push(...New_Images); // New_Images is an array is push the right way
         }
@@ -586,6 +587,7 @@ const update_REU = (prisma) => async (req, res) => {
             ...((Images_Delete || New_Images)
                 ? { Outdoor_Unit_Images: existingUnit.Outdoor_Unit_Images }
                 : {}),
+            ...(AD_License && { AD_License }),
             Initiator: existingUnit.Initiator
         };
 
@@ -595,10 +597,12 @@ const update_REU = (prisma) => async (req, res) => {
             ...(RE_Name && { RE_Name: true }),
             ...(Deed_Owners && { Deed_Owners: true }),
             ...(Deed_Owner_Delete && { Deed_Owners: true }),
+            ...(AD_License && { AD_License: true }),
             ...((Images_Delete || New_Images)
                 ? { Outdoor_Unit_Images: true }
                 : {})
         }
+        
         const updatedUnit = await prisma.realEstateUnit.update({
             where: { Unit_ID: parseInt(Unit_ID) },
             data: updateData,
