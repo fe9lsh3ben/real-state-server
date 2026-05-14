@@ -387,6 +387,7 @@ async function tokenVerifier(req) {
 
                     req.body.Role = user.Role;
                     req.body.User_ID = user.User_ID;
+                    req.body.Entity_Type =  'User';
                     req.body.Full_Name = user.Full_Name;
                     // (user.Employer_REO_ID && (req.body.Employer_REO_ID = user.Employer_REO_ID)); // no need
 
@@ -397,6 +398,7 @@ async function tokenVerifier(req) {
                         where: { Office_ID: data.My_Office_ID },
                         select: {
                             Office_ID: true,
+                            Commercial_Register: true,
                             Session: { select: { Token: true } }
                         }
                     });
@@ -412,6 +414,8 @@ async function tokenVerifier(req) {
                         req.body = {};
                     }
                     req.body.My_Office_ID = office.Office_ID;
+                    req.body.Commercial_Register = office.Commercial_Register;
+                    req.body.Entity_Type =  'Office';
                     // (user.Employer_REO_ID && (req.body.Employer_REO_ID = user.Employer_REO_ID)); // no need
 
                     return { 'verified': true, 'message': "Token is valid" };

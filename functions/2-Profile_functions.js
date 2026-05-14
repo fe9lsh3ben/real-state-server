@@ -277,7 +277,7 @@ const signup = (prisma) => async (req, res) => {
                 Latitude,
                 Longitude,
                 Status: Office_Or_User_Status.ACTIVE,
-                Other:{'Services':''},
+                Other: { 'Services': '' },
             };
 
             try {
@@ -443,7 +443,8 @@ const login = (prisma) => async (req, res) => {
                     where: { Commercial_Register: Commercial_Register },
                     select: {
                         Office_ID: true,
-                        Password: true
+                        Password: true,
+                        Commercial_Register: true
                     }
                 });
 
@@ -1037,32 +1038,69 @@ const passwordReset = (prisma) => async (req, res) => {
 const logout = (prisma) => async (req, res) => {
     try {
 
-        await prisma.user.update({
-            where: { User_ID: req.body.User_ID },
-            data: {
-                Session: {
-                    update: {
-                        Token: null,
-                        Expires_At: null,
-                        Revoked_At: new Date()
+
+
+        const { Entity_Type } = req.body;
+
+        if (Entity_Type === "User") {
+
+            await prisma.user.update({
+                where: { User_ID: req.body.User_ID },
+                data: {
+                    Session: {
+                        update: {
+                            Token: null,
+                            Expires_At: null,
+                            Revoked_At: new Date()
+                        },
+                    },
+                    Refresh_Token: {
+                        update: {
+                            Refresh_Token: null,
+                            Expires_At: null,
+                            Revoked_At: new Date()
+                        },
                     },
                 },
-                Refresh_Token: {
-                    update: {
-                        Refresh_Token: null,
-                        Expires_At: null,
-                        Revoked_At: new Date()
-                    },
-                },
-            },
-        });
-        if (req.headers['x-mobile-app']) {
-            return res.status(200).send({ 'message': 'Logout successful' });
+            });
+            if (req.headers['x-mobile-app']) {
+                return res.status(200).send({ 'message': 'Logout successful' });
+            }
+            res.clearCookie('session');
+            res.clearCookie('refreshToken');
+            res.clearCookie('csrfToken');
+            res.status(200).send({ 'message': 'Logout successful' });
         }
-        res.clearCookie('session');
-        res.clearCookie('refreshToken');
-        res.clearCookie('csrfToken');
-        res.status(200).send({ 'message': 'Logout successful' });
+        else if (Entity_Type === "Office") {
+
+            await prisma.realEstateOffice.update({
+                where: { Commercial_Register: req.body.Commercial_Register },
+                data: {
+                    Session: {
+                        update: {
+                            Token: null,
+                            Expires_At: null,
+                            Revoked_At: new Date()
+                        },
+                    },
+                    Refresh_Token: {
+                        update: {
+                            Refresh_Token: null,
+                            Expires_At: null,
+                            Revoked_At: new Date()
+                        },
+                    },
+                },
+            });
+
+            if (req.headers['x-mobile-app']) {
+                return res.status(200).send({ 'message': 'Logout successful' });
+            }
+            res.clearCookie('session');
+            res.clearCookie('refreshToken');
+            res.clearCookie('csrfToken');
+            res.status(200).send({ 'message': 'Logout successful' });
+        }
     } catch (error) {
         console.error(error);
         dbErrorHandler(res, error, 'logout');

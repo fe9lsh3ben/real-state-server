@@ -35,7 +35,6 @@ async function officeAuthentication(req, res, next) {
             return res.status(403).send({ 'message': 'You are not authorized to access this office, no relationship found.' });
         }
         req.body.My_Office_ID = office.Office_ID;
-        req.body.Office_Owner_ID = office.Owner_ID;
  
         next();
 

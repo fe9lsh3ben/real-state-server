@@ -159,41 +159,71 @@ const generate_REO = (prisma, Office_Or_User_Status, User_Type) => async (req, r
 
 const get_REO = (prisma) => async (req, res) => {
     try {
-        const { Search_Type, selection } = req.query;
+        // req.body = req.body || {};
+        // Object.assign(req.body, req.query);
+        const { Search_Type } = req.query;
 
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
-                const Office_ID = parseInt(req.body.Office_ID);
-                const parsedSelection = JSON.parse(selection);
-                if (isNaN(Office_ID)) return res.status(400).send({ 'message': "Invalid or missing Office_ID." });
+
+                const office = await prisma.realEstateOffice.findUnique({
+                    where: { Office_ID: parseInt(req.query.Office_ID) },
+                    select: {
+                        Office_ID: true,
+                        Commercial_Register: true,
+                        Office_Name: true,
+                        Office_Phone: true,
+                        Other: true,
+                        Office_Image: true,
+                        Office_Banner_Image: true,
+                        Fal_Licenses: true,
+                        City: true,
+                        District: true,
+                        Latitude: true,
+                        Longitude: true,
+                        Contracts: true,
+                        Rating: true,
+                        ADs: {
+                            // Filter the list of ads returned
+                            where: {
+                                AND: [
+                                    { AD_Type: { AD_Type: req.query.AD_Type } },
+                                    { AD_Unit_Type: { AD_Unit_Type: req.query.AD_Unit_Type } }
+                                ]
+                            },
+                            select: {
+                                AD_ID: true,
+                                Unit: {
+                                    select: {
+                                        Unit_ID: true,
+                                        City: true,
+                                        District: true,
+
+                                    }
+                                },
+                                AD_Title: true,
+                                Indoor_Unit_Images: true,
+                                Unit_Price: true,
+                                Created_At: true,
+                            }
+                        },
 
 
-                if (Object.keys(parsedSelection).length === 0) {
-                    return res.status(400).send({ 'message': "No selection parameter, it is an empty object." });
-                }
-
-                const office = await prisma.realEstateOffice.findFirst({
-                    where: { Office_ID },
-                    select:
-                        (parsedSelection || {})
-
+                    }
                 });
 
-
-
-                if (!office) return res.status(404).send({ 'message': 'Real Estate Office not found.' });
-
-                office['RealEstate_Units'] = office['RealEstate_Units'].map(unit => ({
-                    ...unit,
-                    Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
+                if (!office) {
+                    return res.status(404).send({ 'message': 'Real Estate Office not found.' });
+                }
+                office.ADs = office.ADs.map((ad) => ({
+                    ...ad,
+                    Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
                 }));
-
-
                 return res.status(200).send([office]);
             }
 
             case SearchType.LIST_VIEW: {
-                const { Geo_level, Geo_value } = req.body;
+                const { Geo_level, Geo_value } = req.query;
 
                 if (!Geo_level || !Geo_value) {
                     return res.status(400).send({ 'message': "Missing Geo_level or Geo_value." });
@@ -220,7 +250,7 @@ const get_REO = (prisma) => async (req, res) => {
             }
 
             case SearchType.MAP_PINS_VIEW: {
-                const { minLatitude, maxLatitude, minLongitude, maxLongitude } = req.body;
+                const { minLatitude, maxLatitude, minLongitude, maxLongitude } = req.query;
 
                 const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
                 const allValid = allCoords.every(coord => coord !== undefined && !isNaN(coord));
@@ -306,6 +336,9 @@ const get_REO = (prisma) => async (req, res) => {
                             ...unit,
                             Outdoor_Unit_Images: unit.Outdoor_Unit_Images?.[0] || null
                         }));
+
+                        office.Is_Owner = true;
+
                         return res.status(200).send([office]);
                     });
                 });
