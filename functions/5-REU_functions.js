@@ -22,6 +22,7 @@ const generate_REU = (prisma) => async (req, res) => {
             Deed_Number,
             Deed_Date,
             Deed_Owners,
+            AD_License,
             Address,
             Outdoor_Unit_Images,
         } = req.body;
@@ -34,11 +35,12 @@ const generate_REU = (prisma) => async (req, res) => {
         if (!Deed_Date) missingFields.push("Deed Date");
         if (!Deed_Owners) missingFields.push("Deed Owners");
         if (!Address) missingFields.push("Address");
-
+        
 
         if (missingFields.length > 0) {
             return res.status(400).send(`Missing required fields: ${missingFields.join(", ")}`);
         }
+
         if (!validUnitTypes.includes(Unit_Type)) {
             res.status(400).send({ 'message': 'Invalid Unit Type.' });
             return;
@@ -82,6 +84,7 @@ const generate_REU = (prisma) => async (req, res) => {
             Direction,
             Latitude,
             Longitude,
+            AD_License: AD_License ?? {}, // i want if null put empety {}
             ...(Outdoor_Unit_Images && { Outdoor_Unit_Images })
         };
         if (req.body.Polygon) {
@@ -339,7 +342,7 @@ const get_REU = (prisma) => async (req, res) => {
             }
             case SearchType.OFFICE_DETAIL_VIEW: {
                 // Office_ID is required
-                 
+                  
                 return await tokenMiddlewere(req, res,
                     () => officeAuthentication(req, res,
                         () => REUAuthentication(req, res, async () => {
@@ -376,7 +379,7 @@ const get_REU = (prisma) => async (req, res) => {
                                 }
                             });
                             if (!unit) return res.status(404).send({ 'message': 'Real Estate unit not found.' });
-
+                            console.log(unit['AD_License'])
                             unit.Unit_ADs = unit.Unit_ADs.map(ad => ({
                                 ...ad,
                                 Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
