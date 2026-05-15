@@ -34,6 +34,8 @@ RE_AD.route('/')
   .post(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, REUAuthentication, generate_READ(prisma))
 
 
+  .get(get_READ(prisma))
+
   // query parameters : 'http://127.0.0.1:3050/RE_AD?AD_ID=1&Search_Type=complete'
 
   // query parameters : 'http://127.0.0.1:3050/RE_AD?Search_Type=for_map&AD_Type=RENT&AD_Unit_Type=APARTMENT&Region=Mekkah'
@@ -54,7 +56,6 @@ RE_AD.route('/')
 
   .delete(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, delete_READ(prisma));
 
-RE_AD.route('/get_RE_ADs')
 
-.post(get_READ(prisma))
+
 module.exports = { RE_AD }

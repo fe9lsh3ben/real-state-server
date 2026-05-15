@@ -101,19 +101,19 @@ const generate_READ = (prisma) => async (req, res) => {
 const get_READ = (prisma) => async (req, res) => {
 
     try {
-
+        console.log(req.query);
         // Ensure body exists before merging
         req.body = req.body || {};
-        const { Search_Type } = req.body;
-
+        const { Search_Type  } = req.query;
+        console.log(Search_Type);
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
-                let AD_ID = req.body.AD_ID;
-                if (!req.body.AD_ID) {
+                let AD_ID = req.query.AD_ID;
+                if (!req.query.AD_ID) {
                     return res.status(400).send({ 'message': "Ad ID is required." });
                 }
-                if (typeof req.body.AD_ID === 'string') {
-                    AD_ID = parseInt(req.body.AD_ID);
+                if (typeof req.query.AD_ID === 'string') {
+                    AD_ID = parseInt(req.query.AD_ID);
                 }
 
                 if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid Ad ID." });
@@ -139,12 +139,13 @@ const get_READ = (prisma) => async (req, res) => {
                         },
                         Unit: {
                             select: {
+                                AD_License: true,
                                 City: true,
                                 District: true,
                                 Direction: true,
                                 Latitude: true,
                                 Longitude: true,
-                                ...(req.body.Out_Images && { Outdoor_Unit_Images: true }),
+                                ...(req.query.With_Outdoor_Images && { Outdoor_Unit_Images: true }),
                             }
                         },
 
@@ -166,6 +167,7 @@ const get_READ = (prisma) => async (req, res) => {
                         return res.status(404).send({ 'message': 'Real Estate ad not found.' });
                     }
                 }
+                console.log(ad.Indoor_Unit_Images)
                 return res.status(200).send([ad]);
             }
 

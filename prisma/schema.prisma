@@ -374,7 +374,7 @@ model RealEstateAD {
 
     Unit_ID Int
     Unit    RealEstateUnit @relation(fields: [Unit_ID], references: [Unit_ID], onDelete: Cascade)
-
+    
     AD_Type            AD_Type
     AD_Unit_Type       Real_Estate_Unit_Type
     AD_Title           String

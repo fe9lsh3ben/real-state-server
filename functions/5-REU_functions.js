@@ -174,7 +174,6 @@ const get_REU = (prisma) => async (req, res) => {
             case SearchType.DETAIL_VIEW: {
                 const Unit_ID = parseInt(req.body.Unit_ID);
                 if (isNaN(Unit_ID)) return res.status(400).send({ 'message': "Invalid or missing Unit ID." });
-
                 const unit = await prisma.realEstateUnit.findFirst({
                     where: { Unit_ID },
                     select: {
@@ -605,7 +604,7 @@ const update_REU = (prisma) => async (req, res) => {
                 ? { Outdoor_Unit_Images: true }
                 : {})
         }
-        
+
         const updatedUnit = await prisma.realEstateUnit.update({
             where: { Unit_ID: parseInt(Unit_ID) },
             data: updateData,
