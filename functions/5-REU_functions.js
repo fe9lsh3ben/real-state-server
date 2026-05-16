@@ -170,6 +170,7 @@ const generate_REU = (prisma) => async (req, res) => {
 const get_REU = (prisma) => async (req, res) => {
     try {
         const { Search_Type } = req.body;
+
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
                 const Unit_ID = parseInt(req.body.Unit_ID);

@@ -112,14 +112,14 @@ const get_READ = (prisma) => async (req, res) => {
                 if (!req.query.AD_ID) {
                     return res.status(400).send({ 'message': "Ad ID is required." });
                 }
-                if (typeof req.query.AD_ID === 'string') {
-                    AD_ID = parseInt(req.query.AD_ID);
-                }
+                // if (typeof req.query.AD_ID === 'string') {
+                //     AD_ID = parseInt(req.query.AD_ID);
+                // }
 
-                if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid Ad ID." });
+                // if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid Ad ID." });
                 const ad = await prisma.realEstateAD.findFirst({
                     where: {
-                        AD_ID,
+                        AD_ID: parseInt(req.query.AD_ID),
                         Hedden: false,
                     },
                     select: {
@@ -132,11 +132,7 @@ const get_READ = (prisma) => async (req, res) => {
                         AD_Specifications: true,
                         Unit_Price: true,
                         Unit_ID: true,
-                        Initiator_Office: {
-                            select: {
-                                Office_Phone: true,
-                            }
-                        },
+                     
                         Unit: {
                             select: {
                                 AD_License: true,
@@ -167,7 +163,7 @@ const get_READ = (prisma) => async (req, res) => {
                         return res.status(404).send({ 'message': 'Real Estate ad not found.' });
                     }
                 }
-                console.log(ad.Indoor_Unit_Images)
+
                 return res.status(200).send([ad]);
             }
 
@@ -457,11 +453,11 @@ const get_READ = (prisma) => async (req, res) => {
                     () => officeAuthentication(req, res,
                         () => READAuthentication(req, res,
                             async () => {
-                                const AD_ID = parseInt(req.body.AD_ID);
-                                if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid or missing Ad ID." });
+                                // const AD_ID = parseInt(req.body.AD_ID);
+                                // if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid or missing Ad ID." });
 
                                 const ad = await prisma.RealEstateAD.findFirst({
-                                    where: { AD_ID: AD_ID },
+                                    where: { AD_ID: parseInt(req.body.AD_ID) },
                                     select: {
                                         Initiator: true,
                                         AD_Type: true,
