@@ -169,11 +169,11 @@ const generate_REU = (prisma) => async (req, res) => {
 }
 const get_REU = (prisma) => async (req, res) => {
     try {
-        const { Search_Type } = req.body;
+        const { Search_Type } = req.query;
 
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
-                const Unit_ID = parseInt(req.body.Unit_ID);
+                const Unit_ID = parseInt(req.query.Unit_ID);
                 if (isNaN(Unit_ID)) return res.status(400).send({ 'message': "Invalid or missing Unit ID." });
                 const unit = await prisma.realEstateUnit.findFirst({
                     where: { Unit_ID },
@@ -205,7 +205,7 @@ const get_REU = (prisma) => async (req, res) => {
             }
 
             case SearchType.LIST_VIEW: {
-                const { Geo_level, Geo_value } = req.body;
+                const { Geo_level, Geo_value } = req.query;
 
                 if (!Geo_level || !Geo_value) {
                     return res.status(400).send({ 'message': "Missing Geo_level or Geo_value." });
@@ -246,7 +246,7 @@ const get_REU = (prisma) => async (req, res) => {
             }
 
             case SearchType.MAP_PINS_VIEW: {
-                const { minLatitude, maxLatitude, minLongitude, maxLongitude, selection } = req.body;
+                const { minLatitude, maxLatitude, minLongitude, maxLongitude, selection } = req.query;
 
                 const allCoords = [minLatitude, maxLatitude, minLongitude, maxLongitude];
                 const allValid = allCoords.every(coord => coord !== undefined && !isNaN(coord));
@@ -285,7 +285,7 @@ const get_REU = (prisma) => async (req, res) => {
 
 
             case SearchType.CUSTOM_FILTER_QUERY: {
-                const { City, Unit_Type, Direction } = req.body;
+                const { City, Unit_Type, Direction } = req.query;
 
                 const filters = {};
                 if (!City) return res.status(400).send({ 'message': "City is required." });
@@ -312,7 +312,7 @@ const get_REU = (prisma) => async (req, res) => {
                 //         req,
                 //         res,
                 //         async () => {
-                //             const My_Office_ID = req.body.My_Office_ID;
+                //             const My_Office_ID = req.query.My_Office_ID;
 
                 //             const units = await prisma.realEstateUnit.findMany({
                 //                 where: { My_Office_ID },
@@ -346,7 +346,7 @@ const get_REU = (prisma) => async (req, res) => {
                 return await tokenMiddlewere(req, res,
                     () => officeAuthentication(req, res,
                         () => REUAuthentication(req, res, async () => {
-                            const Unit_ID = parseInt(req.body.Unit_ID);
+                            const Unit_ID = parseInt(req.query.Unit_ID);
                             if (isNaN(Unit_ID)) return res.status(400).send({ 'message': "Invalid or missing Unit ID." });
 
                             const unit = await prisma.realEstateUnit.findFirst({
@@ -395,7 +395,7 @@ const get_REU = (prisma) => async (req, res) => {
                 return await tokenMiddlewere(req, res,
                     () => officeAuthentication(req, res,
                         async () => {
-                            const { My_Office_ID, Unit_Type, Geo_Segments, Count, Zoom } = req.body;
+                            const { My_Office_ID, Unit_Type, Geo_Segments, Count, Zoom } = req.query;
                             //DO:NOW
                             // cheaper -> 1. The "Zoom Gate" Strategy(Simplest)Instead of trying to fetch everything everywhere, only fetch individual pins when the user is zoomed in enough to actually see them.Zoom < 12: Fetch nothing(or show "heatmaps/clusters").Zoom 12 - 15: Fetch pins using a larger cacheStep (e.g., $0.05$).Zoom 15 +: Fetch pins using your fine cacheStep($0.005$).To keep the cache working, you simply use a different prefix for the cache keys based on the "tier": "city_15_25" vs "detail_600_1000". 
                             // proficient -> 2.The "Clustering" Strategy(Professional Way)This is how Zillow or Airbnb handle it.You create an API endpoint that returns different data based on the zoom level.On the Server(Node.js / Prisma):When the client sends the request, it also sends the zoom.If Zoom is Low: Your Prisma query uses groupBy to return a list of "Clusters"(e.g., "This neighborhood has 50 houses") instead of every house object.If Zoom is High: Your Prisma query returns the full realEstateUnit objects.
@@ -479,10 +479,7 @@ const get_REU = (prisma) => async (req, res) => {
             }
 
             case SearchType.OFFICE_CUSTOM_FILTER_QUERY: {
-                // Object.assign(req.body, req.query);
-                // return officeAuthentication(req, res,()=>{
-
-                // });
+             
 
             }
 

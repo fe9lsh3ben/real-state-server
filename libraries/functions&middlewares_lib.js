@@ -36,7 +36,7 @@ const {
 const {
     generate_READ,
     get_READ,
-    edit_READ,
+    hide_Ad,
     delete_READ,
 } = require('../functions/6-RE_AD_functions');
 
@@ -101,7 +101,7 @@ module.exports = {
     //Real Estate Ad functions
     generate_READ,
     get_READ,
-    edit_READ,
+    hide_Ad,
     delete_READ,
 
     //Contract functions

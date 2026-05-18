@@ -23,9 +23,7 @@ Contract.route('/')
     .get(tokenMiddlewere, contractAuthentication, get_Contract(prisma))
 
 
-Contract.route('/get-contract-unregitered')
-
-    .get(get_Contract_Unregistered(prisma));
+ 
 
 
     

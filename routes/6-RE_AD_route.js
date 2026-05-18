@@ -5,7 +5,7 @@ const { prisma, AD_Type } = require('../libraries/prisma_utilities');
 const {
   generate_READ,
   get_READ,
-  edit_READ,
+  hide_Ad,
   delete_READ,
   tokenMiddlewere,
   bodyCleaner,
@@ -51,7 +51,7 @@ RE_AD.route('/')
   // .get(get_READ(prisma))
 
 
-  .put(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, edit_READ(prisma))
+  .put(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, hide_Ad(prisma))
 
 
   .delete(tokenMiddlewere, officeAuthentication, markitingFalLicenseAuthentication, READAuthentication, delete_READ(prisma));

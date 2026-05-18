@@ -32,14 +32,4 @@ REO.route('/')
 .put(tokenMiddlewere, officeAuthentication, update_REO(prisma));
 
 
-
- 
-                                
-                                
-                                
-
- 
-
-
-
 module.exports = {REO}

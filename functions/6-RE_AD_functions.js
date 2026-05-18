@@ -75,7 +75,6 @@ const generate_READ = (prisma) => async (req, res) => {
         ad = await prisma.realEstateAD.create({
             data: dataEntry
         });
-
         ad = {
             ...ad,
             Indoor_Unit_Images: ad.Indoor_Unit_Images?.[0] || null
@@ -101,11 +100,8 @@ const generate_READ = (prisma) => async (req, res) => {
 const get_READ = (prisma) => async (req, res) => {
 
     try {
-        console.log(req.query);
-        // Ensure body exists before merging
-        req.body = req.body || {};
-        const { Search_Type  } = req.query;
-        console.log(Search_Type);
+        const { Search_Type } = req.query;
+
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
                 let AD_ID = req.query.AD_ID;
@@ -132,7 +128,7 @@ const get_READ = (prisma) => async (req, res) => {
                         AD_Specifications: true,
                         Unit_Price: true,
                         Unit_ID: true,
-                     
+                        Created_At: true,
                         Unit: {
                             select: {
                                 AD_License: true,
@@ -179,7 +175,7 @@ const get_READ = (prisma) => async (req, res) => {
                     Area_Tolerance,
                     City,
                     District,
-                } = req.body;
+                } = req.query;
                 if (AD_Type) {
                     if (!validAdTypes.includes(AD_Type)) {
                         return res.status(400).send({ 'message': "Invalid AD_Type value." });
@@ -203,7 +199,7 @@ const get_READ = (prisma) => async (req, res) => {
                         }));
                     }
 
-                    
+
 
 
                     let refinedSpecFilters = [];
@@ -320,12 +316,12 @@ const get_READ = (prisma) => async (req, res) => {
                     // check necicity:-
                     Geo_Segments,
                     Count,
-                
+
                     Unit_Price,
                     Price_Tolerance,
                     Area_Tolerance,
                     //______________
-                    
+
                     Office_ID,
                     AD_Type,
                     AD_Unit_Type,
@@ -341,7 +337,7 @@ const get_READ = (prisma) => async (req, res) => {
                     maxLatitude,
                     minLongitude,
                     maxLongitude
-                } = req.body;
+                } = req.query;
 
                 if (!AD_Type || !AD_Unit_Type) return res.status(400).send({ 'message': "Missing AD type and AD unit type are required." });
 
@@ -453,22 +449,35 @@ const get_READ = (prisma) => async (req, res) => {
                     () => officeAuthentication(req, res,
                         () => READAuthentication(req, res,
                             async () => {
-                                // const AD_ID = parseInt(req.body.AD_ID);
-                                // if (isNaN(AD_ID)) return res.status(400).send({ 'message': "Invalid or missing Ad ID." });
 
                                 const ad = await prisma.RealEstateAD.findFirst({
-                                    where: { AD_ID: parseInt(req.body.AD_ID) },
+                                    where: {
+                                        AD_ID: parseInt(req.query.AD_ID),
+                                    },
                                     select: {
-                                        Initiator: true,
+                                        AD_ID: true,
+                                        Office_ID: true,
                                         AD_Type: true,
                                         AD_Unit_Type: true,
                                         AD_Title: true,
                                         Indoor_Unit_Images: true,
                                         AD_Specifications: true,
                                         Unit_Price: true,
+                                        Unit_ID: true,
                                         Hedden: true,
                                         Created_At: true,
-                                        Updated_At: true,
+                                        Unit: {
+                                            select: {
+                                                AD_License: true,
+                                                City: true,
+                                                District: true,
+                                                Direction: true,
+                                                Latitude: true,
+                                                Longitude: true,
+                                                ...(req.query.With_Outdoor_Images && { Outdoor_Unit_Images: true }),
+                                            }
+                                        },
+
                                     }
                                 });
 
@@ -478,12 +487,10 @@ const get_READ = (prisma) => async (req, res) => {
 
                             })));
 
-
-
             }
             case SearchType.OFFICE_LIST_VIEW: {
                 //Office_ID is required
-                Object.assign(req.body, req.query);
+
                 return officeAuthentication(
                     req,
                     res,
@@ -504,7 +511,7 @@ const get_READ = (prisma) => async (req, res) => {
                             maxLatitude,
                             minLongitude,
                             maxLongitude
-                        } = req.body;
+                        } = req.query;
 
                         if (!AD_Type || !AD_Unit_Type) return res.status(400).send({ 'message': "Missing AD type and AD unit type are required." });
 
@@ -603,8 +610,7 @@ const get_READ = (prisma) => async (req, res) => {
             }
 
             case SearchType.OFFICE_MAP_PINS_VIEW: {
-                //Office_ID is required
-                // Object.assign(req.body, req.query);
+
                 return officeAuthentication(req, res, async () => {
                     const {
                         Office_ID,
@@ -622,7 +628,7 @@ const get_READ = (prisma) => async (req, res) => {
                         maxLatitude,
                         minLongitude,
                         maxLongitude
-                    } = req.body;
+                    } = req.query;
 
                     if (!AD_Type || !AD_Unit_Type) return res.status(400).send({ 'message': "Missing AD type and AD unit type are required." });
 
@@ -739,37 +745,23 @@ const get_READ = (prisma) => async (req, res) => {
 };
 
 
-const edit_READ = (prisma) => async (req, res) => {
+const hide_Ad = (prisma) => async (req, res) => {
     try {
         const {
             AD_ID,
-            AD_Type,
-            AD_Unit_Type,
-            AD_Specifications,
-            Hedden,
-            Unit_Price,
-            Indoor_Unit_Images,
-            Editor_Name,
-
+            Hide_Ad
         } = req.body;
 
         if (!AD_ID) {
             return res.status(400).send({ 'message': "Ad ID is required to update the unit." });
         }
 
-        if (!Editor_Name) {
-            return res.status(400).send({ 'message': "Your Name is required to update the unit." });
-        }
-        if (!(AD_Type || AD_Unit_Type || AD_Specifications || Indoor_Unit_Images || Unit_Price || Hedden)) {
-            return res.status(400).send({ 'message': "Nothing to update." });
+        if (Hide_Ad === undefined) {
+            return res.status(400).send({ 'message': "You can only hide or unhide an ad" });
         }
 
-        if (AD_Type && !validAdTypes.includes(AD_Type)) {
-            return res.status(400).send({ 'message': "Invalid AD_Type value." });
-        }
-
-        if (AD_Unit_Type && !validUnitTypes.includes(AD_Unit_Type)) {
-            return res.status(400).send({ 'message': "Invalid AD_Unit_Type value." });
+        if (Hide_Ad !== 'true' && Hide_Ad !== 'false') {
+            return res.status(400).send({ 'message': "Hide_Ad must be true or false." });
         }
 
         const ad = await prisma.realEstateAD.findUnique({
@@ -780,58 +772,18 @@ const edit_READ = (prisma) => async (req, res) => {
             return res.status(404).send({ 'message': "Ad not found." });
         }
 
-
-        if (Array.isArray(ad.Initiator.Edited_By)) {
-            ad.Initiator.Edited_By.push({
-                User_ID: req.body.User_ID,
-                Editor_Name,
-                Edited_At: new Date().toISOString(),
-                Changed: {
-                    ...(AD_Type && { AD_Type }),
-                    ...(AD_Unit_Type && { AD_Unit_Type }),
-                    ...(AD_Specifications && { AD_Specifications }),
-                    ...(Indoor_Unit_Images && { Indoor_Unit_Images: true }),
-                    ...(Unit_Price && { Unit_Price }),
-                    ...(Hedden !== undefined && { Hedden }),
-                }
-            });
-        } else {
-            ad.Initiator.Edited_By = [{
-                User_ID: req.body.User_ID,
-                Editor_Name,
-                Edited_At: new Date().toISOString(),
-                Changed: {
-                    ...(AD_Type && { AD_Type }),
-                    ...(AD_Unit_Type && { AD_Unit_Type }),
-                    ...(AD_Specifications && { AD_Specifications }),
-                    ...(Indoor_Unit_Images && { Indoor_Unit_Images: true }),
-                    ...(Unit_Price && { Unit_Price }),
-                    ...(Hedden !== undefined && { Hedden }),
-                }
-            }];
-        }
-
-
-
-        const updateData = {
-            ...(AD_Type && { AD_Type }),
-            ...(AD_Unit_Type && { AD_Unit_Type }),
-            ...(AD_Specifications && { AD_Specifications }),
-            ...(Indoor_Unit_Images && { Indoor_Unit_Images }),
-            ...(Unit_Price && { Unit_Price }),
-            ...(Hedden && { Hedden: Hedden === 'true' }),
-            Initiator: ad.Initiator
-        };
-
-
-        const updatedUnit = await prisma.realEstateAD.update({
+        await prisma.realEstateAD.update({
             where: { AD_ID: parseInt(AD_ID) },
-            data: updateData,
+            data: {
+                Hedden: Hide_Ad === 'true'
+            },
         });
 
         return res.status(202).json({
-            message: 'AD was updated successfully.',
-            data: updatedUnit
+            message:
+                Hide_Ad ?
+                    "Real Estate AD is hidden"
+                    : "Real Estate is unhidden",
         });
 
     } catch (error) {
@@ -871,6 +823,6 @@ const delete_READ = (prisma) => async (req, res) => {
 module.exports = {
     generate_READ,
     get_READ,
-    edit_READ,
+    hide_Ad,
     delete_READ,
 }

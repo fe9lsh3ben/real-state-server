@@ -162,10 +162,10 @@ const get_REO = (prisma) => async (req, res) => {
         // req.body = req.body || {};
         // Object.assign(req.body, req.query);
         const { Search_Type } = req.query;
-
+        console.log(Search_Type);
         switch (Search_Type) {
             case SearchType.DETAIL_VIEW: {
-
+                console.log('this ', req.query)
                 const office = await prisma.realEstateOffice.findUnique({
                     where: { Office_ID: parseInt(req.query.Office_ID) },
                     select: {
@@ -187,12 +187,13 @@ const get_REO = (prisma) => async (req, res) => {
                             // Filter the list of ads returned
                             where: {
                                 AND: [
-                                    { AD_Type: { AD_Type: req.query.AD_Type } },
-                                    { AD_Unit_Type: { AD_Unit_Type: req.query.AD_Unit_Type } }
+                                    { AD_Type: req.query.AD_Type },
+                                    { AD_Unit_Type: req.query.AD_Unit_Type }
                                 ]
                             },
                             select: {
                                 AD_ID: true,
+                                Office_ID: true,
                                 Unit: {
                                     select: {
                                         Unit_ID: true,
@@ -201,6 +202,8 @@ const get_REO = (prisma) => async (req, res) => {
 
                                     }
                                 },
+                                AD_Type: true,
+                                AD_Unit_Type: true,
                                 AD_Title: true,
                                 Indoor_Unit_Images: true,
                                 Unit_Price: true,
